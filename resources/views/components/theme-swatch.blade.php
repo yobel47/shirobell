@@ -2,7 +2,7 @@
 @php
     $palettes = [
         'rose-garden' => ['bg' => 'bg-gradient-to-br from-rose-50 via-rose-100 to-rose-200', 'text' => 'text-rose-800', 'line' => 'bg-rose-300'],
-        'classic-gold' => ['bg' => 'bg-gradient-to-br from-stone-900 via-stone-800 to-stone-900', 'text' => 'text-amber-300', 'line' => 'bg-amber-400'],
+        'classic-gold' => ['bg' => 'bg-gradient-to-br from-stone-50 via-amber-50 to-stone-100', 'text' => 'text-stone-900', 'line' => 'bg-amber-600'],
         'sage-minimalist' => ['bg' => 'bg-gradient-to-br from-emerald-50 via-stone-50 to-emerald-100', 'text' => 'text-emerald-900', 'line' => 'bg-emerald-300'],
     ];
     $palette = $palettes[$theme->slug] ?? ['bg' => 'bg-rose-brand-50', 'text' => 'text-rose-brand-700', 'line' => 'bg-rose-brand-300'];

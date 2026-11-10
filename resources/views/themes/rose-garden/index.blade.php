@@ -1,6 +1,6 @@
 {{-- Theme: Rose Garden. Receives the data contract from App\Services\InvitationRenderer. --}}
 <x-invitation.layout
-    :invitation="$invitation" :preview="$preview" :music-url="$musicUrl" :cover-url="$coverUrl"
+    :invitation="$invitation" :preview="$preview" :demo="$demo ?? false" :music-url="$musicUrl" :cover-url="$coverUrl"
     css="resources/css/themes/rose-garden.css"
     class="rg-pattern font-sans text-rg-ink"
     x-data="{
@@ -194,7 +194,15 @@
                     {{ $invitation->sectionEnabled('rsvp') && $invitation->sectionEnabled('wishes') ? 'Konfirmasi & Ucapan' : ($invitation->sectionEnabled('rsvp') ? 'Konfirmasi Kehadiran' : 'Ucapan & Doa') }}
                 </h2>
                 <p class="mx-auto mt-3 mb-8 max-w-xs text-sm text-rg-ink/80">Kehadiran dan doa restu Anda sangat berarti bagi kami.</p>
-                <livewire:invitation.public-wishes :invitation="$invitation" :guest-id="$guest?->id" :guest-name="$guestName" :preview="$preview" />
+                @if ($demo ?? false)
+                    @include('themes.rose-garden.livewire.wishes', [
+                        'submitted' => false, 'rsvpEnabled' => true, 'wishesEnabled' => true, 'attendance' => 'yes',
+                        'attendanceOptions' => \App\Enums\Attendance::cases(), 'maxPax' => 2, 'preview' => true,
+                        'wishes' => $demoWishes, 'total' => $demoWishes->count(),
+                    ])
+                @else
+                    <livewire:invitation.public-wishes :invitation="$invitation" :guest-id="$guest?->id" :guest-name="$guestName" :preview="$preview" />
+                @endif
             </section>
         @endif
 

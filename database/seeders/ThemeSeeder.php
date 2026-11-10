@@ -8,15 +8,15 @@ use Illuminate\Database\Seeder;
 class ThemeSeeder extends Seeder
 {
     /**
-     * Themes without a finished Blade view stay inactive (built in M6).
      * Existing rows keep admin edits; only missing themes are inserted.
+     * A theme can only be activated when its Blade view exists (ThemeResource).
      */
     public function run(): void
     {
         $themes = [
             ['slug' => 'rose-garden', 'name' => 'Rose Garden', 'description' => 'Nuansa mawar lembut, romantis, dan elegan.', 'badge' => 'new', 'sort_order' => 1, 'is_active' => true],
-            ['slug' => 'classic-gold', 'name' => 'Classic Gold', 'description' => 'Hitam dan emas yang mewah dan klasik.', 'badge' => null, 'sort_order' => 2, 'is_active' => false],
-            ['slug' => 'sage-minimalist', 'name' => 'Sage Minimalist', 'description' => 'Hijau sage yang tenang dan minimalis.', 'badge' => null, 'sort_order' => 3, 'is_active' => false],
+            ['slug' => 'classic-gold', 'name' => 'Classic Gold', 'description' => 'Gading, hitam, dan emas yang klasik dan mewah.', 'badge' => null, 'sort_order' => 2, 'is_active' => true],
+            ['slug' => 'sage-minimalist', 'name' => 'Sage Minimalist', 'description' => 'Hijau sage yang tenang, bersih, dan minimalis.', 'badge' => null, 'sort_order' => 3, 'is_active' => true],
         ];
 
         foreach ($themes as $theme) {
