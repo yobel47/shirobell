@@ -12,7 +12,6 @@
                 </label>
             @endforeach
         </div>
-        <p class="text-xs text-gray-500">RSVP, ucapan, dan amplop digital mulai tampil setelah fiturnya tersedia.</p>
 
         <div class="max-w-xs">
             <x-editor.field model="rsvp_max_pax" label="Maksimal tamu per RSVP" type="number" min="1" max="10" />

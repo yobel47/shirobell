@@ -21,6 +21,7 @@ class InvitationController extends Controller
         'cerita' => ['Cerita', Editor\StoriesManager::class],
         'teks' => ['Teks', Editor\TextsForm::class],
         'musik' => ['Musik', Editor\MusicForm::class],
+        'amplop' => ['Amplop', Editor\GiftManager::class],
         'tema' => ['Tema', Editor\ThemePicker::class],
         'pengaturan' => ['Pengaturan', Editor\SettingsForm::class],
     ];
@@ -40,6 +41,20 @@ class InvitationController extends Controller
             'tabs' => self::TABS,
             'tab' => $tab,
         ]);
+    }
+
+    public function guests(Invitation $invitation): View
+    {
+        Gate::authorize('update', $invitation);
+
+        return view('customer.invitations.guests', ['invitation' => $invitation]);
+    }
+
+    public function wishes(Invitation $invitation): View
+    {
+        Gate::authorize('update', $invitation);
+
+        return view('customer.invitations.wishes', ['invitation' => $invitation]);
     }
 
     /** Owner-only preview on the main domain; watermarked unless the invitation is active. */

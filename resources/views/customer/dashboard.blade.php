@@ -37,7 +37,8 @@
                         </p>
                         <div class="mt-5 flex flex-wrap gap-2">
                             <a href="{{ route('app.invitations.edit', $invitation) }}" class="btn btn-primary px-4 py-1.5">Edit</a>
-                            <a href="{{ route('app.invitations.preview', $invitation) }}" target="_blank" rel="noopener" class="btn btn-outline px-4 py-1.5">Preview</a>
+                            <a href="{{ route('app.invitations.guests', $invitation) }}" class="btn btn-outline px-4 py-1.5">Tamu</a>
+                            <a href="{{ route('app.invitations.preview', $invitation) }}" target="_blank" rel="noopener" class="btn btn-ghost px-4 py-1.5">Preview</a>
                         </div>
                     </div>
                 </article>
