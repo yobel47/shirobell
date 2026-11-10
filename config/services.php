@@ -35,4 +35,13 @@ return [
         ],
     ],
 
+    /*
+    | Midtrans Snap (redirect mode). See dev-docs/decisions/007-midtrans-snap.md.
+    */
+    'midtrans' => [
+        'server_key' => env('MIDTRANS_SERVER_KEY'),
+        'is_production' => (bool) env('MIDTRANS_IS_PRODUCTION', false),
+        'expiry_hours' => 24,
+    ],
+
 ];
