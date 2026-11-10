@@ -6,12 +6,12 @@
     $mother = $invitation->{$side.'_mother'};
     $instagram = $invitation->{$side.'_instagram'};
 @endphp
-<div>
+<div {!! $reveal !!}>
     <div class="{{ $shape }} mx-auto h-64 w-48 overflow-hidden border-4 border-t-surface bg-t-soft shadow-lg">
         @if ($photo)
             <img src="{{ $photo }}" alt="Foto {{ $fullname }}" class="h-full w-full object-cover" loading="lazy">
         @else
-            <div class="flex h-full items-center justify-center font-script text-6xl text-t-accent">{{ mb_substr((string) $nickname, 0, 1) }}</div>
+            @include('themes._engine.ornaments.monogram', ['initials' => mb_strtoupper(mb_substr((string) $nickname, 0, 1))])
         @endif
     </div>
     <h3 class="mt-6 font-script text-5xl text-t-primary">{{ $nickname }}</h3>

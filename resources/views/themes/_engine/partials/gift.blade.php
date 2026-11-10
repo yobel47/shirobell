@@ -1,4 +1,5 @@
 <section class="relative bg-t-soft/50 px-6 py-16 text-center" x-data="{ zoom: null }" x-on:keydown.escape.window="zoom = null">
+    @include('themes._engine.ornaments.crown', ['class' => 'h-9 w-36'])
     <h2 class="{{ $h2 }}">Amplop Digital</h2>
     <p class="mx-auto mt-4 max-w-xs text-sm leading-relaxed text-t-ink/80">Doa restu Anda adalah karunia terindah bagi kami. Bagi yang ingin memberikan tanda kasih, dapat melalui:</p>
 

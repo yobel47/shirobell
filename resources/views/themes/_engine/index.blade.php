@@ -26,6 +26,12 @@
         'bordered' => 't-frame bg-t-surface px-6 py-8',
         default => 'rounded-3xl bg-t-surface px-6 py-8 shadow-sm',
     };
+    $initials = mb_strtoupper(mb_substr($groom, 0, 1)).' & '.mb_strtoupper(mb_substr($bride, 0, 1));
+    // Scroll reveal (Alpine intersect, bundled with Livewire). Visible without JS,
+    // and off in previews (?buka=1) so the editor frame shows everything at once.
+    $reveal = request()->boolean('buka') ? '' : 'x-data="{ v: false }" x-intersect.once="v = true" x-bind:class="v ? \'t-in\' : \'t-reveal\'"';
+    $cardOrnaments = $engine['sections'] !== 'plain';
+    $hero = $engine['hero'] === 'photo' && ! $coverUrl ? 'frame' : $engine['hero'];
     // ?buka=1 skips the cover (editor preview, catalog thumbnails).
     $skipCover = request()->boolean('buka');
     $btn = 'rounded-full bg-t-primary px-5 py-2 text-xs font-semibold text-t-on transition hover:opacity-90';
@@ -62,8 +68,19 @@
         @if ($pattern)
             <div class="{{ $pattern }} absolute inset-0"></div>
         @endif
+        <div class="t-grain absolute inset-0"></div>
+        @include('themes._engine.ornaments.ambient')
+        @include('themes._engine.ornaments.corners', ['size' => 'h-40 w-40 sm:h-52 sm:w-52', 'gap' => '2'])
         <div class="relative mx-auto flex max-w-md flex-col items-center px-6 text-center">
-            <p class="text-xs tracking-[0.35em] text-t-accent uppercase">The Wedding of</p>
+            <div class="t-sway">@include('themes._engine.ornaments.crown', ['class' => 'h-16 w-56'])</div>
+            <div class="{{ $shape }} mt-2 h-40 w-32 overflow-hidden border-4 border-t-surface shadow-lg ring-1 ring-t-accent/60 [@media(max-height:700px)]:hidden">
+                @if ($coverUrl)
+                    <img src="{{ $coverUrl }}" alt="" class="h-full w-full object-cover">
+                @else
+                    @include('themes._engine.ornaments.monogram', ['withCorners' => false])
+                @endif
+            </div>
+            <p class="mt-4 text-xs tracking-[0.35em] text-t-accent uppercase">The Wedding of</p>
             <h1 class="{{ $names }} mt-4 leading-tight text-t-primary">{{ $groom }} <span class="mx-1 text-t-accent">&amp;</span> {{ $bride }}</h1>
             @if ($dateLabel)
                 <p class="mt-3 text-sm tracking-widest">{{ $dateLabel }}</p>
@@ -82,7 +99,11 @@
 
     <main id="mulai" class="relative mx-auto max-w-md overflow-hidden bg-t-bg sm:border-x sm:border-t-soft">
         {{-- Hero --}}
-        @switch($engine['hero'])
+        <div class="relative">
+        @if (in_array($hero, ['arch', 'frame'], true))
+            @include('themes._engine.ornaments.corners', ['size' => 'h-28 w-28', 'gap' => '1'])
+        @endif
+        @switch($hero)
             @case('photo')
                 <section class="relative flex min-h-[85vh] items-end">
                     @if ($coverUrl)
@@ -93,6 +114,7 @@
                     @endif
                     <div class="absolute inset-0 bg-gradient-to-b from-transparent via-t-bg/30 to-t-bg"></div>
                     <div class="relative w-full px-6 pb-12 text-center">
+                        @include('themes._engine.ornaments.crown', ['class' => 'h-12 w-44'])
                         <p class="text-xs tracking-[0.35em] text-t-accent uppercase">The Wedding of</p>
                         <h2 class="{{ $names }} mt-3 leading-tight text-t-primary">{{ $groom }} <span class="mx-1 text-t-accent">&amp;</span> {{ $bride }}</h2>
                         @if ($dateLabel)
@@ -116,6 +138,8 @@
                         <div class="{{ $shape }} relative aspect-[4/5] w-full overflow-hidden bg-t-soft">
                             @if ($coverUrl)
                                 <img src="{{ $coverUrl }}" alt="Foto {{ $invitation->coupleName() }}" class="h-full w-full object-cover">
+                            @else
+                                @include('themes._engine.ornaments.monogram')
                             @endif
                         </div>
                     </div>
@@ -130,9 +154,12 @@
                         <div class="{{ $shape }} mx-auto h-72 w-56 overflow-hidden border-4 border-t-soft bg-t-soft">
                             @if ($coverUrl)
                                 <img src="{{ $coverUrl }}" alt="Foto {{ $invitation->coupleName() }}" class="h-full w-full object-cover">
+                            @else
+                                @include('themes._engine.ornaments.monogram')
                             @endif
                         </div>
-                        <h2 class="{{ $names }} mt-8 leading-tight text-t-primary">{{ $groom }} <span class="mx-1 text-t-accent">&amp;</span> {{ $bride }}</h2>
+                        <div class="mt-6">@include('themes._engine.ornaments.crown', ['class' => 'h-12 w-44'])</div>
+                        <h2 class="{{ $names }} mt-2 leading-tight text-t-primary">{{ $groom }} <span class="mx-1 text-t-accent">&amp;</span> {{ $bride }}</h2>
                         @if ($dateLabel)
                             <p class="mt-3 text-sm tracking-widest">{{ $dateLabel }}</p>
                         @endif
@@ -147,19 +174,23 @@
                     <div class="{{ $shape }} relative mx-auto mt-8 h-80 w-60 overflow-hidden border-4 border-t-surface bg-t-soft shadow-xl">
                         @if ($coverUrl)
                             <img src="{{ $coverUrl }}" alt="Foto {{ $invitation->coupleName() }}" class="h-full w-full object-cover">
-                        @endif
+                        @else
+                                @include('themes._engine.ornaments.monogram')
+                            @endif
                     </div>
-                    <h2 class="{{ $names }} relative mt-8 leading-tight text-t-primary">{{ $groom }} <span class="mx-1 text-t-accent">&amp;</span> {{ $bride }}</h2>
+                    <div class="relative mt-6">@include('themes._engine.ornaments.crown', ['class' => 'h-12 w-44'])</div>
+                    <h2 class="{{ $names }} relative mt-2 leading-tight text-t-primary">{{ $groom }} <span class="mx-1 text-t-accent">&amp;</span> {{ $bride }}</h2>
                     @if ($dateLabel)
                         <p class="mt-3 text-sm tracking-widest">{{ $dateLabel }}</p>
                     @endif
                 </section>
         @endswitch
+        </div>
 
         @include('themes._engine.partials.ornament')
 
         {{-- Opening & quote --}}
-        <section class="px-8 py-10 text-center">
+        <section class="px-8 py-10 text-center" {!! $reveal !!}>
             @if ($invitation->quote_text)
                 <blockquote class="font-heading text-base leading-relaxed italic opacity-90">"{{ $invitation->quote_text }}"</blockquote>
                 @if ($invitation->quote_source)
@@ -205,9 +236,13 @@
         {{-- Events --}}
         @if ($events->isNotEmpty())
             <section class="space-y-8 px-6 py-16">
+                @include('themes._engine.ornaments.crown', ['class' => 'h-9 w-36'])
                 <h2 class="{{ $h2 }} text-center">Waktu &amp; Tempat</h2>
                 @foreach ($events as $event)
-                    <article class="{{ $card }} text-center">
+                    <article class="{{ $card }} relative overflow-hidden text-center" {!! $reveal !!}>
+                        @if ($cardOrnaments)
+                            @include('themes._engine.ornaments.corners', ['size' => 'h-14 w-14', 'gap' => '1'])
+                        @endif
                         <h3 class="font-heading text-2xl font-semibold text-t-primary">{{ $event->name }}</h3>
                         <p class="mt-4 font-medium">{{ $event->date->translatedFormat('l, d F Y') }}</p>
                         <p class="text-sm opacity-80">Pukul {{ $event->timeLabel() }}</p>
@@ -230,10 +265,11 @@
         {{-- Love story --}}
         @if ($stories->isNotEmpty())
             <section class="relative bg-t-soft/60 px-6 py-16">
+                @include('themes._engine.ornaments.crown', ['class' => 'h-9 w-36'])
                 <h2 class="{{ $h2 }} text-center">Cerita Kami</h2>
                 <ol class="relative mt-10 space-y-10 border-l border-t-accent/50 pl-6">
                     @foreach ($stories as $story)
-                        <li class="relative">
+                        <li class="relative" {!! $reveal !!}>
                             <span class="absolute top-1.5 -left-[31px] h-3 w-3 rounded-full bg-t-accent ring-4 ring-t-soft"></span>
                             @if ($story->story_date)
                                 <p class="text-xs font-semibold tracking-widest text-t-accent uppercase">{{ $story->story_date }}</p>
@@ -254,8 +290,9 @@
             <section class="px-4 py-16"
                      x-data="{ show: false, index: 0, photos: @js($photos->map->url()->values()) }"
                      x-on:keydown.escape.window="show = false">
+                @include('themes._engine.ornaments.crown', ['class' => 'h-9 w-36'])
                 <h2 class="{{ $h2 }} text-center">Galeri</h2>
-                <div class="mt-8 grid grid-cols-2 gap-2">
+                <div class="mt-8 grid grid-cols-2 gap-2" {!! $reveal !!}>
                     @foreach ($photos as $photo)
                         <button type="button" x-on:click="index = {{ $loop->index }}; show = true"
                                 @class([$engine['shape'] === 'square' ? 'overflow-hidden' : 'overflow-hidden rounded-2xl', 'col-span-2' => $loop->index % 5 === 0])>
@@ -285,6 +322,7 @@
         {{-- RSVP & wishes --}}
         @if ($showInteraction)
             <section id="rsvp" class="px-6 py-16 text-center">
+                @include('themes._engine.ornaments.crown', ['class' => 'h-9 w-36'])
                 <h2 class="{{ $h2 }}">
                     {{ $invitation->sectionEnabled('rsvp') && $invitation->sectionEnabled('wishes') ? 'Konfirmasi & Ucapan' : ($invitation->sectionEnabled('rsvp') ? 'Konfirmasi Kehadiran' : 'Ucapan & Doa') }}
                 </h2>
@@ -304,13 +342,17 @@
         @include('themes._engine.partials.ornament')
 
         {{-- Closing --}}
-        <section class="relative px-8 pt-10 pb-16 text-center">
+        <section class="relative overflow-hidden px-8 pt-16 pb-20 text-center">
+            @include('themes._engine.ornaments.corners', ['size' => 'h-24 w-24', 'gap' => '2'])
+            @include('themes._engine.ornaments.crown', ['class' => 'h-12 w-44'])
             @if ($invitation->closing_text)
                 <p class="text-sm leading-relaxed">{{ $invitation->closing_text }}</p>
             @endif
             <p class="mt-8 text-sm">Kami yang berbahagia,</p>
             <p class="{{ $names }} mt-2 text-t-primary">{{ $groom }} &amp; {{ $bride }}</p>
         </section>
+
+        <div class="t-grain pointer-events-none fixed inset-0 z-30"></div>
 
         <footer class="bg-t-primary px-6 py-6 text-center text-xs text-t-on/80">
             Dibuat dengan <a href="{{ config('app.url') }}" class="font-semibold text-t-on">{{ $siteName ?? config('app.name') }}</a>
