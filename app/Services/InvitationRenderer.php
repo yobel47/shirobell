@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\Models\Guest;
 use App\Models\Invitation;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Str;
@@ -13,17 +14,17 @@ use Symfony\Component\HttpFoundation\Response;
  */
 class InvitationRenderer
 {
-    public function response(Invitation $invitation, ?string $guestName = null, bool $preview = false): Response
+    public function response(Invitation $invitation, ?string $guestName = null, bool $preview = false, ?Guest $guest = null): Response
     {
         return response()
-            ->view($invitation->theme->viewName(), $this->data($invitation, $guestName, $preview))
+            ->view($invitation->theme->viewName(), $this->data($invitation, $guestName, $preview, $guest))
             ->header('X-Robots-Tag', 'noindex, nofollow');
     }
 
     /** @return array<string, mixed> */
-    public function data(Invitation $invitation, ?string $guestName = null, bool $preview = false): array
+    public function data(Invitation $invitation, ?string $guestName = null, bool $preview = false, ?Guest $guest = null): array
     {
-        $invitation->loadMissing(['theme', 'events', 'photos', 'stories', 'musicTrack']);
+        $invitation->loadMissing(['theme', 'events', 'photos', 'stories', 'giftAccounts', 'musicTrack']);
 
         $events = $invitation->events;
         $first = $events->first();
@@ -32,11 +33,14 @@ class InvitationRenderer
             'invitation' => $invitation,
             'preview' => $preview,
             'guestName' => $guestName ? Str::limit(trim(strip_tags($guestName)), 80, '') : null,
+            'guest' => $guest,
             'events' => $events,
             'mainDate' => $first?->date,
             'countdownTarget' => $invitation->sectionEnabled('countdown') ? $first?->startsAt()->toIso8601String() : null,
             'photos' => $this->section($invitation, 'gallery', $invitation->photos),
             'stories' => $this->section($invitation, 'story', $invitation->stories),
+            'giftAccounts' => $this->section($invitation, 'gift', $invitation->giftAccounts),
+            'showInteraction' => $invitation->sectionEnabled('rsvp') || $invitation->sectionEnabled('wishes'),
             'musicUrl' => $invitation->musicUrl(),
             'coverUrl' => $invitation->mediaUrl($invitation->cover_photo_path),
             'groomPhotoUrl' => $invitation->mediaUrl($invitation->groom_photo_path),

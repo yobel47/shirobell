@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Enums\InvitationStatus;
 use App\Models\Invitation;
+use App\Services\GuestService;
 use App\Services\InvitationRenderer;
 use App\Services\SlugService;
 use Illuminate\Http\RedirectResponse;
@@ -13,7 +14,7 @@ use Symfony\Component\HttpFoundation\Response;
 /** Serves {slug}.APP_DOMAIN. Only active, non-expired invitations are rendered. */
 class PublicInvitationController extends Controller
 {
-    public function __invoke(Request $request, string $slug, InvitationRenderer $renderer, SlugService $slugs): Response|RedirectResponse
+    public function __invoke(Request $request, string $slug, InvitationRenderer $renderer, SlugService $slugs, GuestService $guests): Response|RedirectResponse
     {
         if ($slugs->isReserved($slug)) {
             return redirect()->to(config('app.url'));
@@ -26,7 +27,16 @@ class PublicInvitationController extends Controller
         }
 
         if ($invitation->isActive()) {
-            return $renderer->response($invitation, guestName: $request->string('to')->toString() ?: null);
+            $guest = $guests->findByCode($invitation, $request->string('g')->toString());
+            if ($guest) {
+                $guests->markOpened($guest);
+            }
+
+            return $renderer->response(
+                $invitation,
+                guestName: $guest?->name ?? ($request->string('to')->toString() ?: null),
+                guest: $guest,
+            );
         }
 
         return match ($invitation->status) {
