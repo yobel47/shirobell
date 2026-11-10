@@ -6,7 +6,7 @@ import tailwindcss from '@tailwindcss/vite';
 export default defineConfig({
     plugins: [
         laravel({
-            input: ['resources/css/app.css', 'resources/js/app.js'],
+            input: ['resources/css/app.css', 'resources/js/app.js', 'resources/css/themes/rose-garden.css'],
             refresh: true,
             fonts: [
                 bunny('Inter', {
@@ -15,6 +15,9 @@ export default defineConfig({
                 bunny('Playfair Display', {
                     weights: [500, 600, 700],
                     styles: ['normal', 'italic'],
+                }),
+                bunny('Great Vibes', {
+                    weights: [400],
                 }),
             ],
         }),

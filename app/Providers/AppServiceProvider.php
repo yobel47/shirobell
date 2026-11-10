@@ -16,7 +16,7 @@ class AppServiceProvider extends ServiceProvider
     public function boot(): void
     {
         // Composed lazily so artisan commands work before the settings table exists.
-        View::composer('components.layouts.*', function ($view): void {
+        View::composer(['components.layouts.*', 'components.invitation.*', 'themes.*', 'invitation-status'], function ($view): void {
             $view->with('siteName', app(SettingService::class)->get('site_name'));
         });
     }

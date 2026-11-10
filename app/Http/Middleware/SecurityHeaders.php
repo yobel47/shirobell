@@ -40,6 +40,8 @@ class SecurityHeaders
         $nonce = Vite::cspNonce();
         $devServer = app()->isLocal() ? ' http://localhost:5173 http://127.0.0.1:5173 http://[::1]:5173' : '';
         $devSocket = app()->isLocal() ? ' ws://localhost:5173 ws://127.0.0.1:5173 ws://[::1]:5173' : '';
+        // Uploaded media is served from the main domain, also on invitation subdomains.
+        $appOrigin = ' '.$this->appOrigin();
 
         // 'unsafe-eval' is required by Alpine (bundled with Livewire) for inline
         // expressions. Tracked in dev-docs/ai/TECHNICAL_DEBT.md (Livewire csp_safe).
@@ -47,9 +49,9 @@ class SecurityHeaders
             "default-src 'self'",
             "script-src 'self' 'nonce-{$nonce}' 'unsafe-eval'{$devServer}",
             "style-src 'self' 'unsafe-inline'{$devServer}",
-            "img-src 'self' data: blob: https:",
+            "img-src 'self' data: blob: https:{$appOrigin}",
             "font-src 'self' data:{$devServer}",
-            "media-src 'self' blob:",
+            "media-src 'self' blob:{$appOrigin}",
             "connect-src 'self'{$devSocket}{$devServer}",
             'frame-src https://www.google.com https://maps.google.com',
             "frame-ancestors 'self'",
@@ -57,5 +59,13 @@ class SecurityHeaders
             "form-action 'self' https://checkout.xendit.co https://checkout-staging.xendit.co",
             "object-src 'none'",
         ]);
+    }
+
+    private function appOrigin(): string
+    {
+        $url = parse_url((string) config('app.url'));
+        $port = isset($url['port']) ? ':'.$url['port'] : '';
+
+        return ($url['scheme'] ?? 'https').'://'.($url['host'] ?? 'localhost').$port;
     }
 }
