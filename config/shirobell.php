@@ -28,6 +28,12 @@ return [
     ],
 
     /*
+    | Date shown as "Terakhir diperbarui" on the legal pages. Bump it whenever
+    | the text of resources/views/legal/* changes.
+    */
+    'legal_updated_at' => '2026-11-10',
+
+    /*
     | Subdomains a customer can never claim.
     */
     'reserved_slugs' => [

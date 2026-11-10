@@ -5,6 +5,7 @@ namespace App\Filament\Pages;
 use App\Services\Admin\AdminActionService;
 use App\Services\SettingService;
 use BackedEnum;
+use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
 use Filament\Notifications\Notification;
 use Filament\Pages\Page;
@@ -51,6 +52,11 @@ class ManageSettings extends Page
                 TextInput::make('support_whatsapp')->label('WhatsApp support')->tel()->maxLength(20)->regex('/^\+?[0-9]{8,15}$/'),
                 TextInput::make('support_email')->label('Email support')->email()->maxLength(150),
             ]),
+            Section::make('Identitas usaha')->description('Tampil di halaman Kontak, Syarat & Ketentuan, Kebijakan Privasi, dan Kebijakan Refund. Wajib diisi sebelum mengajukan Midtrans production.')
+                ->columns(2)->schema([
+                    TextInput::make('business_name')->label('Nama usaha / pemilik')->maxLength(150),
+                    Textarea::make('business_address')->label('Alamat usaha')->rows(3)->maxLength(500)->columnSpanFull(),
+                ]),
         ]);
     }
 

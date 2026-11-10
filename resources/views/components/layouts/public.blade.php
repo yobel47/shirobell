@@ -50,7 +50,13 @@
     <footer class="border-t border-rose-brand-100 bg-white">
         <div class="mx-auto flex max-w-6xl flex-col gap-4 px-4 py-8 text-sm text-gray-500 sm:flex-row sm:items-center sm:justify-between sm:px-6">
             <p><span class="font-serif text-lg text-rose-brand-600">{{ $siteName }}</span> &middot; Undangan pernikahan online</p>
-            <p>&copy; {{ now()->year }} {{ $siteName }}. Hak cipta dilindungi.</p>
+            <nav class="flex flex-wrap gap-x-4 gap-y-2" aria-label="Informasi">
+                <a href="{{ route('legal.terms') }}" class="hover:text-rose-brand-600">Syarat & Ketentuan</a>
+                <a href="{{ route('legal.privacy') }}" class="hover:text-rose-brand-600">Kebijakan Privasi</a>
+                <a href="{{ route('legal.refund') }}" class="hover:text-rose-brand-600">Kebijakan Refund</a>
+                <a href="{{ route('legal.contact') }}" class="hover:text-rose-brand-600">Kontak</a>
+            </nav>
         </div>
+        <p class="border-t border-rose-brand-50 px-4 py-4 text-center text-xs text-gray-400">&copy; {{ now()->year }} {{ $siteName }}. Hak cipta dilindungi.</p>
     </footer>
 </x-layouts.base>

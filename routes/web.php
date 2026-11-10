@@ -6,6 +6,7 @@ use App\Http\Controllers\Customer\OrderController;
 use App\Http\Controllers\Customer\WishExportController;
 use App\Http\Controllers\HealthController;
 use App\Http\Controllers\HomeController;
+use App\Http\Controllers\LegalPageController;
 use App\Http\Controllers\PublicInvitationController;
 use App\Http\Controllers\ThemeDemoController;
 use App\Http\Controllers\Webhook\MidtransNotificationController;
@@ -30,6 +31,13 @@ Route::domain(config('app.domain'))->group(function () {
     Route::get('/', HomeController::class)->name('home');
     Route::get('/health', HealthController::class)->name('health');
     Route::get('/tema/{theme:slug}', ThemeDemoController::class)->name('themes.demo');
+
+    Route::controller(LegalPageController::class)->name('legal.')->group(function () {
+        Route::get('/syarat-ketentuan', 'terms')->name('terms');
+        Route::get('/kebijakan-privasi', 'privacy')->name('privacy');
+        Route::get('/kebijakan-refund', 'refund')->name('refund');
+        Route::get('/kontak', 'contact')->name('contact');
+    });
 
     // Payment gateway notification. CSRF-exempt (bootstrap/app.php); verified by signature + status API.
     Route::post('/webhooks/midtrans', MidtransNotificationController::class)

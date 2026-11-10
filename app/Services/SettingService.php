@@ -25,6 +25,8 @@ class SettingService
         'gallery_max_photos' => 20,
         'support_whatsapp' => '',
         'support_email' => '',
+        'business_name' => '',
+        'business_address' => '',
     ];
 
     public function get(string $key, mixed $default = null): mixed

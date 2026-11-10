@@ -46,5 +46,11 @@
             <span wire:loading wire:target="pay">Memproses...</span>
         </button>
         <p class="text-center text-xs text-gray-500">Pembayaran diproses aman oleh Midtrans: QRIS, transfer virtual account, e-wallet, kartu, dan gerai retail.</p>
+        <p class="text-center text-xs text-gray-500">
+            Dengan membayar, Anda menyetujui
+            <a href="{{ route('legal.terms') }}" target="_blank" class="text-rose-brand-600 hover:underline">Syarat & Ketentuan</a>
+            dan
+            <a href="{{ route('legal.refund') }}" target="_blank" class="text-rose-brand-600 hover:underline">Kebijakan Refund</a>.
+        </p>
     </aside>
 </div>

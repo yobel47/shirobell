@@ -8,6 +8,12 @@
         <x-form.input name="password_confirmation" type="password" label="Ulangi kata sandi" required autocomplete="new-password" />
 
         <button type="submit" class="btn btn-primary w-full">Daftar</button>
+        <p class="text-center text-xs text-gray-500">
+            Dengan mendaftar, Anda menyetujui
+            <a href="{{ route('legal.terms') }}" target="_blank" class="text-rose-brand-600 hover:underline">Syarat & Ketentuan</a>
+            dan
+            <a href="{{ route('legal.privacy') }}" target="_blank" class="text-rose-brand-600 hover:underline">Kebijakan Privasi</a>.
+        </p>
     </form>
 
     <x-slot:footer>
