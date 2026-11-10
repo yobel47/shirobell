@@ -179,6 +179,8 @@ Minimal harian, simpan di luar VPS (object storage) dan terenkripsi:
 | `https://APP_DOMAIN/tema/rose-garden` | demo tema tampil |
 | `https://APP_DOMAIN/kontak` dan halaman kebijakan | identitas usaha dan kontak support terisi |
 | `https://APP_DOMAIN/acak` | halaman 404 berbahasa Indonesia |
+| `https://APP_DOMAIN/tema` | katalog berisi semua tema (setelah `ThemeSeeder`) |
+| Hari-H: aktifkan penerima tamu di undangan uji, buka tautan di HP, scan tiket QR | kamera terbuka (butuh HTTPS), check-in tercatat, layar sapa menampilkan nama |
 | Daftar akun, verifikasi email | email masuk (queue worker berjalan) |
 | Checkout + bayar (sandbox di staging) | order lunas, undangan aktif |
 
@@ -191,6 +193,7 @@ git pull origin main
 composer install --no-dev --optimize-autoloader
 npm ci && npm run build
 php artisan migrate --force
+php artisan db:seed --class=ThemeSeeder --force   # registers new themes from config/themes.php; keeps admin edits
 php artisan filament:assets
 php artisan config:cache && php artisan route:cache && php artisan view:cache && php artisan event:cache
 php artisan queue:restart
