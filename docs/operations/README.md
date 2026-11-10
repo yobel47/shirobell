@@ -11,3 +11,5 @@ Semua nilai rahasia ada di `.env` server (lihat `prod-docs/`), tidak pernah di f
 | Storage link | Foto/musik/QRIS di `storage/app/public` disajikan dari `/storage` | `php artisan storage:link` sekali setelah deploy pertama |
 | Wildcard subdomain | Undangan dibuka di `{slug}.APP_DOMAIN` | DNS `*.APP_DOMAIN` + SSL wildcard (ADR 003); detail di deploy guide M6 |
 | Health check | Monitoring uptime | `GET /health` (200 ok, 503 degraded) |
+| Aset panel admin | CSS/JS Filament di `public/{css,js,fonts}/filament` tidak masuk git | Otomatis lewat `composer install` (`filament:upgrade`); manual: `php artisan filament:assets` |
+| Akun admin | Panel `/admin` hanya untuk role admin | `ADMIN_EMAIL`/`ADMIN_PASSWORD` di `.env`, lalu `php artisan db:seed --class=AdminSeeder` |
