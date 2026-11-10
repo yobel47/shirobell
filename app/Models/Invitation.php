@@ -43,6 +43,7 @@ class Invitation extends Model
             'sections' => 'array',
             'rsvp_max_pax' => 'integer',
             'active_until' => 'datetime',
+            'expiry_reminded_at' => 'datetime',
             'published_at' => 'datetime',
         ];
     }
@@ -102,6 +103,11 @@ class Invitation extends Model
     public function wishes(): HasMany
     {
         return $this->hasMany(Wish::class);
+    }
+
+    public function orders(): HasMany
+    {
+        return $this->hasMany(Order::class);
     }
 
     public function scopeOwnedBy(Builder $query, User $user): Builder

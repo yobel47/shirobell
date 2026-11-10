@@ -94,6 +94,28 @@ class InvitationService
         $this->media->deleteDirectory($invitation->mediaDirectory());
     }
 
+    /**
+     * Publish or extend after a verified payment (or an audited admin action in M5).
+     * An active invitation is extended from its current end date; otherwise from now.
+     * A suspended invitation keeps its status but still receives the paid period.
+     */
+    public function activate(Invitation $invitation, int $days): void
+    {
+        $from = $invitation->active_until && $invitation->active_until->isFuture()
+            ? $invitation->active_until
+            : now();
+
+        $invitation->active_until = $from->copy()->addDays($days);
+        $invitation->published_at ??= now();
+        $invitation->expiry_reminded_at = null;
+
+        if ($invitation->status !== InvitationStatus::Suspended) {
+            $invitation->status = InvitationStatus::Active;
+        }
+
+        $invitation->save();
+    }
+
     private function availableTheme(int $themeId): Theme
     {
         $theme = Theme::query()->where('is_active', true)->find($themeId);
