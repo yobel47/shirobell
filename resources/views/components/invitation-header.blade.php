@@ -2,15 +2,27 @@
 @use('App\Enums\InvitationStatus')
 @php
     $status = $invitation->status;
+    $adminMode = \App\Policies\InvitationPolicy::actingAsAdmin(auth()->user(), $invitation);
+    $backUrl = $adminMode
+        ? \App\Filament\Resources\Invitations\InvitationResource::getUrl('view', ['record' => $invitation], panel: 'admin')
+        : route('app.dashboard');
     $sections = [
         'editor' => ['Editor', route('app.invitations.edit', $invitation)],
         'tamu' => ['Tamu', route('app.invitations.guests', $invitation)],
         'rsvp' => ['RSVP & Ucapan', route('app.invitations.wishes', $invitation)],
     ];
 @endphp
+@if ($adminMode)
+    <div role="alert" class="mb-5 rounded-xl border border-amber-300 bg-amber-50 px-4 py-3 text-sm text-amber-900">
+        <strong>Mode admin.</strong> Anda mengubah undangan milik
+        <strong>{{ $invitation->user->name }}</strong> ({{ $invitation->user->email }}).
+        Setiap halaman yang dibuka dan setiap perubahan tercatat di audit log.
+    </div>
+@endif
+
 <div class="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
     <div class="min-w-0">
-        <a href="{{ route('app.dashboard') }}" class="text-sm text-gray-500 hover:text-rose-brand-600">&larr; Undangan Saya</a>
+        <a href="{{ $backUrl }}" class="text-sm text-gray-500 hover:text-rose-brand-600">&larr; {{ $adminMode ? 'Kembali ke panel admin' : 'Undangan Saya' }}</a>
         <h1 class="mt-1 truncate font-serif text-2xl font-semibold sm:text-3xl">{{ $invitation->coupleName() }}</h1>
         <p class="mt-1 truncate text-sm text-gray-500">{{ $invitation->slug }}.{{ config('app.domain') }}</p>
     </div>
@@ -44,7 +56,7 @@
                 <strong>Ditangguhkan.</strong> {{ $invitation->suspended_reason ?: 'Hubungi admin untuk informasi lebih lanjut.' }}
         @endswitch
     </span>
-    @if ($status !== InvitationStatus::Suspended)
+    @if ($status !== InvitationStatus::Suspended && ! $adminMode)
         <a href="{{ route('app.checkout', $invitation) }}" @class([
             'btn shrink-0 px-4 py-1.5',
             'btn-primary' => $status !== InvitationStatus::Active,

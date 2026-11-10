@@ -112,6 +112,9 @@ class InvitationResource extends Resource
             Action::make('preview')->label('Buka undangan')->icon(Heroicon::OutlinedArrowTopRightOnSquare)->color('gray')
                 ->url(fn (Invitation $record) => $record->publicUrl(), shouldOpenInNewTab: true)
                 ->visible(fn (Invitation $record) => $record->isActive()),
+            Action::make('editContent')->label('Edit isi')->icon(Heroicon::OutlinedPencil)
+                ->visible(fn (Invitation $record) => ! $record->trashed())
+                ->url(fn (Invitation $record) => route('app.invitations.edit', $record)),
             Action::make('extend')->label('Perpanjang / aktifkan manual')->icon(Heroicon::OutlinedCalendarDays)
                 ->visible(fn (Invitation $record) => ! $record->trashed())
                 ->schema([

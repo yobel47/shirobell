@@ -3,11 +3,15 @@
     <header x-data="{ open: false }" class="sticky top-0 z-40 border-b border-rose-brand-100 bg-white">
         <nav class="mx-auto flex max-w-6xl items-center justify-between px-4 py-3 sm:px-6">
             <div class="flex items-center gap-6">
-                <a href="{{ route('app.dashboard') }}" class="font-serif text-2xl font-semibold text-rose-brand-600">{{ $siteName }}</a>
+                <a href="{{ auth()->user()->isAdmin() ? url('/admin') : route('app.dashboard') }}" class="font-serif text-2xl font-semibold text-rose-brand-600">{{ $siteName }}</a>
+                @if (auth()->user()->isAdmin())
+                    <a href="{{ url('/admin') }}" class="btn btn-ghost hidden md:inline-flex">Panel Admin</a>
+                @else
                 <div class="hidden items-center gap-1 md:flex">
                     <a href="{{ route('app.dashboard') }}" @class(['btn btn-ghost', 'bg-rose-brand-50 text-rose-brand-700' => request()->routeIs('app.dashboard')])>Undangan Saya</a>
                     <a href="{{ route('app.orders.index') }}" @class(['btn btn-ghost', 'bg-rose-brand-50 text-rose-brand-700' => request()->routeIs('app.orders.*')])>Transaksi</a>
                 </div>
+                @endif
             </div>
 
             <div class="relative" x-on:click.outside="open = false">
@@ -24,8 +28,12 @@
                         <p class="truncate text-sm font-medium">{{ auth()->user()->name }}</p>
                         <p class="truncate text-xs text-gray-500">{{ auth()->user()->email }}</p>
                     </div>
-                    <a href="{{ route('app.dashboard') }}" class="mt-1 block rounded-lg px-3 py-2 text-sm hover:bg-rose-brand-50 md:hidden">Undangan Saya</a>
-                    <a href="{{ route('app.orders.index') }}" class="block rounded-lg px-3 py-2 text-sm hover:bg-rose-brand-50 md:hidden">Transaksi</a>
+                    @if (auth()->user()->isAdmin())
+                        <a href="{{ url('/admin') }}" class="mt-1 block rounded-lg px-3 py-2 text-sm hover:bg-rose-brand-50">Panel Admin</a>
+                    @else
+                        <a href="{{ route('app.dashboard') }}" class="mt-1 block rounded-lg px-3 py-2 text-sm hover:bg-rose-brand-50 md:hidden">Undangan Saya</a>
+                        <a href="{{ route('app.orders.index') }}" class="block rounded-lg px-3 py-2 text-sm hover:bg-rose-brand-50 md:hidden">Transaksi</a>
+                    @endif
                     <form method="POST" action="{{ route('logout') }}">
                         @csrf
                         <button type="submit" class="block w-full rounded-lg px-3 py-2 text-left text-sm text-red-600 hover:bg-red-50">Keluar</button>
