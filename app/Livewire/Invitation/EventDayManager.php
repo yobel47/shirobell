@@ -33,6 +33,20 @@ class EventDayManager extends Component
         $this->notify('Penerima tamu dinonaktifkan.');
     }
 
+    public function toggleSelfie(): void
+    {
+        $this->authorizeUpdate();
+        $this->invitation->forceFill(['checkin_selfie' => ! $this->invitation->checkin_selfie])->save();
+        $this->notify($this->invitation->checkin_selfie ? 'Selfie check-in diaktifkan.' : 'Selfie check-in dinonaktifkan.');
+    }
+
+    public function deleteSelfie(int $guestId, EventDayService $eventDay): void
+    {
+        $this->authorizeUpdate();
+        $eventDay->deleteSelfie($this->invitation, $this->invitation->guests()->findOrFail($guestId));
+        $this->notify('Foto dihapus.');
+    }
+
     public function deleteGift(int $giftId): void
     {
         $this->authorizeUpdate();
@@ -58,6 +72,7 @@ class EventDayManager extends Component
             'recap' => $eventDay->recap($this->invitation),
             'gifts' => $this->invitation->eventGifts()->latest('id')->take(50)->get(),
             'giftKinds' => EventGift::KINDS,
+            'selfies' => $this->invitation->guests()->whereNotNull('selfie_path')->latest('checked_in_at')->get(['id', 'name', 'selfie_path', 'checked_in_at']),
         ]);
     }
 }

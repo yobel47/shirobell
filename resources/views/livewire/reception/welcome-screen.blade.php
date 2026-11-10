@@ -16,7 +16,11 @@
         <div class="mt-[3vw] min-h-[12vw]" aria-live="polite">
             @if ($greeting)
                 <div wire:key="greet-{{ $greeting->id }}" x-data x-init="$el.animate([{ opacity: 0, transform: 'translateY(2vw)' }, { opacity: 1, transform: 'none' }], { duration: 700, easing: 'ease-out' })"
-                     class="inline-block rounded-[2vw] border border-white/25 bg-white/10 px-[3vw] py-[2vw] backdrop-blur-md">
+                     class="inline-flex items-center gap-[2vw] rounded-[2vw] border border-white/25 bg-white/10 px-[3vw] py-[2vw] backdrop-blur-md">
+                    @if ($greeting->selfie_path)
+                        <img src="{{ $greeting->selfieUrl() }}" alt="" class="h-[11vw] w-[11vw] rounded-full object-cover ring-4 ring-white/60">
+                    @endif
+                    <div>
                     <p class="text-[1.3vw] opacity-90">Terima kasih telah hadir,</p>
                     <p class="font-serif text-[4.2vw] leading-tight font-semibold">{{ $greeting->name }}</p>
                     @if ($greeting->group_name)
@@ -25,6 +29,7 @@
                     @if ($greeting->table_number)
                         <p class="mt-[0.8vw] inline-block rounded-full bg-white px-[1.2vw] py-[0.3vw] text-[1.4vw] font-semibold text-gray-900">Meja {{ $greeting->table_number }}</p>
                     @endif
+                    </div>
                 </div>
             @else
                 <p class="font-serif text-[2.4vw] italic opacity-90">Silakan check-in di meja penerima tamu.</p>

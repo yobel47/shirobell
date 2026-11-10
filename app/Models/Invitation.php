@@ -47,6 +47,7 @@ class Invitation extends Model
             'customization' => 'array',
             'event_day_unlocked_at' => 'datetime',
             'checkin_pin' => 'encrypted',
+            'checkin_selfie' => 'boolean',
             'rsvp_max_pax' => 'integer',
             'active_until' => 'datetime',
             'expiry_reminded_at' => 'datetime',

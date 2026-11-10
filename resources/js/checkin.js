@@ -66,4 +66,69 @@ document.addEventListener('alpine:init', () => {
             this.stop();
         },
     }));
+
+    // Check-in photo. Phones rarely run two cameras at once, so the QR
+    // scanner pauses while this is open (selfie-open / selfie-close events).
+    window.Alpine.data('selfieCamera', () => ({
+        open: false,
+        stream: null,
+        facing: 'user',
+        error: null,
+        busy: false,
+
+        async show() {
+            window.dispatchEvent(new CustomEvent('selfie-open'));
+            this.open = true;
+            await this.$nextTick();
+            await this.startStream();
+        },
+
+        async startStream() {
+            this.stopStream();
+            this.error = null;
+            try {
+                this.stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: this.facing, width: { ideal: 1280 } }, audio: false });
+                this.$refs.selfieVideo.srcObject = this.stream;
+                await this.$refs.selfieVideo.play();
+            } catch (e) {
+                this.error = 'Kamera tidak bisa dibuka. Izinkan akses kamera di browser.';
+            }
+        },
+
+        flip() {
+            this.facing = this.facing === 'user' ? 'environment' : 'user';
+            this.startStream();
+        },
+
+        stopStream() {
+            this.stream?.getTracks().forEach((track) => track.stop());
+            this.stream = null;
+        },
+
+        hide() {
+            this.stopStream();
+            this.open = false;
+            window.dispatchEvent(new CustomEvent('selfie-close'));
+        },
+
+        capture() {
+            const video = this.$refs.selfieVideo;
+            if (!video?.videoWidth || this.busy) return;
+            const canvas = document.createElement('canvas');
+            canvas.width = video.videoWidth;
+            canvas.height = video.videoHeight;
+            canvas.getContext('2d').drawImage(video, 0, 0);
+            this.busy = true;
+            canvas.toBlob((blob) => {
+                const file = new File([blob], 'selfie.jpg', { type: 'image/jpeg' });
+                this.$wire.upload('selfie', file,
+                    () => this.$wire.saveSelfie().then(() => { this.busy = false; this.hide(); }),
+                    () => { this.busy = false; this.error = 'Gagal mengunggah foto. Coba lagi.'; });
+            }, 'image/jpeg', 0.9);
+        },
+
+        destroy() {
+            this.stopStream();
+        },
+    }));
 });

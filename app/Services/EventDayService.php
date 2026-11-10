@@ -9,6 +9,7 @@ use BaconQrCode\Renderer\Image\SvgImageBackEnd;
 use BaconQrCode\Renderer\ImageRenderer;
 use BaconQrCode\Renderer\RendererStyle\RendererStyle;
 use BaconQrCode\Writer;
+use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
@@ -22,9 +23,12 @@ class EventDayService
 {
     public const MAX_PAX = 20;
 
+    public const SELFIE_MAX_PX = 1080;
+
     public function __construct(
         private readonly SettingService $settings,
         private readonly GuestService $guests,
+        private readonly MediaService $media,
     ) {}
 
     public function isAddonMode(): bool
@@ -167,7 +171,7 @@ class EventDayService
     {
         return $invitation->guests()->whereNotNull('checked_in_at')
             ->latest('checked_in_at')->latest('id')->take($limit)
-            ->get(['id', 'name', 'group_name', 'table_number', 'checked_in_at', 'checked_in_pax']);
+            ->get(['id', 'name', 'group_name', 'table_number', 'checked_in_at', 'checked_in_pax', 'selfie_path']);
     }
 
     public function toggleSouvenir(Invitation $invitation, Guest $guest): Guest
@@ -176,6 +180,26 @@ class EventDayService
         $guest->forceFill(['souvenir_at' => $guest->souvenir_at ? null : now()])->save();
 
         return $guest;
+    }
+
+    /** Stores (or replaces) the guest's check-in photo as WebP. */
+    public function setSelfie(Invitation $invitation, Guest $guest, UploadedFile $photo): Guest
+    {
+        abort_unless($guest->invitation_id === $invitation->id && $invitation->checkin_selfie, 404);
+
+        $old = $guest->selfie_path;
+        $path = $this->media->storeImage($photo, $invitation->mediaDirectory().'/selfies', self::SELFIE_MAX_PX, 80);
+        $guest->forceFill(['selfie_path' => $path])->save();
+        $this->media->delete($old);
+
+        return $guest;
+    }
+
+    public function deleteSelfie(Invitation $invitation, Guest $guest): void
+    {
+        abort_unless($guest->invitation_id === $invitation->id, 404);
+        $this->media->delete($guest->selfie_path);
+        $guest->forceFill(['selfie_path' => null])->save();
     }
 
     /** @param array{giver_name: string, kind: string, amount?: ?int, note?: ?string} $data */

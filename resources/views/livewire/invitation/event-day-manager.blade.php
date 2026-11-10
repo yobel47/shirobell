@@ -112,6 +112,33 @@
             @endif
         </div>
 
+        <div class="card space-y-4">
+            <div class="flex flex-wrap items-start justify-between gap-3">
+                <div>
+                    <h2 class="font-serif text-lg font-semibold">Selfie check-in</h2>
+                    <p class="max-w-xl text-sm text-gray-500">Petugas bisa memotret tamu saat check-in. Foto tampil di layar sapa dan tersimpan di sini sebagai kenang-kenangan. Mintalah izin tamu sebelum memotret.</p>
+                </div>
+                <button type="button" wire:click="toggleSelfie" @class(['btn shrink-0', 'btn-primary' => ! $invitation->checkin_selfie, 'btn-outline' => $invitation->checkin_selfie])>
+                    {{ $invitation->checkin_selfie ? 'Nonaktifkan selfie' : 'Aktifkan selfie' }}
+                </button>
+            </div>
+            @if ($selfies->isNotEmpty())
+                <div class="grid grid-cols-3 gap-3 sm:grid-cols-4 lg:grid-cols-6">
+                    @foreach ($selfies as $photo)
+                        <figure wire:key="selfie-{{ $photo->id }}" class="space-y-1">
+                            <a href="{{ $photo->selfieUrl() }}" target="_blank"><img src="{{ $photo->selfieUrl() }}" alt="Foto {{ $photo->name }}" class="aspect-square w-full rounded-xl object-cover" loading="lazy"></a>
+                            <figcaption class="flex items-center justify-between gap-1 text-xs">
+                                <span class="truncate">{{ $photo->name }}</span>
+                                <button type="button" wire:click="deleteSelfie({{ $photo->id }})" wire:confirm="Hapus foto {{ $photo->name }}?" class="shrink-0 text-gray-500 underline">hapus</button>
+                            </figcaption>
+                        </figure>
+                    @endforeach
+                </div>
+            @elseif ($invitation->checkin_selfie)
+                <p class="text-sm text-gray-500">Belum ada foto.</p>
+            @endif
+        </div>
+
         <div class="card">
             <h2 class="font-serif text-lg font-semibold">Baru tiba</h2>
             <ul class="mt-3 divide-y divide-gray-100" wire:poll.20s>

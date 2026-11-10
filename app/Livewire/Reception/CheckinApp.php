@@ -8,11 +8,13 @@ use App\Models\Guest;
 use App\Services\EventDayService;
 use App\Services\GuestService;
 use Livewire\Component;
+use Livewire\WithFileUploads;
 
 /** Receptionist app: scan a guest QR, search by name, or add a walk-in guest. */
 class CheckinApp extends Component
 {
     use ReceptionGuard;
+    use WithFileUploads;
 
     public string $mode = 'scan';
 
@@ -21,6 +23,9 @@ class CheckinApp extends Component
     public string $walkInName = '';
 
     public int $walkInPax = 1;
+
+    /** Photo captured by the selfie camera (Livewire temporary upload). */
+    public $selfie = null;
 
     public string $giftKind = 'amplop';
 
@@ -92,6 +97,17 @@ class CheckinApp extends Component
         $this->result = $this->resultFor($guest, $this->result['status'] ?? 'ok');
     }
 
+    public function saveSelfie(EventDayService $eventDay): void
+    {
+        $this->ensureAccess();
+        abort_unless($this->invitation->checkin_selfie && isset($this->result['id']), 404);
+        $this->validate(['selfie' => ['required', 'image', 'max:8192']], [], ['selfie' => 'foto']);
+
+        $guest = $eventDay->setSelfie($this->invitation, $this->guest($this->result['id']), $this->selfie);
+        $this->reset('selfie');
+        $this->result = $this->resultFor($guest, $this->result['status'] ?? 'ok');
+    }
+
     public function addWalkIn(EventDayService $eventDay): void
     {
         $this->ensureAccess();
@@ -158,6 +174,7 @@ class CheckinApp extends Component
             'table' => $guest->table_number,
             'souvenir' => $guest->souvenir_at !== null,
             'gifts' => $guest->gifts()->count(),
+            'selfie' => $guest->selfieUrl(),
         ];
     }
 }

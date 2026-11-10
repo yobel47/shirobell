@@ -45,6 +45,26 @@
                     </div>
                     <button type="button" wire:click="undo({{ $result['id'] }})" wire:confirm="Batalkan check-in {{ $result['name'] }}?" class="ml-auto text-sm font-medium underline">Batalkan</button>
                 </div>
+                @if ($invitation->checkin_selfie)
+                    <div class="mt-3 flex items-center gap-3" x-data="selfieCamera" wire:key="selfie-{{ $result['id'] }}">
+                        @if ($result['selfie'])
+                            <img src="{{ $result['selfie'] }}" alt="Foto {{ $result['name'] }}" class="h-14 w-14 rounded-full object-cover ring-2 ring-white">
+                        @endif
+                        <button type="button" x-on:click="show()" class="rounded-full bg-white px-4 py-1.5 text-sm font-medium shadow-sm">{{ $result['selfie'] ? 'Foto ulang' : 'Ambil foto tamu' }}</button>
+                        <div x-show="open" x-cloak class="fixed inset-0 z-50 flex flex-col bg-black" x-on:keydown.escape.window="hide()">
+                            <div class="relative flex-1">
+                                <video x-ref="selfieVideo" class="h-full w-full object-cover" playsinline muted></video>
+                                <p x-show="error" x-text="error" class="absolute inset-x-4 top-4 rounded-xl bg-black/70 p-3 text-center text-sm text-white"></p>
+                            </div>
+                            <div class="flex items-center justify-between gap-3 bg-black p-4 text-white">
+                                <button type="button" x-on:click="hide()" class="rounded-full px-4 py-2 text-sm">Batal</button>
+                                <button type="button" x-on:click="capture()" x-bind:disabled="busy" class="h-16 w-16 rounded-full border-4 border-white bg-white/20 disabled:opacity-50" aria-label="Ambil foto"></button>
+                                <button type="button" x-on:click="flip()" class="rounded-full px-4 py-2 text-sm">Balik kamera</button>
+                            </div>
+                        </div>
+                        @error('selfie') <p class="form-error">{{ $message }}</p> @enderror
+                    </div>
+                @endif
                 <div class="mt-3 flex flex-wrap gap-2 border-t border-current/15 pt-3" x-data="{ gift: false }">
                     <button type="button" wire:click="toggleSouvenir({{ $result['id'] }})" @class([
                         'rounded-full px-4 py-1.5 text-sm font-medium',
@@ -82,7 +102,7 @@
     </div>
 
     @if ($mode === 'scan')
-        <div wire:key="scanner" x-data="qrScanner" x-init="start()" class="overflow-hidden rounded-2xl bg-black">
+        <div wire:key="scanner" x-data="qrScanner" x-init="start()" x-on:selfie-open.window="stop()" x-on:selfie-close.window="start()" class="overflow-hidden rounded-2xl bg-black">
             <div class="relative aspect-square">
                 <video x-ref="video" class="h-full w-full object-cover" playsinline muted></video>
                 <canvas x-ref="canvas" class="hidden"></canvas>

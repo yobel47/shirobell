@@ -21,6 +21,11 @@
             <strong>Data transaksi:</strong> nomor order, jumlah, status, dan metode pembayaran. Data kartu dan
             kredensial pembayaran diproses langsung oleh Midtrans dan tidak kami simpan.
         </li>
+        <li>
+            <strong>Foto tamu di hari acara:</strong> jika pemilik undangan mengaktifkan selfie check-in, petugas dapat memotret tamu
+            saat tiba. Foto hanya dapat dilihat pemilik undangan dan di layar sapa acara, dan dapat dihapus kapan saja oleh pemilik
+            atau atas permintaan tamu.
+        </li>
         <li><strong>Data teknis:</strong> cookie sesi untuk menjaga Anda tetap masuk, serta log server untuk keamanan dan pemecahan masalah.</li>
     </ul>
 
