@@ -86,17 +86,22 @@
             <h2 class="text-center font-serif text-3xl font-semibold">Pilihan tema</h2>
             <p class="mx-auto mt-3 max-w-2xl text-center text-gray-600">Tema elegan yang dirancang untuk tampil sempurna di layar HP.</p>
             <div class="mt-10 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-                @foreach (['Rose Garden', 'Classic Gold', 'Sage Minimalist'] as $themeName)
+                @forelse ($themes as $theme)
                     <div class="overflow-hidden rounded-2xl border border-rose-brand-100">
-                        <div class="flex aspect-[4/5] items-center justify-center bg-gradient-to-br from-rose-brand-50 to-rose-brand-100">
-                            <span class="font-serif text-2xl text-rose-brand-600 italic">{{ $themeName }}</span>
-                        </div>
-                        <div class="flex items-center justify-between p-4">
-                            <p class="font-medium">{{ $themeName }}</p>
-                            <span class="text-xs text-gray-400">Segera hadir</span>
+                        <a href="{{ route('themes.demo', $theme) }}" target="_blank" rel="noopener" class="block">
+                            <x-theme-swatch :theme="$theme" class="aspect-[4/5]" />
+                        </a>
+                        <div class="flex items-center justify-between gap-3 p-4">
+                            <div class="min-w-0">
+                                <p class="font-medium">{{ $theme->name }}</p>
+                                <p class="truncate text-xs text-gray-500">{{ $theme->description }}</p>
+                            </div>
+                            <a href="{{ route('themes.demo', $theme) }}" target="_blank" rel="noopener" class="btn btn-outline shrink-0 px-4 py-1.5">Lihat demo</a>
                         </div>
                     </div>
-                @endforeach
+                @empty
+                    <p class="col-span-full text-center text-sm text-gray-500">Tema segera hadir.</p>
+                @endforelse
             </div>
         </div>
     </section>
