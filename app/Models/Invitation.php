@@ -41,6 +41,7 @@ class Invitation extends Model
         return [
             'status' => InvitationStatus::class,
             'sections' => 'array',
+            'customization' => 'array',
             'rsvp_max_pax' => 'integer',
             'active_until' => 'datetime',
             'expiry_reminded_at' => 'datetime',
@@ -103,6 +104,11 @@ class Invitation extends Model
     public function wishes(): HasMany
     {
         return $this->hasMany(Wish::class);
+    }
+
+    public function versions(): HasMany
+    {
+        return $this->hasMany(InvitationVersion::class)->latest('id');
     }
 
     public function orders(): HasMany

@@ -5,6 +5,7 @@ namespace App\Livewire\Invitation\Editor\Concerns;
 use App\Models\Invitation;
 use App\Policies\InvitationPolicy;
 use App\Services\Admin\AdminEditAudit;
+use App\Services\InvitationVersionService;
 use Illuminate\Support\Facades\Gate;
 use Livewire\Attributes\Locked;
 
@@ -36,6 +37,17 @@ trait EditsInvitation
         if (InvitationPolicy::actingAsAdmin(auth()->user(), $this->invitation)) {
             app(AdminEditAudit::class)->begin($this->invitation, static::class);
         }
+
+        // Keeps the state before this change restorable (ADR 010).
+        if ($this->autoSnapshots()) {
+            app(InvitationVersionService::class)->autoSnapshot($this->invitation, auth()->user());
+        }
+    }
+
+    /** Components that create versions themselves override this. */
+    protected function autoSnapshots(): bool
+    {
+        return true;
     }
 
     protected function notify(string $message = 'Perubahan tersimpan.'): void

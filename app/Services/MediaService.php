@@ -15,7 +15,7 @@ use Intervention\Image\ImageManager;
  */
 class MediaService
 {
-    private const DISK = 'public';
+    public const DISK = 'public';
 
     public function storeImage(UploadedFile $file, string $directory, ?int $maxPx = null, int $quality = 80): string
     {
