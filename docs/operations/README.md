@@ -1,0 +1,13 @@
+# Operations — Shirobell
+
+Setup server yang wajib agar aplikasi berjalan benar. Mode: manual-setup (owner menjalankan di server).
+Semua nilai rahasia ada di `.env` server (lihat `prod-docs/`), tidak pernah di file ini.
+
+| Komponen | Kenapa | Dokumen |
+|----------|--------|---------|
+| Queue worker | Email (konfirmasi bayar, pengingat, berakhir) dikirim lewat queue `database` | [supervisor/queue-worker.md](./supervisor/queue-worker.md) |
+| Scheduler (cron) | Expire undangan & order tiap jam, pengingat H-7 harian | [cronjobs/scheduler.md](./cronjobs/scheduler.md) |
+| Notifikasi Midtrans | Aktivasi undangan otomatis setelah bayar | [midtrans-notification.md](./midtrans-notification.md) |
+| Storage link | Foto/musik/QRIS di `storage/app/public` disajikan dari `/storage` | `php artisan storage:link` sekali setelah deploy pertama |
+| Wildcard subdomain | Undangan dibuka di `{slug}.APP_DOMAIN` | DNS `*.APP_DOMAIN` + SSL wildcard (ADR 003); detail di deploy guide M6 |
+| Health check | Monitoring uptime | `GET /health` (200 ok, 503 degraded) |

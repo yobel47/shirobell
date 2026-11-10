@@ -1,8 +1,12 @@
 <?php
 
-use Illuminate\Foundation\Inspiring;
-use Illuminate\Support\Facades\Artisan;
+use Illuminate\Support\Facades\Schedule;
 
-Artisan::command('inspire', function () {
-    $this->comment(Inspiring::quote());
-})->purpose('Display an inspiring quote');
+/*
+| Requires one cron entry on the server:
+| * * * * * cd /path/to/apps && php artisan schedule:run >> /dev/null 2>&1
+| See apps/docs/operations/scheduler-and-queue.md.
+*/
+Schedule::command('invitations:expire')->hourly()->withoutOverlapping();
+Schedule::command('orders:expire')->hourly()->withoutOverlapping();
+Schedule::command('invitations:remind')->dailyAt('09:00')->withoutOverlapping();
