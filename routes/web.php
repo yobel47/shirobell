@@ -8,6 +8,7 @@ use App\Http\Controllers\HealthController;
 use App\Http\Controllers\HomeController;
 use App\Http\Controllers\LegalPageController;
 use App\Http\Controllers\PublicInvitationController;
+use App\Http\Controllers\ThemeCatalogController;
 use App\Http\Controllers\ThemeDemoController;
 use App\Http\Controllers\Webhook\MidtransNotificationController;
 use Illuminate\Support\Facades\Route;
@@ -30,6 +31,7 @@ Route::domain('{slug}.'.config('app.domain'))
 Route::domain(config('app.domain'))->group(function () {
     Route::get('/', HomeController::class)->name('home');
     Route::get('/health', HealthController::class)->name('health');
+    Route::get('/tema', ThemeCatalogController::class)->name('themes.index');
     Route::get('/tema/{theme:slug}', ThemeDemoController::class)->name('themes.demo');
 
     Route::controller(LegalPageController::class)->name('legal.')->group(function () {

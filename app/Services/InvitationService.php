@@ -61,9 +61,12 @@ class InvitationService
         });
     }
 
-    public function changeTheme(Invitation $invitation, int $themeId): void
+    /** Unknown variant keys fall back to the theme's default (null). */
+    public function changeTheme(Invitation $invitation, int $themeId, ?string $variant = null): void
     {
-        $invitation->theme()->associate($this->availableTheme($themeId));
+        $theme = $this->availableTheme($themeId);
+        $invitation->theme()->associate($theme);
+        $invitation->theme_variant = app(ThemeRegistry::class)->hasVariant($theme->slug, $variant) ? $variant : null;
         $invitation->save();
     }
 

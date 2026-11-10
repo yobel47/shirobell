@@ -84,25 +84,19 @@
     <section id="tema" class="scroll-mt-20 bg-white py-16 sm:py-20">
         <div class="mx-auto max-w-6xl px-4 sm:px-6">
             <h2 class="text-center font-serif text-3xl font-semibold">Pilihan tema</h2>
-            <p class="mx-auto mt-3 max-w-2xl text-center text-gray-600">Tema elegan yang dirancang untuk tampil sempurna di layar HP.</p>
+            <p class="mx-auto mt-3 max-w-2xl text-center text-gray-600">{{ $themes->count() }} tema elegan dengan beberapa pilihan warna, dirancang untuk tampil sempurna di layar HP.</p>
             <div class="mt-10 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-                @forelse ($themes as $theme)
-                    <div class="overflow-hidden rounded-2xl border border-rose-brand-100">
-                        <a href="{{ route('themes.demo', $theme) }}" target="_blank" rel="noopener" class="block">
-                            <x-theme-swatch :theme="$theme" class="aspect-[4/5]" />
-                        </a>
-                        <div class="flex items-center justify-between gap-3 p-4">
-                            <div class="min-w-0">
-                                <p class="font-medium">{{ $theme->name }}</p>
-                                <p class="truncate text-xs text-gray-500">{{ $theme->description }}</p>
-                            </div>
-                            <a href="{{ route('themes.demo', $theme) }}" target="_blank" rel="noopener" class="btn btn-outline shrink-0 px-4 py-1.5">Lihat demo</a>
-                        </div>
-                    </div>
+                @forelse ($themes->take(6) as $theme)
+                    <x-theme-card :theme="$theme" />
                 @empty
                     <p class="col-span-full text-center text-sm text-gray-500">Tema segera hadir.</p>
                 @endforelse
             </div>
+            @if ($themes->count() > 6)
+                <div class="mt-10 text-center">
+                    <a href="{{ route('themes.index') }}" class="btn btn-outline px-6 py-2.5">Lihat semua {{ $themes->count() }} tema</a>
+                </div>
+            @endif
         </div>
     </section>
 

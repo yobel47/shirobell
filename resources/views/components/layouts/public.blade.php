@@ -5,7 +5,7 @@
             <a href="{{ route('home') }}" class="font-serif text-2xl font-semibold text-rose-brand-600">{{ $siteName }}</a>
 
             <div class="hidden items-center gap-1 md:flex">
-                <a href="{{ route('home') }}#tema" class="btn btn-ghost">Tema</a>
+                <a href="{{ route('themes.index') }}" class="btn btn-ghost">Tema</a>
                 <a href="{{ route('home') }}#fitur" class="btn btn-ghost">Fitur</a>
                 <a href="{{ route('home') }}#harga" class="btn btn-ghost">Harga</a>
                 <a href="{{ route('home') }}#faq" class="btn btn-ghost">FAQ</a>
@@ -27,7 +27,7 @@
 
         <div x-show="open" x-cloak x-transition class="border-t border-rose-brand-100 bg-cream px-4 pb-4 md:hidden">
             <div class="flex flex-col py-2">
-                <a href="{{ route('home') }}#tema" class="rounded-lg px-3 py-2.5" x-on:click="open = false">Tema</a>
+                <a href="{{ route('themes.index') }}" class="rounded-lg px-3 py-2.5">Tema</a>
                 <a href="{{ route('home') }}#fitur" class="rounded-lg px-3 py-2.5" x-on:click="open = false">Fitur</a>
                 <a href="{{ route('home') }}#harga" class="rounded-lg px-3 py-2.5" x-on:click="open = false">Harga</a>
                 <a href="{{ route('home') }}#faq" class="rounded-lg px-3 py-2.5" x-on:click="open = false">FAQ</a>

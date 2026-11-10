@@ -4,6 +4,7 @@ namespace Tests\Feature\Invitation;
 
 use App\Models\Invitation;
 use App\Models\Theme;
+use App\Services\ThemeRegistry;
 use Database\Seeders\ThemeSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use PHPUnit\Framework\Attributes\DataProvider;
@@ -19,9 +20,12 @@ class ThemesTest extends TestCase
         $this->seed(ThemeSeeder::class);
     }
 
+    /** Every theme in config/themes.php (read directly: providers run before boot). */
     public static function themes(): array
     {
-        return [['rose-garden'], ['classic-gold'], ['sage-minimalist']];
+        $config = require __DIR__.'/../../../config/themes.php';
+
+        return array_map(fn ($slug) => [$slug], array_combine(array_keys($config['themes']), array_keys($config['themes'])));
     }
 
     #[DataProvider('themes')]
@@ -39,7 +43,7 @@ class ThemesTest extends TestCase
 
         $this->get('http://tes-'.$slug.'.'.config('app.domain').'/?to=Pak+Joko')
             ->assertOk()
-            ->assertSee('/build/assets/'.$slug.'-', false)
+            ->assertSee('/build/assets/'.(app(ThemeRegistry::class)->isEngine($slug) ? 'engine' : $slug).'-', false)
             ->assertSee(['Pak Joko', 'Gedung Melati', 'Pertama Bertemu', 'Amplop Digital', 'Selamat berbahagia', 'Kutipan contoh']);
     }
 

@@ -68,6 +68,8 @@ class ThemeResource extends Resource
             ->columns([
                 ImageColumn::make('thumbnail_path')->label('')->disk('public')->square(),
                 TextColumn::make('name')->label('Nama')->description(fn (Theme $r) => $r->slug),
+                TextColumn::make('category')->label('Kategori')->state(fn (Theme $r) => $r->categoryLabel())->badge()->color('gray'),
+                TextColumn::make('variants')->label('Warna')->state(fn (Theme $r) => count($r->variants())),
                 TextColumn::make('invitations_count')->label('Dipakai')->counts('invitations')->sortable(),
                 TextColumn::make('sort_order')->label('Urutan')->sortable(),
                 IconColumn::make('view')->label('Tampilan siap')->boolean()->state(fn (Theme $r) => $r->hasView()),
