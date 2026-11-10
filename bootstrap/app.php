@@ -2,6 +2,7 @@
 
 use App\Http\Middleware\EnsureUserHasRole;
 use App\Http\Middleware\SecurityHeaders;
+use App\Http\Middleware\ThrottleAuthForms;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
@@ -23,6 +24,7 @@ return Application::configure(basePath: dirname(__DIR__))
         ]);
 
         $middleware->redirectUsersTo(fn ($request) => $request->user()?->isAdmin() ? '/admin' : route('app.dashboard'));
+        $middleware->web(append: [ThrottleAuthForms::class]);
         // Payment notifications carry their own signature instead of a CSRF token.
         $middleware->validateCsrfTokens(except: ['webhooks/*']);
     })

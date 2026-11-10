@@ -61,4 +61,17 @@ class RegistrationTest extends TestCase
             'password_confirmation' => 'rahasia123',
         ])->assertSessionHasErrors('phone');
     }
+
+    public function test_registration_is_rate_limited_per_ip(): void
+    {
+        for ($i = 1; $i <= 5; $i++) {
+            $this->post('/register', ['name' => 'Spam', 'email' => "spam{$i}@example.com", 'password' => 'rahasia123', 'password_confirmation' => 'rahasia123']);
+            auth()->logout();
+        }
+
+        $this->post('/register', ['name' => 'Spam', 'email' => 'spam6@example.com', 'password' => 'rahasia123', 'password_confirmation' => 'rahasia123'])
+            ->assertSessionHasErrors('email');
+
+        $this->assertDatabaseMissing('users', ['email' => 'spam6@example.com']);
+    }
 }
