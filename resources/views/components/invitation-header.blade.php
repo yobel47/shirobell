@@ -23,25 +23,34 @@
 </div>
 
 <div @class([
-    'mt-5 rounded-xl px-4 py-3 text-sm',
+    'mt-5 flex flex-col gap-3 rounded-xl px-4 py-3 text-sm sm:flex-row sm:items-center sm:justify-between',
     'bg-amber-50 text-amber-800' => $status === InvitationStatus::Draft,
     'bg-emerald-50 text-emerald-800' => $status === InvitationStatus::Active,
     'bg-gray-100 text-gray-700' => $status === InvitationStatus::Expired,
     'bg-red-50 text-red-700' => $status === InvitationStatus::Suspended,
 ])>
-    @switch($status)
-        @case(InvitationStatus::Draft)
-            <strong>Draft.</strong> Undangan hanya bisa dilihat Anda lewat Preview (dengan watermark). Pembayaran untuk menerbitkan segera tersedia.
-            @break
-        @case(InvitationStatus::Active)
-            <strong>Aktif</strong> sampai {{ $invitation->active_until?->translatedFormat('d F Y') }}.
-            @break
-        @case(InvitationStatus::Expired)
-            <strong>Masa aktif berakhir.</strong> Perpanjang untuk menampilkan undangan lagi.
-            @break
-        @default
-            <strong>Ditangguhkan.</strong> {{ $invitation->suspended_reason ?: 'Hubungi admin untuk informasi lebih lanjut.' }}
-    @endswitch
+    <span>
+        @switch($status)
+            @case(InvitationStatus::Draft)
+                <strong>Draft.</strong> Undangan hanya bisa dilihat Anda lewat Preview (dengan watermark). Terbitkan agar bisa dibuka tamu.
+                @break
+            @case(InvitationStatus::Active)
+                <strong>Aktif</strong> sampai {{ $invitation->active_until?->translatedFormat('d F Y') }}.
+                @break
+            @case(InvitationStatus::Expired)
+                <strong>Masa aktif berakhir.</strong> Perpanjang untuk menampilkan undangan lagi.
+                @break
+            @default
+                <strong>Ditangguhkan.</strong> {{ $invitation->suspended_reason ?: 'Hubungi admin untuk informasi lebih lanjut.' }}
+        @endswitch
+    </span>
+    @if ($status !== InvitationStatus::Suspended)
+        <a href="{{ route('app.checkout', $invitation) }}" @class([
+            'btn shrink-0 px-4 py-1.5',
+            'btn-primary' => $status !== InvitationStatus::Active,
+            'btn-outline' => $status === InvitationStatus::Active,
+        ])>{{ $status === InvitationStatus::Draft ? 'Bayar & terbitkan' : 'Perpanjang' }}</a>
+    @endif
 </div>
 
 <nav aria-label="Menu undangan" class="mt-5 border-b border-rose-brand-100">
