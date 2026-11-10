@@ -1,6 +1,6 @@
 {{-- Theme: Classic Gold. Receives the data contract from App\Services\InvitationRenderer. --}}
 <x-invitation.layout
-    :invitation="$invitation" :preview="$preview" :demo="$demo ?? false" :music-url="$musicUrl" :cover-url="$coverUrl"
+    :invitation="$invitation" :preview="$preview" :demo="$demo ?? false" :music-url="$musicUrl" :cover-url="$coverUrl" :theme-style="$themeStyle ?? null"
     css="resources/css/themes/classic-gold.css"
     class="cg-pattern font-sans text-cg-ink"
     x-data="{

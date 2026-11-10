@@ -5,6 +5,7 @@ namespace App\Livewire\Invitation;
 use App\Enums\Attendance;
 use App\Models\Guest;
 use App\Models\Invitation;
+use App\Services\ThemeRegistry;
 use App\Services\WishService;
 use Illuminate\Validation\Rule;
 use Livewire\Attributes\Locked;
@@ -82,7 +83,10 @@ class PublicWishes extends Component
 
     public function render()
     {
-        $view = "themes.{$this->invitation->theme->slug}.livewire.wishes";
+        $slug = $this->invitation->theme->slug;
+        $view = app(ThemeRegistry::class)->isEngine($slug)
+            ? 'themes._engine.livewire.wishes'
+            : "themes.{$slug}.livewire.wishes";
 
         $wishes = $this->invitation->sectionEnabled('wishes')
             ? $this->invitation->wishes()->visibleMessages()->latest()->take($this->perPage)->get(['id', 'name', 'attendance', 'message', 'created_at'])

@@ -1,4 +1,4 @@
-@props(['invitation', 'preview' => false, 'demo' => false, 'musicUrl' => null, 'css', 'title' => null, 'coverUrl' => null])
+@props(['invitation', 'preview' => false, 'demo' => false, 'musicUrl' => null, 'css', 'title' => null, 'coverUrl' => null, 'themeStyle' => null])
 <!DOCTYPE html>
 <html lang="id">
 <head>
@@ -18,7 +18,7 @@
     @vite([$css])
     @livewireStyles
 </head>
-<body {{ $attributes->merge(['class' => 'antialiased']) }}>
+<body {{ $attributes->merge(['class' => 'antialiased']) }} @if ($themeStyle) style="{{ $themeStyle }}" @endif>
     @if ($demo)
         <div class="fixed inset-x-0 top-0 z-[70] flex items-center justify-center gap-3 bg-black/85 px-4 py-2 text-xs text-white">
             <span>Contoh tema {{ $invitation->theme->name }}</span>

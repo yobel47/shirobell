@@ -1,6 +1,6 @@
 {{-- Theme: Rose Garden. Receives the data contract from App\Services\InvitationRenderer. --}}
 <x-invitation.layout
-    :invitation="$invitation" :preview="$preview" :demo="$demo ?? false" :music-url="$musicUrl" :cover-url="$coverUrl"
+    :invitation="$invitation" :preview="$preview" :demo="$demo ?? false" :music-url="$musicUrl" :cover-url="$coverUrl" :theme-style="$themeStyle ?? null"
     css="resources/css/themes/rose-garden.css"
     class="rg-pattern font-sans text-rg-ink"
     x-data="{

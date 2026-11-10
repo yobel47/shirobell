@@ -20,9 +20,10 @@ class ThemeDemoService
     public function __construct(private readonly InvitationRenderer $renderer) {}
 
     /** @return array<string, mixed> view data for the theme */
-    public function data(Theme $theme): array
+    public function data(Theme $theme, ?string $variant = null): array
     {
         $invitation = $this->invitation($theme);
+        $invitation->theme_variant = app(ThemeRegistry::class)->hasVariant($theme->slug, $variant) ? $variant : null;
         $data = $this->renderer->data($invitation, 'Bapak/Ibu Tamu Undangan');
 
         return array_merge($data, [

@@ -14,6 +14,8 @@ use Symfony\Component\HttpFoundation\Response;
  */
 class InvitationRenderer
 {
+    public function __construct(private readonly ThemeRegistry $themes) {}
+
     public function response(Invitation $invitation, ?string $guestName = null, bool $preview = false, ?Guest $guest = null): Response
     {
         return response()
@@ -46,6 +48,9 @@ class InvitationRenderer
             'groomPhotoUrl' => $invitation->mediaUrl($invitation->groom_photo_path),
             'bridePhotoUrl' => $invitation->mediaUrl($invitation->bride_photo_path),
             'calendarTitle' => 'Pernikahan '.$invitation->coupleName(),
+            'themeStyle' => $this->themes->style($invitation->theme->slug, $invitation->theme_variant, $invitation->customization['font_pair'] ?? null),
+            'themeCss' => $invitation->theme->cssEntry(),
+            'engine' => $this->themes->engine($invitation->theme->slug),
         ];
     }
 

@@ -19,6 +19,21 @@ class ThemeSeeder extends Seeder
             ['slug' => 'sage-minimalist', 'name' => 'Sage Minimalist', 'description' => 'Hijau sage yang tenang, bersih, dan minimalis.', 'badge' => null, 'sort_order' => 3, 'is_active' => true],
         ];
 
+        // Engine themes are declared in config/themes.php (ADR 009).
+        foreach (config('themes.themes') as $slug => $definition) {
+            if (! isset($definition['engine'])) {
+                continue;
+            }
+            $themes[] = [
+                'slug' => $slug,
+                'name' => $definition['name'],
+                'description' => $definition['description'] ?? null,
+                'badge' => 'new',
+                'sort_order' => $definition['sort'] ?? 100,
+                'is_active' => true,
+            ];
+        }
+
         foreach ($themes as $theme) {
             Theme::query()->firstOrCreate(['slug' => $theme['slug']], $theme);
         }
