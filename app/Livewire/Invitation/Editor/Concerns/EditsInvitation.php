@@ -3,12 +3,15 @@
 namespace App\Livewire\Invitation\Editor\Concerns;
 
 use App\Models\Invitation;
+use App\Policies\InvitationPolicy;
+use App\Services\Admin\AdminEditAudit;
 use Illuminate\Support\Facades\Gate;
 use Livewire\Attributes\Locked;
 
 /**
  * Shared by every editor tab. Authorization runs on mount AND before every
- * write, because Livewire actions are separate HTTP requests.
+ * write, because Livewire actions are separate HTTP requests. When an admin
+ * works on a customer's invitation, every change in the request is audited.
  */
 trait EditsInvitation
 {
@@ -29,6 +32,10 @@ trait EditsInvitation
     {
         $this->invitation->refresh();
         Gate::authorize('update', $this->invitation);
+
+        if (InvitationPolicy::actingAsAdmin(auth()->user(), $this->invitation)) {
+            app(AdminEditAudit::class)->begin($this->invitation, static::class);
+        }
     }
 
     protected function notify(string $message = 'Perubahan tersimpan.'): void

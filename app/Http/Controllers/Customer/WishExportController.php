@@ -4,6 +4,8 @@ namespace App\Http\Controllers\Customer;
 
 use App\Http\Controllers\Controller;
 use App\Models\Invitation;
+use App\Policies\InvitationPolicy;
+use App\Services\Admin\AuditLogger;
 use Illuminate\Support\Facades\Gate;
 use Symfony\Component\HttpFoundation\StreamedResponse;
 
@@ -12,6 +14,10 @@ class WishExportController extends Controller
     public function __invoke(Invitation $invitation): StreamedResponse
     {
         Gate::authorize('view', $invitation);
+
+        if (InvitationPolicy::actingAsAdmin(auth()->user(), $invitation)) {
+            app(AuditLogger::class)->log('invitation.admin_export', $invitation, ['owner_id' => $invitation->user_id, 'export' => 'rsvp_csv']);
+        }
 
         $filename = 'rsvp-ucapan-'.$invitation->slug.'-'.now()->format('Ymd').'.csv';
 

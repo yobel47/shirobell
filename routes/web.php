@@ -36,22 +36,25 @@ Route::domain(config('app.domain'))->group(function () {
         ->middleware('throttle:120,1')
         ->name('webhooks.midtrans');
 
-    // Customer area. Admins are redirected to the Filament panel at /admin.
-    Route::middleware(['auth', 'verified', 'role:customer'])
-        ->prefix('app')
-        ->name('app.')
-        ->group(function () {
+    Route::middleware(['auth', 'verified'])->prefix('app')->name('app.')->group(function () {
+        // Customer only. Admins are redirected to the Filament panel at /admin.
+        Route::middleware('role:customer')->group(function () {
             Route::get('/', DashboardController::class)->name('dashboard');
-
             Route::get('/invitations/create', [InvitationController::class, 'create'])->name('invitations.create');
-            Route::get('/invitations/{invitation}/preview', [InvitationController::class, 'preview'])->name('invitations.preview');
-            Route::get('/invitations/{invitation}/edit/{tab?}', [InvitationController::class, 'edit'])->name('invitations.edit');
-            Route::get('/invitations/{invitation}/tamu', [InvitationController::class, 'guests'])->name('invitations.guests');
-            Route::get('/invitations/{invitation}/rsvp', [InvitationController::class, 'wishes'])->name('invitations.wishes');
-            Route::get('/invitations/{invitation}/rsvp/export', WishExportController::class)->name('invitations.wishes.export');
 
             Route::get('/invitations/{invitation}/checkout', [OrderController::class, 'checkout'])->name('checkout');
             Route::get('/orders', [OrderController::class, 'index'])->name('orders.index');
             Route::get('/orders/{order}', [OrderController::class, 'show'])->name('orders.show');
         });
+
+        // Invitation management: the owner, or an admin helping a customer
+        // (InvitationPolicy; admin visits and changes are audited).
+        Route::middleware('role:customer,admin')->group(function () {
+            Route::get('/invitations/{invitation}/preview', [InvitationController::class, 'preview'])->name('invitations.preview');
+            Route::get('/invitations/{invitation}/edit/{tab?}', [InvitationController::class, 'edit'])->name('invitations.edit');
+            Route::get('/invitations/{invitation}/tamu', [InvitationController::class, 'guests'])->name('invitations.guests');
+            Route::get('/invitations/{invitation}/rsvp', [InvitationController::class, 'wishes'])->name('invitations.wishes');
+            Route::get('/invitations/{invitation}/rsvp/export', WishExportController::class)->name('invitations.wishes.export');
+        });
+    });
 });

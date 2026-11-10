@@ -5,6 +5,8 @@ namespace App\Http\Controllers\Customer;
 use App\Http\Controllers\Controller;
 use App\Livewire\Invitation\Editor;
 use App\Models\Invitation;
+use App\Policies\InvitationPolicy;
+use App\Services\Admin\AuditLogger;
 use App\Services\InvitationRenderer;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Gate;
@@ -35,6 +37,7 @@ class InvitationController extends Controller
     {
         Gate::authorize('update', $invitation);
         abort_unless(array_key_exists($tab, self::TABS), 404);
+        $this->auditAdminVisit($invitation, 'editor:'.$tab);
 
         return view('customer.invitations.edit', [
             'invitation' => $invitation->load('theme'),
@@ -46,6 +49,7 @@ class InvitationController extends Controller
     public function guests(Invitation $invitation): View
     {
         Gate::authorize('update', $invitation);
+        $this->auditAdminVisit($invitation, 'tamu');
 
         return view('customer.invitations.guests', ['invitation' => $invitation]);
     }
@@ -53,6 +57,7 @@ class InvitationController extends Controller
     public function wishes(Invitation $invitation): View
     {
         Gate::authorize('update', $invitation);
+        $this->auditAdminVisit($invitation, 'rsvp');
 
         return view('customer.invitations.wishes', ['invitation' => $invitation]);
     }
@@ -61,11 +66,23 @@ class InvitationController extends Controller
     public function preview(Request $request, Invitation $invitation, InvitationRenderer $renderer): Response
     {
         Gate::authorize('view', $invitation);
+        $this->auditAdminVisit($invitation, 'preview');
 
         return $renderer->response(
             $invitation,
             guestName: $request->string('to')->toString() ?: null,
             preview: ! $invitation->isActive(),
         );
+    }
+
+    /** Admins opening a customer's invitation pages leave a trail (owners do not). */
+    private function auditAdminVisit(Invitation $invitation, string $page): void
+    {
+        if (InvitationPolicy::actingAsAdmin(auth()->user(), $invitation)) {
+            app(AuditLogger::class)->log('invitation.admin_open', $invitation, [
+                'owner_id' => $invitation->user_id,
+                'page' => $page,
+            ]);
+        }
     }
 }
