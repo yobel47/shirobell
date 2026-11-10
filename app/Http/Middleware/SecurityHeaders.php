@@ -56,7 +56,7 @@ class SecurityHeaders
             'frame-src https://www.google.com https://maps.google.com',
             "frame-ancestors 'self'",
             "base-uri 'self'",
-            "form-action 'self' https://checkout.xendit.co https://checkout-staging.xendit.co",
+            "form-action 'self' https://app.midtrans.com https://app.sandbox.midtrans.com",
             "object-src 'none'",
         ]);
     }
