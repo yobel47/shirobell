@@ -28,8 +28,8 @@ Route::post('/webhooks/midtrans', MidtransNotificationController::class)
     ->middleware('throttle:120,1')
     ->name('webhooks.midtrans');
 
-// Admin temporarily allowed until the Filament panel exists (M5).
-Route::middleware(['auth', 'verified', 'role:customer,admin'])
+// Customer area. Admins are redirected to the Filament panel at /admin.
+Route::middleware(['auth', 'verified', 'role:customer'])
     ->prefix('app')
     ->name('app.')
     ->group(function () {

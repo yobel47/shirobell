@@ -37,6 +37,11 @@ class EnsureUserHasRole
             }
         }
 
+        // Admins land in the Filament panel instead of a 403 on the customer area.
+        if ($user->isAdmin()) {
+            return redirect('/admin');
+        }
+
         abort(403);
     }
 }

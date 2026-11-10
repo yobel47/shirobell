@@ -25,7 +25,8 @@ class SecurityHeaders
         $response->headers->set('Permissions-Policy', 'geolocation=(), microphone=(), camera=(), payment=()');
 
         if (config('security.csp_enabled')) {
-            $response->headers->set('Content-Security-Policy', $this->contentSecurityPolicy());
+            $policy = $request->is('admin', 'admin/*') ? $this->adminPolicy() : $this->contentSecurityPolicy();
+            $response->headers->set('Content-Security-Policy', $policy);
         }
 
         if ($request->secure() && app()->isProduction()) {
@@ -67,5 +68,27 @@ class SecurityHeaders
         $port = isset($url['port']) ? ':'.$url['port'] : '';
 
         return ($url['scheme'] ?? 'https').'://'.($url['host'] ?? 'localhost').$port;
+    }
+
+    /**
+     * Filament renders inline <script> blocks without a nonce, so the admin
+     * panel (admin-only, behind login) allows 'unsafe-inline' scripts.
+     * Tracked in dev-docs/ai/TECHNICAL_DEBT.md (TD-005).
+     */
+    private function adminPolicy(): string
+    {
+        return implode('; ', [
+            "default-src 'self'",
+            "script-src 'self' 'unsafe-inline' 'unsafe-eval'",
+            "style-src 'self' 'unsafe-inline'",
+            "img-src 'self' data: blob: https:",
+            "font-src 'self' data:",
+            "media-src 'self' blob:",
+            "connect-src 'self'",
+            "frame-ancestors 'self'",
+            "base-uri 'self'",
+            "form-action 'self'",
+            "object-src 'none'",
+        ]);
     }
 }

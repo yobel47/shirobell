@@ -22,7 +22,7 @@ return Application::configure(basePath: dirname(__DIR__))
             'role' => EnsureUserHasRole::class,
         ]);
 
-        $middleware->redirectUsersTo(fn () => route('app.dashboard'));
+        $middleware->redirectUsersTo(fn ($request) => $request->user()?->isAdmin() ? '/admin' : route('app.dashboard'));
         // Payment notifications carry their own signature instead of a CSRF token.
         $middleware->validateCsrfTokens(except: ['webhooks/*']);
     })
