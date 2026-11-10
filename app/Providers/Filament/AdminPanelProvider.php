@@ -27,6 +27,7 @@ class AdminPanelProvider extends PanelProvider
             ->default()
             ->id('admin')
             ->path('admin')
+            ->domain(config('app.domain'))
             ->login()
             ->brandName('Shirobell Admin')
             ->colors([

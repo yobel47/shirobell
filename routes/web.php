@@ -7,12 +7,13 @@ use App\Http\Controllers\Customer\WishExportController;
 use App\Http\Controllers\HealthController;
 use App\Http\Controllers\HomeController;
 use App\Http\Controllers\PublicInvitationController;
+use App\Http\Controllers\ThemeDemoController;
 use App\Http\Controllers\Webhook\MidtransNotificationController;
 use Illuminate\Support\Facades\Route;
 
 /*
-| Invitation subdomain ({slug}.APP_DOMAIN). Registered first so it wins over
-| the main-domain routes below, which have no domain constraint.
+| Invitation subdomain ({slug}.APP_DOMAIN). Only "/" exists there; Livewire's
+| own endpoints stay domain-less so the RSVP form works on the subdomain.
 */
 Route::domain('{slug}.'.config('app.domain'))
     ->where(['slug' => '[a-z0-9-]+'])
@@ -20,29 +21,37 @@ Route::domain('{slug}.'.config('app.domain'))
         Route::get('/', PublicInvitationController::class)->name('invitation.show');
     });
 
-Route::get('/', HomeController::class)->name('home');
-Route::get('/health', HealthController::class)->name('health');
+/*
+| Main domain only. Fortify (config/fortify.php) and the Filament panel are
+| bound to the same domain, so /login, /app and /admin never answer on a
+| customer's subdomain.
+*/
+Route::domain(config('app.domain'))->group(function () {
+    Route::get('/', HomeController::class)->name('home');
+    Route::get('/health', HealthController::class)->name('health');
+    Route::get('/tema/{theme:slug}', ThemeDemoController::class)->name('themes.demo');
 
-// Payment gateway notification. CSRF-exempt (bootstrap/app.php); verified by signature + status API.
-Route::post('/webhooks/midtrans', MidtransNotificationController::class)
-    ->middleware('throttle:120,1')
-    ->name('webhooks.midtrans');
+    // Payment gateway notification. CSRF-exempt (bootstrap/app.php); verified by signature + status API.
+    Route::post('/webhooks/midtrans', MidtransNotificationController::class)
+        ->middleware('throttle:120,1')
+        ->name('webhooks.midtrans');
 
-// Customer area. Admins are redirected to the Filament panel at /admin.
-Route::middleware(['auth', 'verified', 'role:customer'])
-    ->prefix('app')
-    ->name('app.')
-    ->group(function () {
-        Route::get('/', DashboardController::class)->name('dashboard');
+    // Customer area. Admins are redirected to the Filament panel at /admin.
+    Route::middleware(['auth', 'verified', 'role:customer'])
+        ->prefix('app')
+        ->name('app.')
+        ->group(function () {
+            Route::get('/', DashboardController::class)->name('dashboard');
 
-        Route::get('/invitations/create', [InvitationController::class, 'create'])->name('invitations.create');
-        Route::get('/invitations/{invitation}/preview', [InvitationController::class, 'preview'])->name('invitations.preview');
-        Route::get('/invitations/{invitation}/edit/{tab?}', [InvitationController::class, 'edit'])->name('invitations.edit');
-        Route::get('/invitations/{invitation}/tamu', [InvitationController::class, 'guests'])->name('invitations.guests');
-        Route::get('/invitations/{invitation}/rsvp', [InvitationController::class, 'wishes'])->name('invitations.wishes');
-        Route::get('/invitations/{invitation}/rsvp/export', WishExportController::class)->name('invitations.wishes.export');
+            Route::get('/invitations/create', [InvitationController::class, 'create'])->name('invitations.create');
+            Route::get('/invitations/{invitation}/preview', [InvitationController::class, 'preview'])->name('invitations.preview');
+            Route::get('/invitations/{invitation}/edit/{tab?}', [InvitationController::class, 'edit'])->name('invitations.edit');
+            Route::get('/invitations/{invitation}/tamu', [InvitationController::class, 'guests'])->name('invitations.guests');
+            Route::get('/invitations/{invitation}/rsvp', [InvitationController::class, 'wishes'])->name('invitations.wishes');
+            Route::get('/invitations/{invitation}/rsvp/export', WishExportController::class)->name('invitations.wishes.export');
 
-        Route::get('/invitations/{invitation}/checkout', [OrderController::class, 'checkout'])->name('checkout');
-        Route::get('/orders', [OrderController::class, 'index'])->name('orders.index');
-        Route::get('/orders/{order}', [OrderController::class, 'show'])->name('orders.show');
-    });
+            Route::get('/invitations/{invitation}/checkout', [OrderController::class, 'checkout'])->name('checkout');
+            Route::get('/orders', [OrderController::class, 'index'])->name('orders.index');
+            Route::get('/orders/{order}', [OrderController::class, 'show'])->name('orders.show');
+        });
+});
