@@ -4,5 +4,5 @@
         <h1 class="mt-1 font-serif text-3xl font-semibold">Pembayaran</h1>
     </div>
 
-    <livewire:payment.checkout :invitation="$invitation" />
+    <livewire:payment.checkout :invitation="$invitation" :product="$product" />
 </x-layouts.app>

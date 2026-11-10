@@ -17,6 +17,10 @@ use Throwable;
 
 class CheckoutService
 {
+    public const PACKAGE = 'package';
+
+    public const EVENT_DAY = 'event_day';
+
     public function __construct(
         private readonly SettingService $settings,
         private readonly PromoService $promos,
@@ -29,35 +33,49 @@ class CheckoutService
      *
      * @return array{type: string, base: int, discount: int, total: int, days: int, promo: ?PromoCode}
      */
-    public function quote(Invitation $invitation, ?string $promoCode = null): array
+    public function quote(Invitation $invitation, ?string $promoCode = null, string $product = self::PACKAGE): array
     {
-        $base = $this->settings->packagePrice();
+        $eventDay = $product === self::EVENT_DAY;
+        $base = $eventDay ? (int) $this->settings->get('event_day_price') : $this->settings->packagePrice();
         $promo = filled($promoCode) ? $this->promos->resolve($promoCode) : null;
         $discount = $promo?->discountFor($base) ?? 0;
 
         return [
-            'type' => $invitation->published_at ? 'renewal' : 'new',
+            'type' => $eventDay ? 'event_day' : ($invitation->published_at ? 'renewal' : 'new'),
             'base' => $base,
             'discount' => $discount,
             'total' => $base - $discount,
-            'days' => $this->settings->packageDurationDays(),
+            'days' => $eventDay ? 0 : $this->settings->packageDurationDays(),
             'promo' => $promo,
         ];
+    }
+
+    /** The event-day add-on can be bought only in addon mode, for an active invitation, once. */
+    public function canBuyEventDay(Invitation $invitation): bool
+    {
+        return $this->settings->get('event_day_mode') === 'addon'
+            && $invitation->isActive()
+            && $invitation->event_day_unlocked_at === null;
     }
 
     /**
      * Create (or reuse) a pending order and return it with a payment URL.
      * A fully discounted order is settled immediately without Midtrans.
      */
-    public function start(User $user, Invitation $invitation, ?string $promoCode = null): Order
+    public function start(User $user, Invitation $invitation, ?string $promoCode = null, string $product = self::PACKAGE): Order
     {
         if ($invitation->user_id !== $user->id || $invitation->status === InvitationStatus::Suspended) {
             throw ValidationException::withMessages(['checkout' => 'Undangan ini tidak bisa dibayar.']);
         }
 
-        $quote = $this->quote($invitation, $promoCode);
+        if ($product === self::EVENT_DAY && ! $this->canBuyEventDay($invitation)) {
+            throw ValidationException::withMessages(['checkout' => 'Add-on Hari-H tidak tersedia untuk undangan ini.']);
+        }
+
+        $quote = $this->quote($invitation, $promoCode, $product);
 
         $reusable = $invitation->orders()
+            ->where('type', $quote['type'])
             ->where('status', OrderStatus::Pending)
             ->where('total_amount', $quote['total'])
             ->where('promo_code_id', $quote['promo']?->id)

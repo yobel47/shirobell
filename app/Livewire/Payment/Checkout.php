@@ -19,10 +19,14 @@ class Checkout extends Component
     #[Locked]
     public ?string $appliedPromo = null;
 
-    public function mount(Invitation $invitation): void
+    #[Locked]
+    public string $product = CheckoutService::PACKAGE;
+
+    public function mount(Invitation $invitation, string $product = CheckoutService::PACKAGE): void
     {
         Gate::authorize('update', $invitation);
         $this->invitation = $invitation;
+        $this->product = $product === CheckoutService::EVENT_DAY ? CheckoutService::EVENT_DAY : CheckoutService::PACKAGE;
     }
 
     public function applyPromo(CheckoutService $checkout): void
@@ -30,7 +34,7 @@ class Checkout extends Component
         $this->validate(['promoInput' => ['required', 'string', 'max:30']], [], ['promoInput' => 'kode promo']);
 
         try {
-            $checkout->quote($this->invitation, $this->promoInput);
+            $checkout->quote($this->invitation, $this->promoInput, $this->product);
         } catch (ValidationException $e) {
             $this->addError('promoInput', $e->validator->errors()->first('promo'));
 
@@ -51,7 +55,7 @@ class Checkout extends Component
         $this->invitation->refresh();
         Gate::authorize('update', $this->invitation);
 
-        $order = $checkout->start(auth()->user(), $this->invitation, $this->appliedPromo);
+        $order = $checkout->start(auth()->user(), $this->invitation, $this->appliedPromo, $this->product);
 
         return $order->canContinuePayment()
             ? $this->redirect($order->payment_url)
@@ -61,12 +65,12 @@ class Checkout extends Component
     public function render(CheckoutService $checkout)
     {
         try {
-            $quote = $checkout->quote($this->invitation, $this->appliedPromo);
+            $quote = $checkout->quote($this->invitation, $this->appliedPromo, $this->product);
         } catch (ValidationException $e) {
             // Promo became invalid (quota used up, expired) after it was applied.
             $this->appliedPromo = null;
             $this->addError('promoInput', $e->validator->errors()->first('promo'));
-            $quote = $checkout->quote($this->invitation);
+            $quote = $checkout->quote($this->invitation, null, $this->product);
         }
 
         return view('livewire.payment.checkout', ['quote' => $quote]);

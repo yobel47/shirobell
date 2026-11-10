@@ -28,10 +28,12 @@ class MidtransClient
                 'gross_amount' => $order->total_amount,
             ],
             'item_details' => [[
-                'id' => $order->type === 'renewal' ? 'RENEWAL' : 'PACKAGE',
+                'id' => match ($order->type) {
+                    'renewal' => 'RENEWAL', 'event_day' => 'EVENTDAY', default => 'PACKAGE'
+                },
                 'price' => $order->total_amount,
                 'quantity' => 1,
-                'name' => Str::limit(($order->type === 'renewal' ? 'Perpanjangan' : 'Paket').' undangan '.$order->duration_days.' hari', 50, ''),
+                'name' => Str::limit($order->type === 'event_day' ? 'Add-on Hari-H undangan' : ($order->type === 'renewal' ? 'Perpanjangan' : 'Paket').' undangan '.$order->duration_days.' hari', 50, ''),
             ]],
             'customer_details' => array_filter([
                 'first_name' => Str::limit($user->name, 100, ''),

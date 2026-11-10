@@ -63,7 +63,7 @@ class OrderResource extends Resource
                 TextColumn::make('number')->label('Nomor')->searchable()->copyable()->fontFamily('mono'),
                 TextColumn::make('user.name')->label('Pelanggan')->description(fn (Order $r) => $r->user?->email)->searchable(),
                 TextColumn::make('invitation.slug')->label('Undangan')->searchable(),
-                TextColumn::make('type')->label('Jenis')->formatStateUsing(fn (string $state) => $state === 'renewal' ? 'Perpanjangan' : 'Baru'),
+                TextColumn::make('type')->label('Jenis')->formatStateUsing(fn (string $state) => Order::TYPES[$state] ?? $state),
                 TextColumn::make('total_amount')->label('Total')->money('IDR', locale: 'id')->sortable(),
                 TextColumn::make('status')->label('Status')->badge()
                     ->formatStateUsing(fn (OrderStatus $state) => $state->label())
@@ -90,7 +90,7 @@ class OrderResource extends Resource
             Section::make('Order')->columns(3)->schema([
                 TextEntry::make('number')->label('Nomor')->copyable(),
                 TextEntry::make('status')->badge()->formatStateUsing(fn (OrderStatus $state) => $state->label())->color(fn (OrderStatus $state) => self::statusColor($state)),
-                TextEntry::make('type')->label('Jenis')->formatStateUsing(fn (string $state) => $state === 'renewal' ? 'Perpanjangan' : 'Baru'),
+                TextEntry::make('type')->label('Jenis')->formatStateUsing(fn (string $state) => Order::TYPES[$state] ?? $state),
                 TextEntry::make('user.name')->label('Pelanggan'),
                 TextEntry::make('user.email')->label('Email'),
                 TextEntry::make('invitation.slug')->label('Undangan'),

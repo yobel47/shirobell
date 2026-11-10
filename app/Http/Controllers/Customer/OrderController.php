@@ -5,6 +5,8 @@ namespace App\Http\Controllers\Customer;
 use App\Http\Controllers\Controller;
 use App\Models\Invitation;
 use App\Models\Order;
+use App\Services\Payment\CheckoutService;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\View\View;
@@ -29,10 +31,15 @@ class OrderController extends Controller
         return view('customer.orders.show', ['order' => $order]);
     }
 
-    public function checkout(Invitation $invitation): View
+    public function checkout(Request $request, Invitation $invitation, CheckoutService $checkout): View|RedirectResponse
     {
         Gate::authorize('update', $invitation);
 
-        return view('customer.orders.checkout', ['invitation' => $invitation]);
+        $product = $request->query('produk') === 'hari-h' ? CheckoutService::EVENT_DAY : CheckoutService::PACKAGE;
+        if ($product === CheckoutService::EVENT_DAY && ! $checkout->canBuyEventDay($invitation)) {
+            return redirect()->route('app.invitations.event-day', $invitation);
+        }
+
+        return view('customer.orders.checkout', ['invitation' => $invitation, 'product' => $product]);
     }
 }

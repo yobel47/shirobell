@@ -5,6 +5,7 @@ namespace App\Filament\Pages;
 use App\Services\Admin\AdminActionService;
 use App\Services\SettingService;
 use BackedEnum;
+use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
 use Filament\Notifications\Notification;
@@ -46,6 +47,14 @@ class ManageSettings extends Page
                     TextInput::make('package_price')->label('Harga paket')->prefix('Rp')->integer()->required()->minValue(1000)->maxValue(100000000),
                     TextInput::make('package_duration_days')->label('Masa aktif')->suffix('hari')->integer()->required()->minValue(1)->maxValue(730),
                     TextInput::make('gallery_max_photos')->label('Maksimal foto galeri')->integer()->required()->minValue(1)->maxValue(100),
+                ]),
+            Section::make('Fitur Hari-H')->description('Aplikasi penerima tamu, tiket QR, cetak kartu QR, dan layar sapa.')
+                ->columns(2)->schema([
+                    Select::make('event_day_mode')->label('Cara penjualan')->required()->native(false)
+                        ->options(['included' => 'Termasuk paket (gratis)', 'addon' => 'Add-on berbayar'])->live(),
+                    TextInput::make('event_day_price')->label('Harga add-on')->prefix('Rp')->integer()->minValue(1000)->maxValue(100000000)
+                        ->required(fn ($get) => $get('event_day_mode') === 'addon')
+                        ->visible(fn ($get) => $get('event_day_mode') === 'addon'),
                 ]),
             Section::make('Situs & kontak')->columns(2)->schema([
                 TextInput::make('site_name')->label('Nama situs')->required()->maxLength(50),

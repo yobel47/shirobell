@@ -93,7 +93,11 @@ class PaymentService
             ])->save();
 
             $this->promos->markUsed($locked->promo_code_id);
-            $this->invitations->activate($locked->invitation, $locked->duration_days);
+            if ($locked->type === 'event_day') {
+                $locked->invitation->forceFill(['event_day_unlocked_at' => now()])->save();
+            } else {
+                $this->invitations->activate($locked->invitation, $locked->duration_days);
+            }
 
             return true;
         });

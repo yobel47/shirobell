@@ -63,8 +63,14 @@ class Order extends Model
         return $this->isPending() && $this->payment_url && ($this->expires_at === null || $this->expires_at->isFuture());
     }
 
+    public const TYPES = [
+        'new' => 'Penerbitan',
+        'renewal' => 'Perpanjangan',
+        'event_day' => 'Add-on Hari-H',
+    ];
+
     public function typeLabel(): string
     {
-        return $this->type === 'renewal' ? 'Perpanjangan' : 'Penerbitan';
+        return self::TYPES[$this->type] ?? $this->type;
     }
 }

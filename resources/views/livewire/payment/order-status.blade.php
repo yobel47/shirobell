@@ -50,7 +50,7 @@
     <section class="card">
         <dl class="space-y-2 text-sm">
             <div class="flex justify-between"><dt class="text-gray-500">Nomor order</dt><dd class="font-mono">{{ $order->number }}</dd></div>
-            <div class="flex justify-between"><dt class="text-gray-500">Jenis</dt><dd>{{ $order->typeLabel() }} {{ $order->duration_days }} hari</dd></div>
+            <div class="flex justify-between"><dt class="text-gray-500">Jenis</dt><dd>{{ $order->typeLabel() }}@if ($order->duration_days) {{ $order->duration_days }} hari @endif</dd></div>
             <div class="flex justify-between"><dt class="text-gray-500">Harga</dt><dd>{{ $rp($order->base_amount) }}</dd></div>
             @if ($order->discount_amount)
                 <div class="flex justify-between text-emerald-700"><dt>Diskon</dt><dd>- {{ $rp($order->discount_amount) }}</dd></div>
