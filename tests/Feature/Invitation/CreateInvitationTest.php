@@ -89,7 +89,7 @@ class CreateInvitationTest extends TestCase
 
     public function test_inactive_theme_cannot_be_chosen(): void
     {
-        $inactive = Theme::firstWhere('slug', 'classic-gold');
+        $inactive = Theme::factory()->create(['slug' => 'belum-siap', 'name' => 'Belum Siap', 'is_active' => false]);
 
         Livewire::actingAs(User::factory()->create())
             ->test(CreateWizard::class)

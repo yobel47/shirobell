@@ -200,7 +200,7 @@ class AdminPanelTest extends TestCase
     public function test_theme_without_view_cannot_be_activated(): void
     {
         Filament::setCurrentPanel('admin');
-        $theme = Theme::firstWhere('slug', 'classic-gold');
+        $theme = Theme::factory()->create(['slug' => 'tanpa-view', 'name' => 'Tanpa View', 'is_active' => false]);
 
         Livewire::actingAs($this->admin)
             ->test(EditTheme::class, ['record' => $theme->id])
