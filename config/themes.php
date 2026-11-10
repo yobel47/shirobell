@@ -52,6 +52,19 @@ return [
     ],
 
     /*
+    | Font pairs a customer can pick per invitation (engine themes only),
+    | stored in invitations.customization.font_pair. Keys of 'fonts'.
+    */
+    'font_pairs' => [
+        'klasik' => ['name' => 'Klasik', 'fonts' => ['playfair', 'great-vibes', 'inter']],
+        'anggun' => ['name' => 'Anggun', 'fonts' => ['cormorant', 'pinyon', 'lora']],
+        'keraton' => ['name' => 'Keraton', 'fonts' => ['cinzel', 'parisienne', 'cormorant']],
+        'modern' => ['name' => 'Modern', 'fonts' => ['dm-serif', 'alex-brush', 'montserrat']],
+        'lembut' => ['name' => 'Lembut', 'fonts' => ['marcellus', 'parisienne', 'josefin']],
+        'tegas' => ['name' => 'Tegas', 'fonts' => ['cinzel', 'great-vibes', 'montserrat']],
+    ],
+
+    /*
     | Engine recipe options (see resources/views/themes/_engine/index.blade.php):
     | hero: arch | photo | editorial | frame
     | shape: arch | circle | rounded | square

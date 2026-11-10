@@ -4,7 +4,7 @@
     css="resources/css/themes/classic-gold.css"
     class="cg-pattern font-sans text-cg-ink"
     x-data="{
-        opened: false,
+        opened: {{ request()->boolean('buka') ? 'true' : 'false' }},
         playing: false,
         open() {
             this.opened = true;
@@ -18,7 +18,7 @@
             if (audio.paused) { audio.play(); this.playing = true; } else { audio.pause(); this.playing = false; }
         },
     }"
-    x-init="document.documentElement.style.overflow = 'hidden'"
+    x-init="if (!opened) document.documentElement.style.overflow = 'hidden'"
 >
     @php
         $dateLabel = $mainDate?->translatedFormat('l, d F Y');
@@ -27,7 +27,7 @@
     @endphp
 
     {{-- Cover --}}
-    <section x-show="!opened" x-transition:leave="transition duration-700" x-transition:leave-end="-translate-y-full opacity-0"
+    <section x-show="!opened" @if (request()->boolean('buka')) x-cloak @endif x-transition:leave="transition duration-700" x-transition:leave-end="-translate-y-full opacity-0"
              class="fixed inset-0 z-40 flex items-center justify-center overflow-hidden bg-cg-deep text-cg-cream">
         @if ($coverUrl)
             <img src="{{ $coverUrl }}" alt="" class="absolute inset-0 h-full w-full object-cover opacity-60">

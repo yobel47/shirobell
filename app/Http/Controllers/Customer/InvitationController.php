@@ -26,6 +26,7 @@ class InvitationController extends Controller
         'amplop' => ['Amplop', Editor\GiftManager::class],
         'tema' => ['Tema', Editor\ThemePicker::class],
         'pengaturan' => ['Pengaturan', Editor\SettingsForm::class],
+        'riwayat' => ['Riwayat', Editor\VersionHistory::class],
     ];
 
     public function create(): View
@@ -66,7 +67,10 @@ class InvitationController extends Controller
     public function preview(Request $request, Invitation $invitation, InvitationRenderer $renderer): Response
     {
         Gate::authorize('view', $invitation);
-        $this->auditAdminVisit($invitation, 'preview');
+        // The editor's live preview frame reloads on every save; the editor visit is already audited.
+        if (! $request->boolean('frame')) {
+            $this->auditAdminVisit($invitation, 'preview');
+        }
 
         return $renderer->response(
             $invitation,

@@ -25,11 +25,14 @@
             <a href="{{ route('register') }}" class="rounded-full bg-white px-3 py-1 font-semibold text-black">Buat undangan seperti ini</a>
         </div>
     @endif
-    @if ($preview)
+    {{-- Inside the editor's preview frame (?frame=1) the banner is hidden; the watermark stays. --}}
+    @if ($preview && ! request()->boolean('frame'))
         <div class="fixed inset-x-0 top-0 z-[70] bg-black/80 px-4 py-2 text-center text-xs text-white">
             Mode preview: undangan belum diterbitkan dan hanya terlihat oleh Anda.
             <a href="{{ route('app.invitations.edit', $invitation) }}" class="font-semibold underline">Kembali ke editor</a>
         </div>
+    @endif
+    @if ($preview)
         <div class="pointer-events-none fixed inset-0 z-[60] flex select-none flex-col items-center justify-around overflow-hidden" aria-hidden="true">
             @for ($i = 0; $i < 6; $i++)
                 <span class="-rotate-30 font-sans text-6xl font-bold tracking-[0.4em] text-black/10 sm:text-7xl">PREVIEW</span>

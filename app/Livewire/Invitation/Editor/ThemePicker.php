@@ -24,6 +24,23 @@ class ThemePicker extends Component
         $this->dispatch('invitation-saved');
     }
 
+    /** Engine themes only; '' restores the theme's own fonts. */
+    public function setFontPair(string $pair): void
+    {
+        $this->authorizeUpdate();
+        $customization = $this->invitation->customization ?? [];
+
+        if ($pair === '' || ! array_key_exists($pair, config('themes.font_pairs', []))) {
+            unset($customization['font_pair']);
+        } else {
+            $customization['font_pair'] = $pair;
+        }
+
+        $this->invitation->forceFill(['customization' => $customization ?: null])->save();
+        $this->notify('Font diganti.');
+        $this->dispatch('invitation-saved');
+    }
+
     public function render(ThemeRegistry $registry)
     {
         $themes = Theme::query()->available()->get()->filter->hasView()
@@ -33,6 +50,10 @@ class ThemePicker extends Component
         return view('livewire.invitation.editor.theme-picker', [
             'themes' => $themes,
             'categories' => $registry->categories(),
+            'isEngine' => $registry->isEngine($this->invitation->theme->slug),
+            'fontPairs' => config('themes.font_pairs', []),
+            'fonts' => config('themes.fonts', []),
+            'currentFontPair' => $this->invitation->customization['font_pair'] ?? '',
             'currentVariant' => $registry->variantKey($this->invitation->theme->slug, $this->invitation->theme_variant),
         ]);
     }

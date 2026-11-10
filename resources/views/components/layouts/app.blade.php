@@ -1,4 +1,4 @@
-@props(['title' => null])
+@props(['title' => null, 'wide' => false])
 <x-layouts.base :title="$title">
     <header x-data="{ open: false }" class="sticky top-0 z-40 border-b border-rose-brand-100 bg-white">
         <nav class="mx-auto flex max-w-6xl items-center justify-between px-4 py-3 sm:px-6">
@@ -43,7 +43,7 @@
         </nav>
     </header>
 
-    <main class="mx-auto max-w-6xl px-4 py-6 sm:px-6 sm:py-10">
+    <main @class(["mx-auto px-4 py-6 sm:px-6 sm:py-10", "max-w-[88rem]" => $wide, "max-w-6xl" => ! $wide])>
         @if (session('status'))
             <div class="mb-6 rounded-xl bg-emerald-50 px-4 py-3 text-sm text-emerald-700">{{ session('status') }}</div>
         @endif

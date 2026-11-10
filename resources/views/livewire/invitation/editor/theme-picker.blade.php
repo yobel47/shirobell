@@ -5,6 +5,33 @@
     </div>
     @error('theme_id') <p class="form-error">{{ $message }}</p> @enderror
 
+    @if ($isEngine)
+        <div class="rounded-2xl border border-gray-100 bg-white p-4">
+            <p class="text-sm font-semibold">Font</p>
+            <p class="text-xs text-gray-500">Ganti pasangan huruf untuk judul, nama, dan isi undangan.</p>
+            <div class="mt-3 grid grid-cols-2 gap-2 sm:grid-cols-4">
+                <button type="button" wire:click="setFontPair('')" @class([
+                    'rounded-xl border px-3 py-2 text-left text-sm',
+                    'border-rose-brand-500 bg-rose-brand-50' => $currentFontPair === '',
+                    'border-gray-200 hover:border-rose-brand-300' => $currentFontPair !== '',
+                ])>
+                    <span class="block font-medium">Bawaan tema</span>
+                    <span class="block text-xs text-gray-500">Sesuai desain</span>
+                </button>
+                @foreach ($fontPairs as $key => $pair)
+                    <button type="button" wire:click="setFontPair('{{ $key }}')" @class([
+                        'rounded-xl border px-3 py-2 text-left',
+                        'border-rose-brand-500 bg-rose-brand-50' => $currentFontPair === $key,
+                        'border-gray-200 hover:border-rose-brand-300' => $currentFontPair !== $key,
+                    ])>
+                        <span class="block text-lg leading-tight" style="font-family: {{ $fonts[$pair['fonts'][1]] ?? 'cursive' }}">Raka &amp; Nadia</span>
+                        <span class="block text-xs text-gray-500" style="font-family: {{ $fonts[$pair['fonts'][0]] ?? 'serif' }}">{{ $pair['name'] }}</span>
+                    </button>
+                @endforeach
+            </div>
+        </div>
+    @endif
+
     <div class="-mx-1 flex gap-2 overflow-x-auto px-1 pb-1" role="tablist" aria-label="Kategori tema">
         <button type="button" wire:click="$set('category', '')" @class([
             'shrink-0 rounded-full px-4 py-1.5 text-sm font-medium',
