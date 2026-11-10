@@ -8,6 +8,7 @@ use App\Http\Controllers\HealthController;
 use App\Http\Controllers\HomeController;
 use App\Http\Controllers\LegalPageController;
 use App\Http\Controllers\PublicInvitationController;
+use App\Http\Controllers\Reception\ReceptionController;
 use App\Http\Controllers\ThemeCatalogController;
 use App\Http\Controllers\ThemeDemoController;
 use App\Http\Controllers\Webhook\MidtransNotificationController;
@@ -41,6 +42,14 @@ Route::domain(config('app.domain'))->group(function () {
         Route::get('/kontak', 'contact')->name('contact');
     });
 
+    // Event-day receptionist link (ADR 011): secret token + PIN, no account.
+    Route::prefix('penerima-tamu/{token}')->name('reception.')->controller(ReceptionController::class)->group(function () {
+        Route::get('/', 'show')->name('show');
+        Route::post('/', 'login')->middleware('throttle:20,1')->name('login');
+        Route::get('/layar', 'screen')->name('screen');
+        Route::post('/keluar', 'logout')->name('logout');
+    });
+
     // Payment gateway notification. CSRF-exempt (bootstrap/app.php); verified by signature + status API.
     Route::post('/webhooks/midtrans', MidtransNotificationController::class)
         ->middleware('throttle:120,1')
@@ -65,6 +74,8 @@ Route::domain(config('app.domain'))->group(function () {
             Route::get('/invitations/{invitation}/tamu', [InvitationController::class, 'guests'])->name('invitations.guests');
             Route::get('/invitations/{invitation}/rsvp', [InvitationController::class, 'wishes'])->name('invitations.wishes');
             Route::get('/invitations/{invitation}/rsvp/export', WishExportController::class)->name('invitations.wishes.export');
+            Route::get('/invitations/{invitation}/hari-h', [InvitationController::class, 'eventDay'])->name('invitations.event-day');
+            Route::get('/invitations/{invitation}/hari-h/kartu', [InvitationController::class, 'qrCards'])->name('invitations.event-day.cards');
         });
     });
 });

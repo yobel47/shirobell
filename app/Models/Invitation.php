@@ -36,12 +36,17 @@ class Invitation extends Model
         'sections', 'rsvp_max_pax', 'wa_message_template',
     ];
 
+    /** Receptionist secrets never leave the model in arrays or JSON. */
+    protected $hidden = ['checkin_token', 'checkin_pin'];
+
     protected function casts(): array
     {
         return [
             'status' => InvitationStatus::class,
             'sections' => 'array',
             'customization' => 'array',
+            'event_day_unlocked_at' => 'datetime',
+            'checkin_pin' => 'encrypted',
             'rsvp_max_pax' => 'integer',
             'active_until' => 'datetime',
             'expiry_reminded_at' => 'datetime',

@@ -27,6 +27,9 @@ class SettingService
         'support_email' => '',
         'business_name' => '',
         'business_address' => '',
+        // Event-day module (ADR 011): 'included' in the package, or a paid 'addon'.
+        'event_day_mode' => 'included',
+        'event_day_price' => 49000,
     ];
 
     public function get(string $key, mixed $default = null): mixed

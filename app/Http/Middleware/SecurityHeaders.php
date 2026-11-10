@@ -22,7 +22,9 @@ class SecurityHeaders
         $response->headers->set('X-Content-Type-Options', 'nosniff');
         $response->headers->set('X-Frame-Options', 'SAMEORIGIN');
         $response->headers->set('Referrer-Policy', 'strict-origin-when-cross-origin');
-        $response->headers->set('Permissions-Policy', 'geolocation=(), microphone=(), camera=(), payment=()');
+        // The receptionist QR scanner needs the camera; everything else keeps it off.
+        $camera = $request->is('penerima-tamu/*') ? 'camera=(self)' : 'camera=()';
+        $response->headers->set('Permissions-Policy', "geolocation=(), microphone=(), {$camera}, payment=()");
 
         if (config('security.csp_enabled')) {
             $policy = $request->is('admin', 'admin/*') ? $this->adminPolicy() : $this->contentSecurityPolicy();
@@ -39,8 +41,9 @@ class SecurityHeaders
     private function contentSecurityPolicy(): string
     {
         $nonce = Vite::cspNonce();
-        $devServer = app()->isLocal() ? ' http://localhost:5173 http://127.0.0.1:5173 http://[::1]:5173' : '';
-        $devSocket = app()->isLocal() ? ' ws://localhost:5173 ws://127.0.0.1:5173 ws://[::1]:5173' : '';
+        // Browsers reject IPv6 literals in CSP sources, so only named hosts are listed.
+        $devServer = app()->isLocal() ? ' http://localhost:5173 http://127.0.0.1:5173' : '';
+        $devSocket = app()->isLocal() ? ' ws://localhost:5173 ws://127.0.0.1:5173' : '';
         // Uploaded media is served from the main domain, also on invitation subdomains.
         $appOrigin = ' '.$this->appOrigin();
 
@@ -54,7 +57,8 @@ class SecurityHeaders
             "font-src 'self' data:{$devServer}",
             "media-src 'self' blob:{$appOrigin}",
             "connect-src 'self'{$devSocket}{$devServer}",
-            'frame-src https://www.google.com https://maps.google.com',
+            // 'self': the editor's live preview frame.
+            "frame-src 'self' https://www.google.com https://maps.google.com",
             "frame-ancestors 'self'",
             "base-uri 'self'",
             "form-action 'self' https://app.midtrans.com https://app.sandbox.midtrans.com",

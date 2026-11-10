@@ -17,6 +17,9 @@ class Guest extends Model
         return [
             'opened_at' => 'datetime',
             'shared_at' => 'datetime',
+            'checked_in_at' => 'datetime',
+            'checked_in_pax' => 'integer',
+            'is_walk_in' => 'boolean',
         ];
     }
 

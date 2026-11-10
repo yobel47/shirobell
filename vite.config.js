@@ -6,7 +6,7 @@ import tailwindcss from '@tailwindcss/vite';
 export default defineConfig({
     plugins: [
         laravel({
-            input: ['resources/css/app.css', 'resources/js/app.js', 'resources/css/themes/rose-garden.css', 'resources/css/themes/classic-gold.css', 'resources/css/themes/sage-minimalist.css', 'resources/css/themes/engine.css'],
+            input: ['resources/css/app.css', 'resources/js/app.js', 'resources/css/themes/rose-garden.css', 'resources/css/themes/classic-gold.css', 'resources/css/themes/sage-minimalist.css', 'resources/css/themes/engine.css', 'resources/js/checkin.js'],
             refresh: true,
             fonts: [
                 bunny('Inter', {
