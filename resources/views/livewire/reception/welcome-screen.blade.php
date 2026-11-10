@@ -4,7 +4,7 @@
     @if ($coverUrl)
         <img src="{{ $coverUrl }}" alt="" class="absolute inset-0 h-full w-full object-cover">
     @endif
-    <div class="absolute inset-0 bg-gradient-to-r from-black/80 via-black/55 to-black/30"></div>
+    <div class="absolute inset-0 bg-linear-to-r from-black/80 via-black/55 to-black/30"></div>
 
     <div class="relative flex flex-1 flex-col justify-end p-[5vw]">
         <p class="text-[1.2vw] tracking-[0.4em] uppercase" style="color: {{ $colors['accent'] }}">Selamat datang di pernikahan</p>
@@ -21,6 +21,9 @@
                     <p class="font-serif text-[4.2vw] leading-tight font-semibold">{{ $greeting->name }}</p>
                     @if ($greeting->group_name)
                         <p class="text-[1.3vw] opacity-80">{{ $greeting->group_name }}</p>
+                    @endif
+                    @if ($greeting->table_number)
+                        <p class="mt-[0.8vw] inline-block rounded-full bg-white px-[1.2vw] py-[0.3vw] text-[1.4vw] font-semibold text-gray-900">Meja {{ $greeting->table_number }}</p>
                     @endif
                 </div>
             @else

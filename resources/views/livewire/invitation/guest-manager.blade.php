@@ -90,10 +90,11 @@
             <div wire:key="guest-{{ $guest->id }}" class="card p-4">
                 @if ($editingId === $guest->id)
                     <form wire:submit="update" class="space-y-3">
-                        <div class="grid gap-3 sm:grid-cols-3">
+                        <div class="grid gap-3 sm:grid-cols-4">
                             <x-editor.field model="form.name" label="Nama" maxlength="100" />
                             <x-editor.field model="form.phone" label="No. WhatsApp" inputmode="tel" maxlength="20" />
                             <x-editor.field model="form.group_name" label="Grup" maxlength="50" list="guest-groups" />
+                            <x-editor.field model="form.table_number" label="Nomor meja" maxlength="20" />
                         </div>
                         <div class="flex justify-end gap-2">
                             <button type="button" wire:click="cancelEdit" class="btn btn-ghost">Batal</button>
@@ -108,7 +109,7 @@
                                 <span class="rounded-full px-2 py-0.5 text-xs font-medium {{ $statusClass }}">{{ $statusLabel }}@if ($statusKey === 'rsvp' && $guest->rsvp?->pax) ({{ $guest->rsvp->pax }} orang)@endif</span>
                             </div>
                             <p class="mt-0.5 text-xs text-gray-500">
-                                {{ $guest->group_name ?: 'Tanpa grup' }}@if ($guest->phone) &middot; {{ $guest->phone }}@endif
+                                {{ $guest->group_name ?: 'Tanpa grup' }}@if ($guest->table_number) &middot; Meja {{ $guest->table_number }}@endif @if ($guest->phone) &middot; {{ $guest->phone }}@endif
                             </p>
                         </div>
                         <div class="flex shrink-0 flex-wrap gap-1" x-data="{ copied: false }">

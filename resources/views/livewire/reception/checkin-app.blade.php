@@ -34,6 +34,9 @@
                 @if ($result['group'] || $result['walk_in'])
                     <p class="text-sm">{{ $result['group'] }}{{ $result['group'] && $result['walk_in'] ? ' · ' : '' }}{{ $result['walk_in'] ? 'Tamu dadakan' : '' }}</p>
                 @endif
+                @if ($result['table'])
+                    <p class="mt-2 inline-block rounded-full bg-white px-3 py-1 text-sm font-semibold">Meja {{ $result['table'] }}</p>
+                @endif
                 <div class="mt-3 flex flex-wrap items-center gap-3">
                     <div class="flex items-center gap-2" aria-label="Jumlah orang">
                         <button type="button" wire:click="setPax({{ $result['id'] }}, {{ max(1, $result['pax'] - 1) }})" class="h-9 w-9 rounded-full bg-white text-lg font-semibold shadow-sm" aria-label="Kurangi">&minus;</button>
@@ -41,6 +44,27 @@
                         <button type="button" wire:click="setPax({{ $result['id'] }}, {{ min($maxPax, $result['pax'] + 1) }})" class="h-9 w-9 rounded-full bg-white text-lg font-semibold shadow-sm" aria-label="Tambah">+</button>
                     </div>
                     <button type="button" wire:click="undo({{ $result['id'] }})" wire:confirm="Batalkan check-in {{ $result['name'] }}?" class="ml-auto text-sm font-medium underline">Batalkan</button>
+                </div>
+                <div class="mt-3 flex flex-wrap gap-2 border-t border-current/15 pt-3" x-data="{ gift: false }">
+                    <button type="button" wire:click="toggleSouvenir({{ $result['id'] }})" @class([
+                        'rounded-full px-4 py-1.5 text-sm font-medium',
+                        'bg-emerald-600 text-white' => $result['souvenir'],
+                        'bg-white shadow-sm' => ! $result['souvenir'],
+                    ])>{{ $result['souvenir'] ? 'Souvenir diberikan' : 'Beri souvenir' }}</button>
+                    <button type="button" x-on:click="gift = !gift" class="rounded-full bg-white px-4 py-1.5 text-sm font-medium shadow-sm">
+                        Catat hadiah @if ($result['gifts']) ({{ $result['gifts'] }}) @endif
+                    </button>
+                    <form x-show="gift" x-cloak wire:submit="recordGift" x-on:submit="gift = false" class="grid w-full gap-2 rounded-xl bg-white p-3 text-ink sm:grid-cols-[auto_1fr_1fr_auto]">
+                        <select wire:model="giftKind" class="rounded-lg border-gray-200 text-sm" aria-label="Jenis hadiah">
+                            @foreach ($giftKinds as $key => $label)
+                                <option value="{{ $key }}">{{ $label }}</option>
+                            @endforeach
+                        </select>
+                        <input type="number" min="0" wire:model="giftAmount" placeholder="Nominal (opsional)" class="rounded-lg border-gray-200 text-sm" aria-label="Nominal">
+                        <input type="text" wire:model="giftNote" maxlength="200" placeholder="Catatan, mis. nomor amplop" class="rounded-lg border-gray-200 text-sm" aria-label="Catatan">
+                        <button type="submit" class="btn btn-primary px-4 py-1.5">Simpan</button>
+                        @error('giftAmount') <p class="form-error sm:col-span-4">{{ $message }}</p> @enderror
+                    </form>
                 </div>
             @endif
         </div>

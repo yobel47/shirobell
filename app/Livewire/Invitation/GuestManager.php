@@ -85,7 +85,7 @@ class GuestManager extends Component
 
         $this->resetErrorBag();
         $this->editingId = $guest->id;
-        $this->form = ['name' => $guest->name, 'phone' => (string) $guest->phone, 'group_name' => (string) $guest->group_name];
+        $this->form = ['name' => $guest->name, 'phone' => (string) $guest->phone, 'group_name' => (string) $guest->group_name, 'table_number' => (string) $guest->table_number];
     }
 
     public function update(GuestService $guests): void
@@ -97,12 +97,14 @@ class GuestManager extends Component
             'form.name' => ['required', 'string', 'max:100'],
             'form.phone' => ['nullable', 'string', 'max:20', 'regex:/^\+?[0-9\s-]{8,20}$/'],
             'form.group_name' => ['nullable', 'string', 'max:50'],
-        ], [], ['form.name' => 'nama', 'form.phone' => 'nomor WhatsApp', 'form.group_name' => 'grup'])['form'];
+            'form.table_number' => ['nullable', 'string', 'max:20'],
+        ], [], ['form.name' => 'nama', 'form.phone' => 'nomor WhatsApp', 'form.group_name' => 'grup', 'form.table_number' => 'nomor meja'])['form'];
 
         $guest->update([
             'name' => trim($data['name']),
             'phone' => $guests->normalizePhone($data['phone'] ?? null),
             'group_name' => trim((string) ($data['group_name'] ?? '')) ?: null,
+            'table_number' => trim((string) ($data['table_number'] ?? '')) ?: null,
         ]);
 
         $this->cancelEdit();

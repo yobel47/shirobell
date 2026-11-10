@@ -111,6 +111,11 @@ class Invitation extends Model
         return $this->hasMany(Wish::class);
     }
 
+    public function eventGifts(): HasMany
+    {
+        return $this->hasMany(EventGift::class);
+    }
+
     public function versions(): HasMany
     {
         return $this->hasMany(InvitationVersion::class)->latest('id');

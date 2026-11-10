@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\Models\EventGift;
 use App\Models\Guest;
 use App\Models\Invitation;
 use BaconQrCode\Renderer\Image\SvgImageBackEnd;
@@ -166,7 +167,57 @@ class EventDayService
     {
         return $invitation->guests()->whereNotNull('checked_in_at')
             ->latest('checked_in_at')->latest('id')->take($limit)
-            ->get(['id', 'name', 'group_name', 'checked_in_at', 'checked_in_pax']);
+            ->get(['id', 'name', 'group_name', 'table_number', 'checked_in_at', 'checked_in_pax']);
+    }
+
+    public function toggleSouvenir(Invitation $invitation, Guest $guest): Guest
+    {
+        abort_unless($guest->invitation_id === $invitation->id, 404);
+        $guest->forceFill(['souvenir_at' => $guest->souvenir_at ? null : now()])->save();
+
+        return $guest;
+    }
+
+    /** @param array{giver_name: string, kind: string, amount?: ?int, note?: ?string} $data */
+    public function recordGift(Invitation $invitation, ?Guest $guest, array $data): EventGift
+    {
+        abort_if($guest && $guest->invitation_id !== $invitation->id, 404);
+
+        $gift = $invitation->eventGifts()->make([
+            'giver_name' => mb_substr(trim($data['giver_name']), 0, 100),
+            'kind' => array_key_exists($data['kind'], EventGift::KINDS) ? $data['kind'] : 'amplop',
+            'amount' => isset($data['amount']) && $data['amount'] > 0 ? (int) $data['amount'] : null,
+            'note' => filled($data['note'] ?? null) ? mb_substr(trim($data['note']), 0, 200) : null,
+        ]);
+        $gift->guest()->associate($guest);
+        $gift->save();
+
+        return $gift;
+    }
+
+    /**
+     * Gifts, souvenirs and catering numbers for the owner's recap.
+     *
+     * @return array{souvenirs: int, gifts: array<string, array{count: int, amount: int}>, expected_pax: int, arrived_pax: int}
+     */
+    public function recap(Invitation $invitation): array
+    {
+        $gifts = collect(array_keys(EventGift::KINDS))->mapWithKeys(fn ($kind) => [$kind => ['count' => 0, 'amount' => 0]])->all();
+        foreach ($invitation->eventGifts()->toBase()->selectRaw('kind, count(*) as n, coalesce(sum(amount), 0) as total')->groupBy('kind')->get() as $row) {
+            $gifts[$row->kind] = ['count' => (int) $row->n, 'amount' => (int) $row->total];
+        }
+
+        // Expected portions: latest "yes" RSVP per guest link, plus anonymous "yes" RSVPs.
+        $yes = $invitation->wishes()->where('attendance', 'yes')->latest('id')->get(['id', 'guest_id', 'pax']);
+        $expected = $yes->whereNotNull('guest_id')->unique('guest_id')->sum(fn ($w) => max(1, (int) $w->pax))
+            + $yes->whereNull('guest_id')->sum(fn ($w) => max(1, (int) $w->pax));
+
+        return [
+            'souvenirs' => $invitation->guests()->whereNotNull('souvenir_at')->count(),
+            'gifts' => $gifts,
+            'expected_pax' => (int) $expected,
+            'arrived_pax' => (int) $invitation->guests()->sum('checked_in_pax'),
+        ];
     }
 
     /** QR payload for a guest ticket: the guest's personal code. */

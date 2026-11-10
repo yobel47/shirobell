@@ -3,6 +3,7 @@
 namespace App\Livewire\Reception;
 
 use App\Livewire\Reception\Concerns\ReceptionGuard;
+use App\Models\EventGift;
 use App\Models\Guest;
 use App\Services\EventDayService;
 use App\Services\GuestService;
@@ -20,6 +21,12 @@ class CheckinApp extends Component
     public string $walkInName = '';
 
     public int $walkInPax = 1;
+
+    public string $giftKind = 'amplop';
+
+    public ?int $giftAmount = null;
+
+    public string $giftNote = '';
 
     /** Last action shown in the result card: ok | already | unknown. */
     public ?array $result = null;
@@ -59,6 +66,32 @@ class CheckinApp extends Component
         $this->result = null;
     }
 
+    public function toggleSouvenir(int $guestId, EventDayService $eventDay): void
+    {
+        $this->ensureAccess();
+        $guest = $eventDay->toggleSouvenir($this->invitation, $this->guest($guestId));
+        $this->result = $this->resultFor($guest, $this->result['status'] ?? 'ok');
+    }
+
+    /** Records a gift handed over by the guest in the result card. */
+    public function recordGift(EventDayService $eventDay): void
+    {
+        $this->ensureAccess();
+        abort_unless(isset($this->result['id']), 404);
+        $this->validate([
+            'giftKind' => ['required', 'in:'.implode(',', array_keys(EventGift::KINDS))],
+            'giftAmount' => ['nullable', 'integer', 'min:0', 'max:1000000000'],
+            'giftNote' => ['nullable', 'string', 'max:200'],
+        ], [], ['giftKind' => 'jenis', 'giftAmount' => 'nominal', 'giftNote' => 'catatan']);
+
+        $guest = $this->guest($this->result['id']);
+        $eventDay->recordGift($this->invitation, $guest, [
+            'giver_name' => $guest->name, 'kind' => $this->giftKind, 'amount' => $this->giftAmount, 'note' => $this->giftNote,
+        ]);
+        $this->reset('giftKind', 'giftAmount', 'giftNote');
+        $this->result = $this->resultFor($guest, $this->result['status'] ?? 'ok');
+    }
+
     public function addWalkIn(EventDayService $eventDay): void
     {
         $this->ensureAccess();
@@ -85,6 +118,7 @@ class CheckinApp extends Component
             'stats' => $eventDay->stats($this->invitation),
             'matches' => $matches,
             'maxPax' => EventDayService::MAX_PAX,
+            'giftKinds' => EventGift::KINDS,
         ]);
     }
 
@@ -121,6 +155,9 @@ class CheckinApp extends Component
             'pax' => $guest->checked_in_pax,
             'time' => $guest->checked_in_at?->format('H.i'),
             'walk_in' => $guest->is_walk_in,
+            'table' => $guest->table_number,
+            'souvenir' => $guest->souvenir_at !== null,
+            'gifts' => $guest->gifts()->count(),
         ];
     }
 }
