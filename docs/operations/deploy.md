@@ -157,6 +157,7 @@ sudo nginx -t && sudo systemctl reload nginx
 1. Queue worker: [supervisor/queue-worker.md](./supervisor/queue-worker.md)
 2. Scheduler: [cronjobs/scheduler.md](./cronjobs/scheduler.md)
 3. Notification URL Midtrans: [midtrans-notification.md](./midtrans-notification.md)
+4. Panel admin, Sistem, Pengaturan: isi nama situs, email dan WhatsApp support, serta Identitas usaha (nama dan alamat). Data ini tampil di `/kontak`, `/syarat-ketentuan`, `/kebijakan-privasi`, dan `/kebijakan-refund`, yang diperiksa Midtrans saat aktivasi production.
 
 ## 9. Backup
 
@@ -176,6 +177,8 @@ Minimal harian, simpan di luar VPS (object storage) dan terenkripsi:
 | `https://acak.APP_DOMAIN/login` | 404 (route utama tidak tersedia di subdomain) |
 | `https://APP_DOMAIN/admin` | halaman login admin |
 | `https://APP_DOMAIN/tema/rose-garden` | demo tema tampil |
+| `https://APP_DOMAIN/kontak` dan halaman kebijakan | identitas usaha dan kontak support terisi |
+| `https://APP_DOMAIN/acak` | halaman 404 berbahasa Indonesia |
 | Daftar akun, verifikasi email | email masuk (queue worker berjalan) |
 | Checkout + bayar (sandbox di staging) | order lunas, undangan aktif |
 
