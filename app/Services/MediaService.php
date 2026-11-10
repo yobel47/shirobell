@@ -17,7 +17,7 @@ class MediaService
 {
     private const DISK = 'public';
 
-    public function storeImage(UploadedFile $file, string $directory, ?int $maxPx = null): string
+    public function storeImage(UploadedFile $file, string $directory, ?int $maxPx = null, int $quality = 80): string
     {
         $maxPx ??= (int) config('shirobell.invitation.image_max_px', 1600);
 
@@ -25,7 +25,7 @@ class MediaService
         $image->scaleDown(width: $maxPx, height: $maxPx);
 
         $path = trim($directory, '/').'/'.Str::random(40).'.webp';
-        Storage::disk(self::DISK)->put($path, (string) $image->toWebp(80));
+        Storage::disk(self::DISK)->put($path, (string) $image->toWebp($quality));
 
         return $path;
     }

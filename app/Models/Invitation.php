@@ -89,6 +89,21 @@ class Invitation extends Model
         return $this->hasMany(InvitationStory::class)->orderBy('sort_order')->orderBy('id');
     }
 
+    public function giftAccounts(): HasMany
+    {
+        return $this->hasMany(GiftAccount::class)->orderBy('sort_order')->orderBy('id');
+    }
+
+    public function guests(): HasMany
+    {
+        return $this->hasMany(Guest::class);
+    }
+
+    public function wishes(): HasMany
+    {
+        return $this->hasMany(Wish::class);
+    }
+
     public function scopeOwnedBy(Builder $query, User $user): Builder
     {
         return $query->where('user_id', $user->id);

@@ -21,6 +21,10 @@ return [
         'image_max_kb' => 8192,
         'image_max_px' => 1600,
         'music_max_kb' => 10240,
+        'max_gift_accounts' => 6,
+        'max_guests' => 1000,
+        'bulk_guest_lines' => 200,
+        'wish_rate_limit' => 5,
     ],
 
     /*
