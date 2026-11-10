@@ -15,9 +15,9 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/up',
     )
     ->withMiddleware(function (Middleware $middleware): void {
-        $middleware->web(append: [
-            SecurityHeaders::class,
-        ]);
+        // Global, so unmatched routes (404), the Filament panel and Livewire
+        // endpoints all get the same headers.
+        $middleware->append(SecurityHeaders::class);
 
         $middleware->alias([
             'role' => EnsureUserHasRole::class,

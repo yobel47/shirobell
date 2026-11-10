@@ -25,6 +25,14 @@ class ErrorPagesTest extends TestCase
             ->assertSee('noindex', false);
     }
 
+    public function test_unmatched_routes_still_get_security_headers(): void
+    {
+        $response = $this->get('/halaman-tidak-ada')->assertNotFound();
+
+        $response->assertHeader('X-Content-Type-Options', 'nosniff');
+        $this->assertStringContainsString("object-src 'none'", $response->headers->get('Content-Security-Policy'));
+    }
+
     public function test_unknown_path_on_invitation_subdomain_shows_custom_404(): void
     {
         $this->get('http://budi-ani.shirobell.test/apa-saja')
