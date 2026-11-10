@@ -40,4 +40,12 @@
 
         {{ $slot }}
     </main>
+
+    <div x-data="{ show: false, message: '', timer: null }"
+         x-on:notify.window="message = $event.detail.message; show = true; clearTimeout(timer); timer = setTimeout(() => show = false, 2500)"
+         x-show="show" x-cloak x-transition
+         role="status" aria-live="polite"
+         class="fixed inset-x-0 bottom-20 z-50 mx-auto w-fit max-w-[90vw] rounded-full bg-ink px-5 py-2.5 text-sm text-white shadow-lg sm:bottom-6">
+        <span x-text="message"></span>
+    </div>
 </x-layouts.base>
