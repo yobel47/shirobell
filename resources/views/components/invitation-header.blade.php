@@ -10,6 +10,7 @@
         'editor' => ['Editor', route('app.invitations.edit', $invitation)],
         'tamu' => ['Tamu', route('app.invitations.guests', $invitation)],
         'rsvp' => ['RSVP & Ucapan', route('app.invitations.wishes', $invitation)],
+        'hari-h' => ['Hari-H', route('app.invitations.event-day', $invitation)],
     ];
 @endphp
 @if ($adminMode)

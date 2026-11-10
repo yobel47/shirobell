@@ -51,6 +51,10 @@ class InvitationRenderer
             'themeStyle' => $this->themes->style($invitation->theme->slug, $invitation->theme_variant, $invitation->customization['font_pair'] ?? null),
             'themeCss' => $invitation->theme->cssEntry(),
             'engine' => $this->themes->engine($invitation->theme->slug),
+            // Entry ticket on a guest's personal link once the receptionist module is open.
+            'ticketQr' => $guest && $invitation->exists && app(EventDayService::class)->isOpen($invitation)
+                ? app(EventDayService::class)->qrSvg($guest->code)
+                : null,
         ];
     }
 

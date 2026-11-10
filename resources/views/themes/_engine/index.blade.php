@@ -278,6 +278,10 @@
             @include('themes._engine.partials.gift')
         @endif
 
+        @if ($ticketQr ?? null)
+            <x-invitation.ticket :qr="$ticketQr" :guest="$guest" />
+        @endif
+
         {{-- RSVP & wishes --}}
         @if ($showInteraction)
             <section id="rsvp" class="px-6 py-16 text-center">

@@ -19,7 +19,7 @@
             src() { return this.url + '&v=' + this.version; },
          }"
          x-on:notify.window="reload()">
-        <nav aria-label="Bagian editor" class="-mx-4 mb-6 overflow-x-auto px-4 lg:mx-0 lg:mb-0 lg:px-0">
+        <nav aria-label="Bagian editor" class="-mx-4 mb-6 overflow-x-auto px-4 lg:mx-0 lg:mb-0 lg:overflow-visible lg:px-0">
             <ul class="flex gap-1 lg:sticky lg:top-24 lg:flex-col">
                 @foreach ($tabs as $key => [$label])
                     <li>

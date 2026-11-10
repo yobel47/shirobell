@@ -62,7 +62,7 @@
                 <div class="relative">
                     @foreach ($variants ?: ['' => null] as $key => $v)
                         <div x-show="variant === @js($key)" @if (! $loop->first) x-cloak @endif>
-                            <x-theme-swatch :theme="$theme" :variant="$key" class="h-40" />
+                            <x-theme-swatch :theme="$theme" :variant="$key" class="h-56" />
                         </div>
                     @endforeach
                     @if ($theme->badge === 'new')

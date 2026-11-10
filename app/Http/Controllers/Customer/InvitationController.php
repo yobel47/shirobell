@@ -7,6 +7,7 @@ use App\Livewire\Invitation\Editor;
 use App\Models\Invitation;
 use App\Policies\InvitationPolicy;
 use App\Services\Admin\AuditLogger;
+use App\Services\EventDayService;
 use App\Services\InvitationRenderer;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Gate;
@@ -64,6 +65,28 @@ class InvitationController extends Controller
     }
 
     /** Owner-only preview on the main domain; watermarked unless the invitation is active. */
+    public function eventDay(Invitation $invitation): View
+    {
+        Gate::authorize('update', $invitation);
+        $this->auditAdminVisit($invitation, 'hari-h');
+
+        return view('customer.invitations.event-day', ['invitation' => $invitation]);
+    }
+
+    /** Printable QR cards; only once the receptionist module is open. */
+    public function qrCards(Invitation $invitation, EventDayService $eventDay): View
+    {
+        Gate::authorize('update', $invitation);
+        abort_unless($eventDay->isOpen($invitation), 404);
+        $this->auditAdminVisit($invitation, 'kartu-qr');
+
+        return view('customer.invitations.qr-cards', [
+            'invitation' => $invitation,
+            'guests' => $invitation->guests()->orderBy('group_name')->orderBy('name')->get(['id', 'name', 'group_name', 'code']),
+            'qr' => fn (string $code) => $eventDay->qrSvg($code, 160),
+        ]);
+    }
+
     public function preview(Request $request, Invitation $invitation, InvitationRenderer $renderer): Response
     {
         Gate::authorize('view', $invitation);

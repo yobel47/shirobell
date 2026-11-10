@@ -36,8 +36,11 @@ class EditorPreviewAndVersionsTest extends TestCase
 
     public function test_editor_page_shows_live_preview_frame(): void
     {
-        $this->actingAs($this->owner)
-            ->get(route('app.invitations.edit', $this->invitation))
+        $response = $this->actingAs($this->owner)->get(route('app.invitations.edit', $this->invitation));
+        // The preview is a same-origin frame; CSP must allow it (regression found in browser QA).
+        $this->assertStringContainsString("frame-src 'self'", $response->headers->get('Content-Security-Policy'));
+
+        $response
             ->assertOk()
             ->assertSee('Preview undangan')
             ->assertSee('preview?buka=1\u0026frame=1', false)
