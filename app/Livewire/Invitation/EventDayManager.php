@@ -3,6 +3,7 @@
 namespace App\Livewire\Invitation;
 
 use App\Livewire\Invitation\Editor\Concerns\EditsInvitation;
+use App\Models\EventGift;
 use App\Services\EventDayService;
 use Livewire\Component;
 
@@ -32,6 +33,13 @@ class EventDayManager extends Component
         $this->notify('Penerima tamu dinonaktifkan.');
     }
 
+    public function deleteGift(int $giftId): void
+    {
+        $this->authorizeUpdate();
+        $this->invitation->eventGifts()->findOrFail($giftId)->delete();
+        $this->notify('Catatan hadiah dihapus.');
+    }
+
     protected function autoSnapshots(): bool
     {
         return false;
@@ -47,6 +55,9 @@ class EventDayManager extends Component
             'open' => $eventDay->isOpen($this->invitation),
             'stats' => $eventDay->stats($this->invitation),
             'arrivals' => $eventDay->recentArrivals($this->invitation, 10),
+            'recap' => $eventDay->recap($this->invitation),
+            'gifts' => $this->invitation->eventGifts()->latest('id')->take(50)->get(),
+            'giftKinds' => EventGift::KINDS,
         ]);
     }
 }

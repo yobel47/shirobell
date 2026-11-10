@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\Customer\DashboardController;
+use App\Http\Controllers\Customer\EventDayExportController;
 use App\Http\Controllers\Customer\InvitationController;
 use App\Http\Controllers\Customer\OrderController;
 use App\Http\Controllers\Customer\WishExportController;
@@ -76,6 +77,7 @@ Route::domain(config('app.domain'))->group(function () {
             Route::get('/invitations/{invitation}/rsvp/export', WishExportController::class)->name('invitations.wishes.export');
             Route::get('/invitations/{invitation}/hari-h', [InvitationController::class, 'eventDay'])->name('invitations.event-day');
             Route::get('/invitations/{invitation}/hari-h/kartu', [InvitationController::class, 'qrCards'])->name('invitations.event-day.cards');
+            Route::get('/invitations/{invitation}/hari-h/export', EventDayExportController::class)->name('invitations.event-day.export');
         });
     });
 });

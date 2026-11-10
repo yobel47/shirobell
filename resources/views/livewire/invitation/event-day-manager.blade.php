@@ -74,12 +74,50 @@
             </div>
         </div>
 
+        @php $rp = fn (int $n) => 'Rp '.number_format($n, 0, ',', '.'); @endphp
+        <div class="card space-y-4">
+            <div class="flex flex-wrap items-start justify-between gap-3">
+                <div>
+                    <h2 class="font-serif text-lg font-semibold">Rekap hari-H</h2>
+                    <p class="text-sm text-gray-500">Perkiraan porsi dihitung dari RSVP "Hadir"; jumlah datang dari check-in.</p>
+                </div>
+                <div class="flex gap-2">
+                    <a href="{{ route('app.invitations.event-day.export', [$invitation, 'jenis' => 'kehadiran']) }}" class="btn btn-outline px-4 py-1.5">Unduh kehadiran</a>
+                    <a href="{{ route('app.invitations.event-day.export', [$invitation, 'jenis' => 'hadiah']) }}" class="btn btn-outline px-4 py-1.5">Unduh hadiah</a>
+                </div>
+            </div>
+            <div class="grid gap-3 sm:grid-cols-3 lg:grid-cols-6" wire:poll.30s>
+                <div class="rounded-xl bg-gray-50 p-3"><p class="text-xs text-gray-500">Porsi (perkiraan)</p><p class="text-xl font-semibold">{{ $recap['expected_pax'] }}</p></div>
+                <div class="rounded-xl bg-gray-50 p-3"><p class="text-xs text-gray-500">Orang datang</p><p class="text-xl font-semibold">{{ $recap['arrived_pax'] }}</p></div>
+                <div class="rounded-xl bg-gray-50 p-3"><p class="text-xs text-gray-500">Souvenir</p><p class="text-xl font-semibold">{{ $recap['souvenirs'] }}</p></div>
+                @foreach ($giftKinds as $key => $label)
+                    <div class="rounded-xl bg-gray-50 p-3">
+                        <p class="text-xs text-gray-500">{{ $label }}</p>
+                        <p class="text-xl font-semibold">{{ $recap['gifts'][$key]['count'] }}</p>
+                        @if ($recap['gifts'][$key]['amount'])<p class="text-xs text-gray-500">{{ $rp($recap['gifts'][$key]['amount']) }}</p>@endif
+                    </div>
+                @endforeach
+            </div>
+            @if ($gifts->isNotEmpty())
+                <ul class="divide-y divide-gray-100 text-sm">
+                    @foreach ($gifts as $gift)
+                        <li wire:key="gift-{{ $gift->id }}" class="flex flex-wrap items-center justify-between gap-2 py-2">
+                            <span><span class="font-medium">{{ $gift->giver_name }}</span> &middot; {{ $gift->kindLabel() }}@if ($gift->amount) &middot; {{ $rp($gift->amount) }}@endif @if ($gift->note)<span class="text-gray-500"> &middot; {{ $gift->note }}</span>@endif</span>
+                            <span class="flex items-center gap-3 text-gray-500">{{ $gift->created_at->format('H.i') }}
+                                <button type="button" wire:click="deleteGift({{ $gift->id }})" wire:confirm="Hapus catatan hadiah dari {{ $gift->giver_name }}?" class="text-xs underline">hapus</button>
+                            </span>
+                        </li>
+                    @endforeach
+                </ul>
+            @endif
+        </div>
+
         <div class="card">
             <h2 class="font-serif text-lg font-semibold">Baru tiba</h2>
             <ul class="mt-3 divide-y divide-gray-100" wire:poll.20s>
                 @forelse ($arrivals as $guest)
                     <li class="flex items-center justify-between gap-3 py-2 text-sm">
-                        <span class="font-medium">{{ $guest->name }}@if ($guest->group_name) <span class="text-gray-500">&middot; {{ $guest->group_name }}</span>@endif</span>
+                        <span class="font-medium">{{ $guest->name }}@if ($guest->group_name) <span class="text-gray-500">&middot; {{ $guest->group_name }}</span>@endif @if ($guest->table_number)<span class="text-gray-500">&middot; Meja {{ $guest->table_number }}</span>@endif</span>
                         <span class="shrink-0 text-gray-500">{{ $guest->checked_in_at->format('H.i') }} &middot; {{ $guest->checked_in_pax }} orang</span>
                     </li>
                 @empty
