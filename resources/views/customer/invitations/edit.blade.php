@@ -1,4 +1,6 @@
 @php
+    // The canvas designer is its own live preview.
+    $showPreview = $tab !== 'desain';
     $previewUrl = route('app.invitations.preview', [$invitation, 'buka' => 1, 'frame' => 1]);
 @endphp
 <x-layouts.app :title="'Edit '.$invitation->coupleName()" wide>
@@ -8,7 +10,7 @@
         Live preview: the frame reloads after every save (the editor tabs dispatch
         "notify"). Desktop shows it beside the form; smaller screens open it full screen.
     --}}
-    <div class="mt-6 lg:grid lg:grid-cols-[12rem_1fr] lg:gap-8 xl:grid-cols-[12rem_1fr_22rem]"
+    <div @class(['mt-6 lg:grid lg:grid-cols-[12rem_1fr] lg:gap-8', 'xl:grid-cols-[12rem_1fr_22rem]' => $showPreview])
          x-data="{
             device: 'phone',
             open: false,
@@ -39,6 +41,7 @@
             @livewire($tabs[$tab][1], ['invitation' => $invitation], key($tab))
         </div>
 
+        @if ($showPreview)
         {{-- Desktop preview column --}}
         <aside class="hidden xl:block" aria-label="Preview undangan">
             <div class="sticky top-24">
@@ -74,5 +77,6 @@
                 <iframe x-bind:src="src()" title="Preview undangan" class="w-full flex-1 border-0"></iframe>
             </template>
         </div>
+        @endif
     </div>
 </x-layouts.app>
