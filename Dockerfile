@@ -23,6 +23,8 @@ RUN npm run build
 # ---- Application (PHP-FPM) ---------------------------------------------------
 FROM php:8.3-fpm-alpine AS app
 WORKDIR /var/www/html
+# Lets the deploy job clean up only its own old images on a shared VPS.
+LABEL io.shirobell.app="shirobell"
 
 # install-php-extensions handles build deps and GD with WebP.
 COPY --from=mlocati/php-extension-installer:2.7 /usr/bin/install-php-extensions /usr/local/bin/
@@ -55,5 +57,6 @@ CMD ["php-fpm"]
 # ---- Web server (Nginx) ------------------------------------------------------
 FROM nginx:1.27-alpine AS web
 WORKDIR /var/www/html
+LABEL io.shirobell.app="shirobell"
 COPY docker/nginx/default.conf /etc/nginx/conf.d/default.conf
 COPY --from=app /var/www/html/public ./public

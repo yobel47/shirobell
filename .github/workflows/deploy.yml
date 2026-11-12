@@ -155,4 +155,5 @@ jobs:
             $compose up -d --remove-orphans
             $compose exec -T app php artisan queue:restart
             docker logout ghcr.io
-            docker image prune -f
+            # Only Shirobell's own unused images; other projects on the VPS are untouched.
+            docker image prune -f --filter "label=io.shirobell.app=shirobell"
