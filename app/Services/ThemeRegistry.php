@@ -15,6 +15,7 @@ class ThemeRegistry
     private const ENGINE_DEFAULTS = [
         'hero' => 'arch', 'shape' => 'arch', 'heading' => 'script', 'sections' => 'cards',
         'ornament' => 'line', 'pattern' => 'none', 'fonts' => ['playfair', 'great-vibes', 'inter'],
+        'illustration' => null,
     ];
 
     /** @return array<string, string> */

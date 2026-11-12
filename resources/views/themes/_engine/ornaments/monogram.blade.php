@@ -8,7 +8,7 @@
         @include('themes._engine.ornaments.corners', ['size' => 'h-12 w-12', 'gap' => '1'])
     @endif
     <div class="relative px-2 text-center">
-        <p class="font-script text-5xl leading-none text-t-primary">{{ $initials }}</p>
+        <p class="font-script text-4xl leading-none whitespace-nowrap text-t-primary">{{ $initials }}</p>
         <div class="mx-auto mt-3 h-px w-12 bg-t-accent"></div>
     </div>
 </div>

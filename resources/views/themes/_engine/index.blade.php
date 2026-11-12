@@ -32,6 +32,13 @@
     $reveal = request()->boolean('buka') ? '' : 'x-data="{ v: false }" x-intersect.once="v = true" x-bind:class="v ? \'t-in\' : \'t-reveal\'"';
     $cardOrnaments = $engine['sections'] !== 'plain';
     $hero = $engine['hero'] === 'photo' && ! $coverUrl ? 'frame' : $engine['hero'];
+    $illustrationTop = in_array($engine['illustration'], ['lampion', 'melati', 'taman'], true);
+    // Room on the cover so the illustration never sits under the text or button.
+    $coverRoom = match (true) {
+        ! $engine['illustration'] => '',
+        $illustrationTop => 'pt-[20vh]',
+        default => 'pb-[24vh]',
+    };
     // ?buka=1 skips the cover (editor preview, catalog thumbnails).
     $skipCover = request()->boolean('buka');
     $btn = 'rounded-full bg-t-primary px-5 py-2 text-xs font-semibold text-t-on transition hover:opacity-90';
@@ -70,8 +77,9 @@
         @endif
         <div class="t-grain absolute inset-0"></div>
         @include('themes._engine.ornaments.ambient')
+        @include('themes._engine.illustrations.place', ['class' => 'w-full max-w-lg max-h-[24vh]'])
         @include('themes._engine.ornaments.corners', ['size' => 'h-40 w-40 sm:h-52 sm:w-52', 'gap' => '2'])
-        <div class="relative mx-auto flex max-w-md flex-col items-center px-6 text-center">
+        <div class="relative mx-auto flex max-w-md flex-col items-center px-6 text-center {{ $coverRoom }}">
             <div class="t-sway">@include('themes._engine.ornaments.crown', ['class' => 'h-16 w-56'])</div>
             <div class="{{ $shape }} mt-2 h-40 w-32 overflow-hidden border-4 border-t-surface shadow-lg ring-1 ring-t-accent/60 [@media(max-height:700px)]:hidden">
                 @if ($coverUrl)
@@ -208,6 +216,12 @@
             <p class="font-script text-5xl text-t-accent">&amp;</p>
             @include('themes._engine.partials.person', ['side' => 'bride', 'photo' => $bridePhotoUrl])
         </section>
+
+        @if ($engine['illustration'])
+            <div class="relative h-44 overflow-hidden" aria-hidden="true">
+                @include('themes._engine.illustrations.place', ['class' => 'w-full max-w-md max-h-44'])
+            </div>
+        @endif
 
         {{-- Countdown --}}
         @if ($countdownTarget)
@@ -351,6 +365,12 @@
             <p class="mt-8 text-sm">Kami yang berbahagia,</p>
             <p class="{{ $names }} mt-2 text-t-primary">{{ $groom }} &amp; {{ $bride }}</p>
         </section>
+
+        @if ($engine['illustration'])
+            <div class="relative h-48 overflow-hidden" aria-hidden="true">
+                @include('themes._engine.illustrations.place', ['class' => 'w-full max-w-md max-h-48'])
+            </div>
+        @endif
 
         <div class="t-grain pointer-events-none fixed inset-0 z-30"></div>
 
