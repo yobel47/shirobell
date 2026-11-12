@@ -21,8 +21,9 @@ return Application::configure(basePath: dirname(__DIR__))
 
         // Behind a reverse proxy (Docker deploy) the client IP and HTTPS come
         // from X-Forwarded-* headers. Rate limits are per IP, so this matters.
-        // TRUSTED_PROXIES: "*" when the app is only reachable through the proxy,
-        // or a comma separated list of proxy IPs/CIDRs. Empty = trust none.
+        // TRUSTED_PROXIES: comma separated proxy IPs/CIDRs (Docker networks, plus
+        // Cloudflare ranges in production). Only listed hops are skipped, so a
+        // forged left-most X-Forwarded-For entry is ignored. Empty = trust none.
         if ($proxies = env('TRUSTED_PROXIES')) {
             $middleware->trustProxies(at: $proxies === '*' ? '*' : array_map('trim', explode(',', $proxies)));
         }

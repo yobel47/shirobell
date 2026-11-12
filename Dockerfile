@@ -23,11 +23,18 @@ RUN npm run build
 # ---- Application (PHP-FPM) ---------------------------------------------------
 FROM php:8.3-fpm-alpine AS app
 WORKDIR /var/www/html
+# Lets the deploy job clean up only its own old images on a shared VPS.
+LABEL io.shirobell.app="shirobell"
 
-# install-php-extensions handles build deps and GD with WebP.
-COPY --from=mlocati/php-extension-installer:2.7 /usr/bin/install-php-extensions /usr/local/bin/
-RUN install-php-extensions bcmath gd intl pdo_mysql zip opcache pcntl exif \
-    && apk add --no-cache fcgi
+# PHP extensions with the official helper; build deps are removed afterwards.
+# GD needs WebP (MediaService re-encodes uploads to WebP).
+RUN set -eux; \
+    apk add --no-cache fcgi icu-libs libzip libpng libjpeg-turbo libwebp freetype; \
+    apk add --no-cache --virtual .build-deps $PHPIZE_DEPS icu-dev libzip-dev libpng-dev libjpeg-turbo-dev libwebp-dev freetype-dev linux-headers; \
+    docker-php-ext-configure gd --with-freetype --with-jpeg --with-webp; \
+    docker-php-ext-install -j"$(nproc)" bcmath gd intl pdo_mysql zip opcache pcntl exif; \
+    apk del .build-deps; \
+    php -r 'exit(gd_info()["WebP Support"] ? 0 : 1);'
 
 COPY docker/php/php.ini /usr/local/etc/php/conf.d/zz-shirobell.ini
 COPY docker/php/www.conf /usr/local/etc/php-fpm.d/zz-shirobell.conf
@@ -55,5 +62,6 @@ CMD ["php-fpm"]
 # ---- Web server (Nginx) ------------------------------------------------------
 FROM nginx:1.27-alpine AS web
 WORKDIR /var/www/html
+LABEL io.shirobell.app="shirobell"
 COPY docker/nginx/default.conf /etc/nginx/conf.d/default.conf
 COPY --from=app /var/www/html/public ./public

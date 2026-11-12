@@ -2,7 +2,7 @@
 
 ## Apa
 
-Menjalankan Shirobell di VPS yang sudah punya Docker, Nginx (reverse proxy di container), dan MySQL. Ada dua lingkungan di VPS yang sama, terpisah total (container, database, file unggahan, `.env`):
+Menjalankan Shirobell di VPS yang sudah punya Docker (dikelola Portainer), Nginx Proxy Manager (container `npm-app-1`, network `proxy-net`), dan MySQL (container `vps-mysql`). Ada dua lingkungan di VPS yang sama, terpisah total (container, database, file unggahan, `.env`):
 
 | Branch | Lingkungan | Domain | Folder di VPS | `STACK_NAME` |
 |--------|------------|--------|---------------|--------------|
@@ -20,8 +20,8 @@ Setiap push ke `dev` atau `main` menjalankan GitHub Actions: test, build image, 
 ## Arsitektur
 
 ```
-production: Tamu -> Cloudflare -> Nginx proxy -> shirobell-web     -> shirobell-app     -> MySQL (db shirobell)
-staging:    Tamu -----------------> Nginx proxy -> shirobell-dev-web -> shirobell-dev-app -> MySQL (db shirobell_dev)
+production: Tamu -> Cloudflare -> Nginx Proxy Manager -> shirobell-web     -> shirobell-app     -> MySQL (db shirobell)
+staging:    Tamu -----------------> Nginx Proxy Manager -> shirobell-dev-web -> shirobell-dev-app -> MySQL (db shirobell_dev)
 ```
 
 Setiap lingkungan punya 4 container (`-web`, `-app`, `-worker`, `-scheduler`) dan volume `-storage` sendiri.
@@ -29,7 +29,7 @@ Setiap lingkungan punya 4 container (`-web`, `-app`, `-worker`, `-scheduler`) da
 File di repo:
 - `Dockerfile`, `docker-compose.prod.yml` (dipakai kedua lingkungan), `docker/`;
 - `.env.production.example`, `.env.staging.example`;
-- `docker/proxy/shirobell.conf`, `docker/proxy/shirobell-dev.conf`;
+- `docker/proxy/*.conf` (hanya alternatif untuk Nginx biasa; VPS ini memakai Nginx Proxy Manager);
 - `.github/workflows/deploy.yml`.
 
 ## Prerequisites
@@ -37,7 +37,7 @@ File di repo:
 | Item | Keterangan |
 |------|------------|
 | VPS | Docker dan Docker Compose v2 (`docker compose version`) |
-| Nginx proxy | Container Nginx yang memegang port 80/443, versi 1.25.1 atau lebih baru untuk `http2 on;` |
+| Reverse proxy | Nginx Proxy Manager (`npm-app-1`, panel di `http://IP-VPS:81`) |
 | MySQL | Versi 8.x (container atau di host) |
 | DNS | Domain `shirobell.my.id` di Cloudflare |
 | Token Cloudflare | Untuk sertifikat staging: My Profile > API Tokens > template "Edit zone DNS", zona `shirobell.my.id` |
@@ -60,45 +60,41 @@ File di repo:
 | A | `*.dev` | IP VPS | DNS only (abu-abu) |
 
 - Buka **SSL/TLS > Overview**, lalu pilih **Full (strict)**.
-- Buka **SSL/TLS > Origin Server > Create Certificate**, untuk hostname `shirobell.my.id` dan `*.shirobell.my.id`. Simpan certificate sebagai `shirobell-origin.pem` dan private key sebagai `shirobell-origin.key`.
+- Sertifikat dibuat oleh Nginx Proxy Manager (langkah 4), jadi Origin Certificate Cloudflare tidak diperlukan.
 
 Staging memakai DNS only, karena sertifikat gratis Cloudflare tidak menutup subdomain dua tingkat seperti `budi.dev.shirobell.my.id`.
 
-### 3. Sertifikat staging (Let's Encrypt wildcard)
+### 3. Network untuk MySQL
 
-Di VPS:
+`vps-mysql` hanya ada di network `bridge` dan network aplikasi lain. Buat network khusus, lalu sambungkan (tanpa restart MySQL):
 
 ```bash
-sudo mkdir -p /etc/letsencrypt
-sudo sh -c 'echo "dns_cloudflare_api_token = TOKEN-CLOUDFLARE" > /etc/letsencrypt/cloudflare.ini'
-sudo chmod 600 /etc/letsencrypt/cloudflare.ini
-
-sudo docker run --rm -v /etc/letsencrypt:/etc/letsencrypt certbot/dns-cloudflare:v2.11.0 certonly \
-  --dns-cloudflare --dns-cloudflare-credentials /etc/letsencrypt/cloudflare.ini \
-  -d dev.shirobell.my.id -d '*.dev.shirobell.my.id' \
-  --agree-tos -m EMAIL-ADMIN --non-interactive
+docker network create shirobell-db
+docker network connect shirobell-db vps-mysql
 ```
 
-Perpanjangan otomatis, dengan cron root mingguan:
+Hasilnya: `DB_NETWORK=shirobell-db` dan `DB_HOST=vps-mysql`. Sambungan ini bertahan saat MySQL di-restart, tapi hilang kalau container `vps-mysql` dibuat ulang. Kalau itu terjadi, jalankan lagi `docker network connect`, atau tambahkan network ini di konfigurasi container MySQL.
 
-```
-0 3 * * 1 docker run --rm -v /etc/letsencrypt:/etc/letsencrypt certbot/dns-cloudflare:v2.11.0 renew --quiet && docker exec NAMA-CONTAINER-NGINX nginx -s reload
-```
+### 4. Sertifikat di Nginx Proxy Manager
 
-### 4. Nginx proxy
+Buka `http://IP-VPS:81`, lalu menu **SSL Certificates**:
 
-1. Cari nama network container Nginx:
+Buat dua sertifikat dengan **Add Certificate > Let's Encrypt** (DNS Challenge):
 
-   ```bash
-   docker inspect NAMA-CONTAINER-NGINX --format '{{json .NetworkSettings.Networks}}'
-   ```
+| Sertifikat | Domain Names |
+|------------|--------------|
+| Production | `shirobell.my.id`, `*.shirobell.my.id` |
+| Staging | `dev.shirobell.my.id`, `*.dev.shirobell.my.id` |
 
-   Nama ini menjadi `PROXY_NETWORK` di kedua `.env`.
-2. Letakkan `shirobell-origin.pem` dan `shirobell-origin.key` di folder sertifikat yang di-mount ke container Nginx (contoh: `/etc/nginx/certs`). Pastikan juga `/etc/letsencrypt` ter-mount (hanya baca).
-3. Salin `docker/proxy/shirobell.conf` dan `docker/proxy/shirobell-dev.conf` ke folder `conf.d` Nginx. Sesuaikan path sertifikat kalau berbeda. Untuk Nginx lebih lama dari 1.25.1, ganti `listen 443 ssl; http2 on;` dengan `listen 443 ssl http2;`.
-4. Jalankan `docker exec NAMA-CONTAINER-NGINX nginx -t`, lalu `nginx -s reload`.
+Untuk keduanya:
+- isi email admin;
+- DNS Provider: **Cloudflare**;
+- Credentials File Content: `dns_cloudflare_api_token=TOKEN-CLOUDFLARE` (token "Edit zone DNS" untuk zona `shirobell.my.id`), menggantikan contoh teks;
+- setujui Terms, lalu Save.
 
-Production mengambil IP pengunjung dari header `CF-Connecting-IP`. Untuk mencegah pemalsuan header lewat akses langsung ke IP VPS, sebaiknya port 443 production hanya menerima IP Cloudflare (opsional, lewat firewall atau `allow`/`deny`).
+NPM memperpanjang sertifikat otomatis. Sertifikat Let's Encrypt diterima mode Full (strict).
+
+Alternatif production: Origin Certificate Cloudflare (SSL/TLS > Origin Server), diunggah sebagai **Custom Certificate**.
 
 ### 5. Database (dua database terpisah)
 
@@ -130,8 +126,9 @@ chmod 600 /opt/shirobell/.env /opt/shirobell-dev/.env
 
 | Kunci | Production | Staging |
 |-------|-----------|---------|
-| `APP_KEY` | `php artisan key:generate --show` di laptop | Buat **lagi** (berbeda) |
-| `PROXY_NETWORK`, `DB_NETWORK`, `DB_HOST` | Dari langkah 4 dan 5 | Sama |
+| `APP_KEY` | `echo "base64:$(openssl rand -base64 32)"` di VPS | Buat **lagi** (berbeda) |
+| `PROXY_NETWORK`, `DB_NETWORK`, `DB_HOST` | `proxy-net`, `shirobell-db`, `vps-mysql` (sudah terisi di template) | Sama |
+| `TRUSTED_PROXIES` | Sudah terisi: network Docker dan IP Cloudflare | Sudah terisi: network Docker saja |
 | `DB_PASSWORD` | Password production | Password staging |
 | `MAIL_USERNAME`, `MAIL_PASSWORD` | Brevo | Boleh sama |
 | `MIDTRANS_SERVER_KEY` | Sandbox dulu, production setelah disetujui (`MIDTRANS_IS_PRODUCTION=true`) | Selalu sandbox |
@@ -168,7 +165,21 @@ ssh-keygen -t ed25519 -C "shirobell-deploy" -f shirobell_deploy -N ""
 
 Selama secret belum lengkap, job deploy dilewati dengan peringatan, bukan gagal.
 
-### 8. Deploy pertama
+### 8. Proxy host di Nginx Proxy Manager
+
+Menu **Hosts > Proxy Hosts > Add Proxy Host**, dibuat dua kali:
+
+| Isian | Production | Staging |
+|-------|-----------|---------|
+| Domain Names | `shirobell.my.id`, `*.shirobell.my.id` | `dev.shirobell.my.id`, `*.dev.shirobell.my.id` |
+| Scheme / Forward Hostname / Port | `http` / `shirobell-web` / `80` | `http` / `shirobell-dev-web` / `80` |
+| Block Common Exploits | aktif | aktif |
+| Tab SSL | Sertifikat Let's Encrypt `shirobell.my.id`, Force SSL, HTTP/2 | Sertifikat Let's Encrypt `dev.shirobell.my.id`, Force SSL, HTTP/2 |
+| Tab Advanced | `client_max_body_size 25M;` | `client_max_body_size 25M;` dan `add_header X-Robots-Tag "noindex, nofollow" always;` |
+
+NPM berada di network `proxy-net`, sama dengan container web Shirobell, jadi nama container langsung bisa dipakai.
+
+### 9. Deploy pertama
 
 1. **Staging:** push apa pun ke `dev`, atau buka **Actions > CI & Deploy > Run workflow > dev**.
 2. Setelah job deploy hijau, jalankan seeder awal sekali saja (pengaturan default, tema, admin):
@@ -180,7 +191,7 @@ Selama secret belum lengkap, job deploy dilewati dengan peringatan, bukan gagal.
 3. Uji staging. Kalau sudah baik, buat Pull Request `dev` ke `main`, lalu merge. Production ter-deploy (dengan persetujuan kalau Required reviewers aktif). Jalankan seeder awal yang sama di `/opt/shirobell`.
 4. Hapus `ADMIN_PASSWORD` dari `.env` setelah berhasil login.
 
-### 9. Midtrans
+### 10. Midtrans
 
 Satu akun Midtrans punya satu Notification URL per mode:
 - **Sandbox**: `https://dev.shirobell.my.id/webhooks/midtrans`. Selama production belum disetujui dan masih memakai sandbox, URL ini dipindah ke production saat uji bayar di sana.
@@ -232,10 +243,11 @@ Enkripsi sebelum diunggah (misalnya `gpg --symmetric`). Uji restore minimal sebu
 
 | Gejala | Penyebab dan solusi |
 |--------|---------------------|
-| 502 Bad Gateway | Container Nginx tidak satu network dengan `shirobell-web` atau `shirobell-dev-web`. Cek `PROXY_NETWORK` |
+| 502 Bad Gateway | NPM tidak satu network dengan `shirobell-web`/`shirobell-dev-web`, atau stack belum di-deploy. Cek `PROXY_NETWORK=proxy-net` |
 | Redirect berulang di production | Cloudflare memakai mode Flexible. Ganti ke Full (strict) |
 | Sertifikat staging salah atau tidak aman | Record `dev` atau `*.dev` masih Proxied, atau sertifikat Let's Encrypt belum dibuat atau path-nya salah |
 | 419 Page Expired setelah login | `TRUSTED_PROXIES` kosong, atau `APP_URL` bukan `https://` |
+| Semua pengunjung terkena rate limit bersama | `TRUSTED_PROXIES` tidak memuat range Docker atau Cloudflare. Cek dengan `docker inspect npm-app-1` dan cloudflare.com/ips |
 | Subdomain undangan 404 | `APP_DOMAIN` salah, atau record wildcard belum ada |
 | `SQLSTATE[HY000] [2002]` | `DB_HOST` atau `DB_NETWORK` salah |
 | Email tidak terkirim | Cek `docker logs shirobell-worker`, kredensial Brevo, dan verifikasi domain |
