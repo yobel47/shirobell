@@ -65,7 +65,10 @@
     }"
     x-init="if (!opened) document.documentElement.style.overflow = 'hidden'"
 >
-    {{-- Cover --}}
+    {{-- Cover: the customer's canvas design when enabled (ADR 012), otherwise the recipe cover. --}}
+    @if ($canvasCover ?? null)
+        @include('themes._engine.canvas.cover', ['cover' => $canvasCover])
+    @else
     <section x-show="!opened" @if ($skipCover) x-cloak @endif x-transition:leave="transition duration-700" x-transition:leave-end="-translate-y-full opacity-0"
              class="fixed inset-0 z-40 flex items-center justify-center overflow-hidden bg-t-bg text-t-ink">
         @if ($coverUrl)
@@ -104,6 +107,8 @@
             </button>
         </div>
     </section>
+
+    @endif
 
     <main id="mulai" class="relative mx-auto max-w-md overflow-hidden bg-t-bg sm:border-x sm:border-t-soft">
         {{-- Hero --}}

@@ -28,7 +28,7 @@ class InvitationVersionService
         'bride_nickname', 'bride_fullname', 'bride_father', 'bride_mother', 'bride_child_order', 'bride_instagram',
         'opening_text', 'quote_text', 'quote_source', 'closing_text',
         'sections', 'rsvp_max_pax', 'wa_message_template',
-        'theme_id', 'theme_variant', 'customization',
+        'theme_id', 'theme_variant', 'customization', 'canvas',
     ];
 
     private const EVENT_FIELDS = ['name', 'date', 'start_time', 'end_time', 'timezone', 'venue_name', 'address', 'maps_url', 'sort_order'];

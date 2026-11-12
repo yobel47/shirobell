@@ -45,6 +45,7 @@ class Invitation extends Model
             'status' => InvitationStatus::class,
             'sections' => 'array',
             'customization' => 'array',
+            'canvas' => 'array',
             'event_day_unlocked_at' => 'datetime',
             'checkin_pin' => 'encrypted',
             'checkin_selfie' => 'boolean',
