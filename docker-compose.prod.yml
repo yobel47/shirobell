@@ -1,0 +1,66 @@
+# Shirobell production stack (see docs/operations/docker-deploy.md).
+# Lives on the server at $DEPLOY_PATH next to the .env file. Images are built
+# by GitHub Actions and pulled from GHCR; IMAGE_TAG is set by the deploy job.
+#
+# - web joins the existing reverse proxy network (PROXY_NETWORK), so the proxy
+#   forwards shirobell.my.id and *.shirobell.my.id to http://shirobell-web:80.
+# - app, worker and scheduler join the existing MySQL network (DB_NETWORK).
+#   If MySQL runs on the host instead, set DB_HOST=host.docker.internal.
+
+x-app: &app
+  image: ghcr.io/${GHCR_OWNER:-yobel47}/shirobell-app:${IMAGE_TAG:-latest}
+  env_file: .env
+  restart: unless-stopped
+  volumes:
+    - storage:/var/www/html/storage
+  extra_hosts:
+    - "host.docker.internal:host-gateway"
+  networks:
+    - internal
+    - database
+
+services:
+  app:
+    <<: *app
+    container_name: shirobell-app
+    healthcheck:
+      test: ["CMD-SHELL", "SCRIPT_NAME=/fpm-ping SCRIPT_FILENAME=/fpm-ping REQUEST_METHOD=GET cgi-fcgi -bind -connect 127.0.0.1:9000 || exit 1"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+
+  worker:
+    <<: *app
+    container_name: shirobell-worker
+    command: ["php", "artisan", "queue:work", "--queue=default", "--sleep=3", "--tries=3", "--max-time=3600"]
+
+  scheduler:
+    <<: *app
+    container_name: shirobell-scheduler
+    command: ["php", "artisan", "schedule:work"]
+
+  web:
+    image: ghcr.io/${GHCR_OWNER:-yobel47}/shirobell-web:${IMAGE_TAG:-latest}
+    container_name: shirobell-web
+    restart: unless-stopped
+    depends_on:
+      - app
+    volumes:
+      - storage:/var/www/html/storage:ro
+    networks:
+      - internal
+      - proxy
+
+volumes:
+  storage:
+    name: shirobell-storage
+
+networks:
+  internal:
+    name: shirobell-internal
+  proxy:
+    name: ${PROXY_NETWORK:-proxy}
+    external: true
+  database:
+    name: ${DB_NETWORK:-mysql}
+    external: true

@@ -19,6 +19,14 @@ return Application::configure(basePath: dirname(__DIR__))
         // endpoints all get the same headers.
         $middleware->append(SecurityHeaders::class);
 
+        // Behind a reverse proxy (Docker deploy) the client IP and HTTPS come
+        // from X-Forwarded-* headers. Rate limits are per IP, so this matters.
+        // TRUSTED_PROXIES: "*" when the app is only reachable through the proxy,
+        // or a comma separated list of proxy IPs/CIDRs. Empty = trust none.
+        if ($proxies = env('TRUSTED_PROXIES')) {
+            $middleware->trustProxies(at: $proxies === '*' ? '*' : array_map('trim', explode(',', $proxies)));
+        }
+
         $middleware->alias([
             'role' => EnsureUserHasRole::class,
         ]);
