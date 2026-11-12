@@ -146,9 +146,11 @@ jobs:
             set -e
             cd "$DEPLOY_PATH"
             test -f .env || { echo "Missing $DEPLOY_PATH/.env"; exit 1; }
+            test -r .env || { echo "$DEPLOY_PATH/.env is not readable by $(whoami). Run: chown $(whoami) $DEPLOY_PATH/.env"; exit 1; }
+            grep -q '^STACK_NAME=' .env || { echo "STACK_NAME missing in $DEPLOY_PATH/.env"; exit 1; }
             echo "$GHCR_TOKEN" | docker login ghcr.io -u "$GHCR_USER" --password-stdin
             export IMAGE_TAG
-            compose="docker compose -f docker-compose.prod.yml"
+            compose="docker compose --env-file .env -f docker-compose.prod.yml"
             $compose pull
             $compose run --rm --no-deps app php artisan migrate --force
             $compose run --rm --no-deps app php artisan db:seed --class=ThemeSeeder --force
