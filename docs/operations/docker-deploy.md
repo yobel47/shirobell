@@ -60,7 +60,7 @@ File di repo:
 | A | `*.dev` | IP VPS | DNS only (abu-abu) |
 
 - Buka **SSL/TLS > Overview**, lalu pilih **Full (strict)**.
-- Buka **SSL/TLS > Origin Server > Create Certificate**, untuk hostname `shirobell.my.id` dan `*.shirobell.my.id`. Simpan certificate sebagai `shirobell-origin.pem` dan private key sebagai `shirobell-origin.key`.
+- Sertifikat dibuat oleh Nginx Proxy Manager (langkah 4), jadi Origin Certificate Cloudflare tidak diperlukan.
 
 Staging memakai DNS only, karena sertifikat gratis Cloudflare tidak menutup subdomain dua tingkat seperti `budi.dev.shirobell.my.id`.
 
@@ -79,12 +79,22 @@ Hasilnya: `DB_NETWORK=shirobell-db` dan `DB_HOST=vps-mysql`. Sambungan ini berta
 
 Buka `http://IP-VPS:81`, lalu menu **SSL Certificates**:
 
-1. **Production:** pilih **Add SSL Certificate > Custom**. Name: `shirobell-origin`. Certificate Key: file `shirobell-origin.key`. Certificate: file `shirobell-origin.pem`.
-2. **Staging:** pilih **Add SSL Certificate > Let's Encrypt**.
-   - Domain Names: `dev.shirobell.my.id` dan `*.dev.shirobell.my.id`.
-   - Isi email admin, lalu aktifkan **Use a DNS Challenge**.
-   - DNS Provider: **Cloudflare**. Credentials File Content: `dns_cloudflare_api_token=TOKEN-CLOUDFLARE` (token "Edit zone DNS" untuk zona `shirobell.my.id`).
-   - Setujui Terms, lalu Save. NPM memperpanjang sertifikat ini otomatis.
+Buat dua sertifikat dengan **Add Certificate > Let's Encrypt** (DNS Challenge):
+
+| Sertifikat | Domain Names |
+|------------|--------------|
+| Production | `shirobell.my.id`, `*.shirobell.my.id` |
+| Staging | `dev.shirobell.my.id`, `*.dev.shirobell.my.id` |
+
+Untuk keduanya:
+- isi email admin;
+- DNS Provider: **Cloudflare**;
+- Credentials File Content: `dns_cloudflare_api_token=TOKEN-CLOUDFLARE` (token "Edit zone DNS" untuk zona `shirobell.my.id`), menggantikan contoh teks;
+- setujui Terms, lalu Save.
+
+NPM memperpanjang sertifikat otomatis. Sertifikat Let's Encrypt diterima mode Full (strict).
+
+Alternatif production: Origin Certificate Cloudflare (SSL/TLS > Origin Server), diunggah sebagai **Custom Certificate**.
 
 ### 5. Database (dua database terpisah)
 
@@ -164,7 +174,7 @@ Menu **Hosts > Proxy Hosts > Add Proxy Host**, dibuat dua kali:
 | Domain Names | `shirobell.my.id`, `*.shirobell.my.id` | `dev.shirobell.my.id`, `*.dev.shirobell.my.id` |
 | Scheme / Forward Hostname / Port | `http` / `shirobell-web` / `80` | `http` / `shirobell-dev-web` / `80` |
 | Block Common Exploits | aktif | aktif |
-| Tab SSL | `shirobell-origin`, Force SSL, HTTP/2 | Sertifikat Let's Encrypt dev, Force SSL, HTTP/2 |
+| Tab SSL | Sertifikat Let's Encrypt `shirobell.my.id`, Force SSL, HTTP/2 | Sertifikat Let's Encrypt `dev.shirobell.my.id`, Force SSL, HTTP/2 |
 | Tab Advanced | `client_max_body_size 25M;` | `client_max_body_size 25M;` dan `add_header X-Robots-Tag "noindex, nofollow" always;` |
 
 NPM berada di network `proxy-net`, sama dengan container web Shirobell, jadi nama container langsung bisa dipakai.
