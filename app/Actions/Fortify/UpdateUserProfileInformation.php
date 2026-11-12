@@ -22,6 +22,7 @@ class UpdateUserProfileInformation implements UpdatesUserProfileInformation
     {
         Validator::make($input, [
             'name' => ['required', 'string', 'max:255'],
+            'phone' => ['nullable', 'string', 'regex:/^(\+62|62|0)8[0-9]{7,12}$/'],
 
             'email' => [
                 'required',
@@ -30,7 +31,13 @@ class UpdateUserProfileInformation implements UpdatesUserProfileInformation
                 'max:255',
                 Rule::unique('users')->ignore($user->id),
             ],
+        ], [
+            'phone.regex' => 'Nomor WhatsApp tidak valid. Contoh: 081234567890.',
+        ], [
+            'name' => 'nama', 'phone' => 'nomor WhatsApp',
         ])->validateWithBag('updateProfileInformation');
+
+        $user->forceFill(['phone' => filled($input['phone'] ?? null) ? $input['phone'] : null]);
 
         if ($input['email'] !== $user->email &&
             $user instanceof MustVerifyEmail) {

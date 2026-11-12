@@ -34,6 +34,9 @@
                         <a href="{{ route('app.dashboard') }}" class="mt-1 block rounded-lg px-3 py-2 text-sm hover:bg-rose-brand-50 md:hidden">Undangan Saya</a>
                         <a href="{{ route('app.orders.index') }}" class="block rounded-lg px-3 py-2 text-sm hover:bg-rose-brand-50 md:hidden">Transaksi</a>
                     @endif
+                    @unless (auth()->user()->isAdmin())
+                        <a href="{{ route('app.profile') }}" class="block rounded-lg px-3 py-2 text-sm hover:bg-rose-brand-50">Profil &amp; kata sandi</a>
+                    @endunless
                     <form method="POST" action="{{ route('logout') }}">
                         @csrf
                         <button type="submit" class="block w-full rounded-lg px-3 py-2 text-left text-sm text-red-600 hover:bg-red-50">Keluar</button>
@@ -45,7 +48,14 @@
 
     <main @class(["mx-auto px-4 py-6 sm:px-6 sm:py-10", "max-w-[88rem]" => $wide, "max-w-6xl" => ! $wide])>
         @if (session('status'))
-            <div class="mb-6 rounded-xl bg-emerald-50 px-4 py-3 text-sm text-emerald-700">{{ session('status') }}</div>
+            @php
+                $statusMessages = [
+                    'profile-information-updated' => 'Profil berhasil diperbarui.',
+                    'password-updated' => 'Kata sandi berhasil diubah.',
+                    'verification-link-sent' => 'Tautan verifikasi baru sudah dikirim ke email Anda.',
+                ];
+            @endphp
+            <div class="mb-6 rounded-xl bg-emerald-50 px-4 py-3 text-sm text-emerald-700" role="status">{{ $statusMessages[session('status')] ?? session('status') }}</div>
         @endif
 
         {{ $slot }}

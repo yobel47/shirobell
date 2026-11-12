@@ -65,6 +65,8 @@ Route::domain(config('app.domain'))->group(function () {
             Route::get('/invitations/{invitation}/checkout', [OrderController::class, 'checkout'])->name('checkout');
             Route::get('/orders', [OrderController::class, 'index'])->name('orders.index');
             Route::get('/orders/{order}', [OrderController::class, 'show'])->name('orders.show');
+            // Forms post to Fortify's user-profile-information.update and user-password.update.
+            Route::view('/profil', 'customer.profile')->name('profile');
         });
 
         // Invitation management: the owner, or an admin helping a customer
