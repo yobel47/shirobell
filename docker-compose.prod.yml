@@ -10,6 +10,8 @@
 #   the environment's domains to http://${STACK_NAME}-web:80.
 # - app, worker and scheduler join the MySQL network (DB_NETWORK).
 #   If MySQL runs on the host instead, set DB_HOST=host.docker.internal.
+# - Memory caps keep this stack from starving other services on a shared VPS;
+#   override them in .env (APP_MEM, WORKER_MEM, SCHEDULER_MEM, WEB_MEM).
 
 name: ${STACK_NAME:-shirobell}
 
@@ -29,6 +31,7 @@ services:
   app:
     <<: *app
     container_name: ${STACK_NAME:-shirobell}-app
+    mem_limit: ${APP_MEM:-320m}
     healthcheck:
       test: ["CMD-SHELL", "SCRIPT_NAME=/fpm-ping SCRIPT_FILENAME=/fpm-ping REQUEST_METHOD=GET cgi-fcgi -bind -connect 127.0.0.1:9000 || exit 1"]
       interval: 30s
@@ -38,16 +41,19 @@ services:
   worker:
     <<: *app
     container_name: ${STACK_NAME:-shirobell}-worker
-    command: ["php", "artisan", "queue:work", "--queue=default", "--sleep=3", "--tries=3", "--max-time=3600"]
+    mem_limit: ${WORKER_MEM:-192m}
+    command: ["php", "artisan", "queue:work", "--queue=default", "--sleep=3", "--tries=3", "--max-time=3600", "--memory=128"]
 
   scheduler:
     <<: *app
     container_name: ${STACK_NAME:-shirobell}-scheduler
+    mem_limit: ${SCHEDULER_MEM:-128m}
     command: ["php", "artisan", "schedule:work"]
 
   web:
     image: ghcr.io/${GHCR_OWNER:-yobel47}/shirobell-web:${IMAGE_TAG:-latest}
     container_name: ${STACK_NAME:-shirobell}-web
+    mem_limit: ${WEB_MEM:-48m}
     restart: unless-stopped
     depends_on:
       - app
