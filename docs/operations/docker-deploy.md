@@ -126,7 +126,7 @@ chmod 600 /opt/shirobell/.env /opt/shirobell-dev/.env
 
 | Kunci | Production | Staging |
 |-------|-----------|---------|
-| `APP_KEY` | `php artisan key:generate --show` di laptop | Buat **lagi** (berbeda) |
+| `APP_KEY` | `echo "base64:$(openssl rand -base64 32)"` di VPS | Buat **lagi** (berbeda) |
 | `PROXY_NETWORK`, `DB_NETWORK`, `DB_HOST` | `proxy-net`, `shirobell-db`, `vps-mysql` (sudah terisi di template) | Sama |
 | `TRUSTED_PROXIES` | Sudah terisi: network Docker dan IP Cloudflare | Sudah terisi: network Docker saja |
 | `DB_PASSWORD` | Password production | Password staging |
