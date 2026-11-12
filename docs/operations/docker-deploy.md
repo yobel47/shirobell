@@ -244,6 +244,7 @@ Enkripsi sebelum diunggah (misalnya `gpg --symmetric`). Uji restore minimal sebu
 | Gejala | Penyebab dan solusi |
 |--------|---------------------|
 | 502 Bad Gateway | NPM tidak satu network dengan `shirobell-web`/`shirobell-dev-web`, atau stack belum di-deploy. Cek `PROXY_NETWORK=proxy-net` |
+| 502 dengan log NPM `shirobell-web  could not be resolved (2: Server failure)` | Ada spasi tersembunyi di Forward Hostname. Cek dengan `grep -nF 'set $server' /data/compose/13/data/nginx/proxy_host/*.conf \| cat -A`, lalu ketik ulang nama container di NPM |
 | Redirect berulang di production | Cloudflare memakai mode Flexible. Ganti ke Full (strict) |
 | Sertifikat staging salah atau tidak aman | Record `dev` atau `*.dev` masih Proxied, atau sertifikat Let's Encrypt belum dibuat atau path-nya salah |
 | 419 Page Expired setelah login | `TRUSTED_PROXIES` kosong, atau `APP_URL` bukan `https://` |
