@@ -52,6 +52,8 @@ class InvitationRenderer
             'themeCss' => $invitation->theme->cssEntry(),
             'engine' => $this->themes->engine($invitation->theme->slug),
             'canvasCover' => app(CanvasService::class)->coverEnabled($invitation) ? app(CanvasService::class)->cover($invitation) : null,
+            'sectionOrder' => app(CanvasService::class)->sectionOrder($invitation),
+            'canvasPages' => app(CanvasService::class)->pages($invitation),
             // Entry ticket on a guest's personal link once the receptionist module is open.
             'ticketQr' => $guest && $invitation->exists && app(EventDayService::class)->isOpen($invitation)
                 ? app(EventDayService::class)->qrSvg($guest->code)
