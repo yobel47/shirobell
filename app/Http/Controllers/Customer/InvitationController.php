@@ -26,7 +26,7 @@ class InvitationController extends Controller
         'musik' => ['Musik', Editor\MusicForm::class],
         'amplop' => ['Amplop', Editor\GiftManager::class],
         'tema' => ['Tema', Editor\ThemePicker::class],
-        'desain' => ['Desain Sampul', Editor\CanvasEditor::class],
+        'desain' => ['Desain & Susunan', Editor\CanvasEditor::class],
         'pengaturan' => ['Pengaturan', Editor\SettingsForm::class],
         'riwayat' => ['Riwayat', Editor\VersionHistory::class],
     ];

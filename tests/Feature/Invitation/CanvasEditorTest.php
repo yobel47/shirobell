@@ -97,7 +97,7 @@ class CanvasEditorTest extends TestCase
 
         Livewire::actingAs($this->owner)
             ->test(CanvasEditor::class, ['invitation' => $this->invitation])
-            ->call('save', $design)
+            ->call('save', ['cover' => $design])
             ->assertDispatched('notify');
 
         $this->assertSame('#123456', $this->invitation->refresh()->canvas['cover']['bg']);
@@ -163,8 +163,51 @@ class CanvasEditorTest extends TestCase
         $this->actingAs($this->owner)
             ->get(route('app.invitations.edit', [$this->invitation, 'desain']))
             ->assertOk()
-            ->assertSee('Desain Sampul')
+            ->assertSee('Desain &amp; Susunan', false)
             ->assertSee('canvasEditor(', false)
             ->assertDontSee('Preview undangan');
+    }
+
+    public function test_sections_can_be_reordered_hidden_and_mixed_with_free_pages(): void
+    {
+        $page = ['id' => 'pg1', 'name' => 'Doa', 'height' => 500, 'bg' => 'soft', 'elements' => [
+            $this->text('Halaman Doa Khusus'),
+            ['type' => 'button', 'x' => 0, 'y' => 0, 'w' => 100, 'h' => 40, 'props' => []],
+        ]];
+
+        Livewire::actingAs($this->owner)
+            ->test(CanvasEditor::class, ['invitation' => $this->invitation])
+            ->call('save', [
+                'cover' => ['enabled' => false],
+                'pages' => [$page],
+                'order' => ['closing', 'page:pg1', 'events', 'hero', 'bogus', 'page:tidak-ada', 'events'],
+                'hidden' => ['countdown', 'gallery', 'bogus'],
+            ]);
+
+        $canvas = $this->invitation->refresh()->canvas;
+        $this->assertSame(['closing', 'page:pg1', 'events', 'hero'], array_slice($canvas['order'], 0, 4));
+        $this->assertCount(11, $canvas['order']);
+        $this->assertSame(['countdown', 'gallery'], $canvas['hidden']);
+        // Free pages never get an open button.
+        $this->assertSame(['text'], array_column($canvas['pages'][0]['elements'], 'type'));
+
+        $this->invitation->events()->create(['name' => 'Resepsi', 'date' => now()->addMonth()->toDateString(), 'start_time' => '10:00', 'timezone' => 'WIB', 'venue_name' => 'Gedung Melati']);
+        $html = $this->get('http://budi-ani.'.config('app.domain').'/?buka=1')->assertOk()->getContent();
+
+        $closing = strpos($html, 'Kami yang berbahagia');
+        $doa = strpos($html, 'Halaman Doa Khusus');
+        $events = strpos($html, 'Gedung Melati');
+        $this->assertTrue($closing < $doa && $doa < $events, 'Sections follow the saved order');
+        $this->assertStringNotContainsString('Menuju Hari Bahagia', $html);
+        $this->assertStringContainsString('aspect-ratio: 390 / 500', $html);
+    }
+
+    public function test_free_pages_are_capped(): void
+    {
+        $pages = array_map(fn ($i) => ['id' => 'p'.$i, 'name' => 'H'.$i, 'height' => 99999, 'elements' => []], range(1, 15));
+        $doc = app(CanvasService::class)->sanitizeDocument($this->invitation, ['pages' => $pages]);
+
+        $this->assertCount(CanvasService::MAX_PAGES, $doc['pages']);
+        $this->assertSame(3000.0, $doc['pages'][0]['height']);
     }
 }

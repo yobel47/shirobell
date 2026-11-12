@@ -7,7 +7,7 @@
             <p class="mt-1 text-sm text-gray-500">Desain bebas tersedia untuk tema selain Rose Garden, Classic Gold, dan Sage Minimalist. Ganti tema di tab Tema untuk memakainya.</p>
         </div>
     @else
-        <div x-data="canvasEditor(@js($cover), @js($library), @js($images), @js($context))" x-on:keydown.window="key($event)" class="space-y-4" style="{{ $themeStyle }}">
+        <div x-data="canvasEditor(@js($doc), @js($library), @js($images), @js($context), @js($sections))" x-on:keydown.window="key($event)" class="space-y-4" style="{{ $themeStyle }}">
             {{-- Toolbar --}}
             <div class="flex flex-wrap items-center gap-2 rounded-2xl bg-white p-2 shadow-sm ring-1 ring-gray-100">
                 <button type="button" x-on:click="undo()" :disabled="history.length < 2" class="btn btn-ghost px-3 py-1.5" title="Undo (Ctrl+Z)">Undo</button>
@@ -18,10 +18,13 @@
                 <button type="button" x-on:click="move(-1)" :disabled="!selected" class="btn btn-ghost px-3 py-1.5">Ke belakang</button>
                 <button type="button" x-on:click="remove()" :disabled="!selected" class="btn btn-ghost px-3 py-1.5 text-red-600" title="Hapus (Delete)">Hapus</button>
                 <span class="h-6 w-px bg-gray-200"></span>
-                <button type="button" x-on:click="useTemplate()" class="btn btn-ghost px-3 py-1.5">Desain bawaan tema</button>
+                <button type="button" x-show="pageId === 'cover'" x-on:click="useTemplate()" class="btn btn-ghost px-3 py-1.5">Desain bawaan tema</button>
+                <select x-model="zoom" x-on:change="zoom = zoom === 'fit' ? 'fit' : Number(zoom)" class="rounded-full border-gray-200 py-1 text-sm" aria-label="Zoom">
+                    <option value="fit">Pas layar</option><option value="0.75">75%</option><option value="1">100%</option><option value="1.25">125%</option><option value="1.5">150%</option>
+                </select>
                 <label class="ml-auto flex items-center gap-2 text-sm">
-                    <input type="checkbox" x-model="state.enabled" x-on:change="commit()" class="rounded border-gray-300 text-rose-brand-500">
-                    Pakai desain ini di undangan
+                    <input type="checkbox" x-model="doc.cover.enabled" x-on:change="commit()" class="rounded border-gray-300 text-rose-brand-500">
+                    Pakai sampul desain sendiri
                 </label>
                 <a href="{{ route('app.invitations.preview', $invitation) }}" target="_blank" class="btn btn-outline px-4 py-1.5">Lihat hasil</a>
                 <button type="button" x-on:click="save()" :disabled="saving" class="btn btn-primary px-4 py-1.5">
@@ -29,10 +32,45 @@
                 </button>
             </div>
 
-            <div class="grid gap-4 lg:grid-cols-[13rem_minmax(0,1fr)_16rem]">
+            <div class="grid gap-4 lg:grid-cols-[15rem_minmax(0,1fr)_16rem]">
                 {{-- Add elements --}}
                 <aside class="space-y-4 rounded-2xl bg-white p-4 shadow-sm ring-1 ring-gray-100">
                     <div>
+                        <p class="mb-1 text-xs font-semibold tracking-wide text-gray-500 uppercase">Susunan halaman</p>
+                        <p class="mb-2 text-[11px] leading-snug text-gray-500">Seret untuk mengubah urutan. Klik halaman bebas atau sampul untuk mendesainnya.</p>
+                        <button type="button" x-on:click="openPage('cover')" class="mb-1 flex w-full items-center gap-2 rounded-lg px-2 py-1.5 text-left text-sm"
+                                :class="pageId === 'cover' ? 'bg-rose-brand-50 font-semibold text-rose-brand-700' : 'hover:bg-gray-50'">
+                            <span class="text-gray-300">&#9679;</span> Sampul
+                        </button>
+                        <ul class="space-y-0.5">
+                            <template x-for="(entry, i) in doc.order" :key="entry">
+                                <li draggable="true" x-on:dragstart="dragIndex = i" x-on:dragover.prevent x-on:drop="drop(i)"
+                                    class="group flex items-center gap-1 rounded-lg px-1 py-1 text-sm"
+                                    :class="entry === 'page:' + pageId ? 'bg-rose-brand-50 font-semibold text-rose-brand-700' : 'hover:bg-gray-50'">
+                                    <span class="cursor-grab px-0.5 text-gray-300" title="Seret">&#8942;</span>
+                                    <button type="button" class="min-w-0 flex-1 truncate text-left" :class="isHidden(entry) && 'text-gray-400 line-through'"
+                                            x-on:click="entry.startsWith('page:') && openPage(entry.slice(5))" x-text="entryLabel(entry)"></button>
+                                    <span class="hidden shrink-0 items-center text-gray-500 group-hover:flex focus-within:flex" :class="isHidden(entry) && '!flex'">
+                                        <button type="button" class="rounded p-1 hover:bg-gray-200" title="Naik" x-on:click="moveEntry(i, i - 1)"><svg class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M5 15l7-7 7 7"/></svg></button>
+                                        <button type="button" class="rounded p-1 hover:bg-gray-200" title="Turun" x-on:click="moveEntry(i, i + 1)"><svg class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7"/></svg></button>
+                                        <template x-if="!entry.startsWith('page:')">
+                                            <span class="flex items-center">
+                                                <button type="button" class="rounded p-1 hover:bg-gray-200" :title="isHidden(entry) ? 'Tampilkan' : 'Sembunyikan'" x-on:click="toggleHidden(entry)">
+                                                    <span x-show="!isHidden(entry)"><svg class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M2.5 12s3.5-7 9.5-7 9.5 7 9.5 7-3.5 7-9.5 7-9.5-7-9.5-7Z M12 15a3 3 0 1 0 0-6 3 3 0 0 0 0 6Z"/></svg></span><span x-show="isHidden(entry)"><svg class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M3 3l18 18 M10.6 6.1A9.8 9.8 0 0 1 12 6c6 0 9.5 6 9.5 6a17 17 0 0 1-3 3.6 M6.6 6.6C4 8.3 2.5 12 2.5 12s3.5 7 9.5 7c1.8 0 3.3-.5 4.6-1.2 M9.9 9.9a3 3 0 0 0 4.2 4.2"/></svg></span>
+                                                </button>
+                                                <a :href="sections[entry].url" class="rounded p-1 text-rose-brand-600 hover:bg-gray-200" title="Ubah isi bagian ini"><svg class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M16.9 3.6a2 2 0 0 1 2.8 2.8L8 18l-4 1 1-4Z"/></svg></a>
+                                            </span>
+                                        </template>
+                                        <template x-if="entry.startsWith('page:')">
+                                            <button type="button" class="rounded p-1 text-red-600 hover:bg-gray-200" title="Hapus halaman" x-on:click="deletePage(entry.slice(5))"><svg class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M6 7h12 M9 7V5h6v2 M8 7l1 12h6l1-12"/></svg></button>
+                                        </template>
+                                    </span>
+                                </li>
+                            </template>
+                        </ul>
+                        <button type="button" x-on:click="addPage()" class="mt-2 w-full rounded-lg border border-dashed border-rose-brand-300 px-2 py-2 text-sm font-medium text-rose-brand-700 hover:bg-rose-brand-50">+ Halaman bebas</button>
+                    </div>
+                    <div class="border-t border-gray-100 pt-4">
                         <p class="mb-2 text-xs font-semibold tracking-wide text-gray-500 uppercase">Teks</p>
                         <div class="grid grid-cols-2 gap-1.5 text-sm">
                             <button type="button" x-on:click="addText('title')" class="rounded-lg bg-gray-50 px-2 py-2 font-script text-lg hover:bg-rose-brand-50">Nama</button>
@@ -79,9 +117,9 @@
                 </aside>
 
                 {{-- Artboard --}}
-                <div class="flex justify-center rounded-2xl bg-gray-100 p-4" x-on:pointerdown.self="selectedId = null">
-                    <div x-ref="board" class="relative aspect-[390/844] w-full max-w-[360px] touch-none overflow-hidden shadow-xl select-none [container-type:inline-size]"
-                         :style="{ backgroundColor: swatch(state.bg) }" x-on:pointerdown.self="selectedId = null">
+                <div class="flex max-h-[calc(100vh-9rem)] items-start justify-center overflow-auto rounded-2xl bg-gray-100 p-6" x-on:pointerdown.self="selectedId = null">
+                    <div x-ref="board" class="relative shrink-0 touch-none overflow-hidden shadow-xl select-none [container-type:inline-size]"
+                         :style="boardStyle()" x-on:pointerdown.self="selectedId = null">
                         @if ($pattern)
                             <div class="{{ $pattern }} pointer-events-none absolute inset-0" x-show="state.pattern"></div>
                         @endif
@@ -129,6 +167,17 @@
                 <aside class="space-y-4 rounded-2xl bg-white p-4 text-sm shadow-sm ring-1 ring-gray-100">
                     <template x-if="!selected">
                         <div class="space-y-4">
+                            <template x-if="pageId !== 'cover'">
+                                <div class="space-y-2 border-b border-gray-100 pb-3">
+                                    <p class="font-semibold">Halaman</p>
+                                    <label class="block text-xs text-gray-500">Nama
+                                        <input type="text" maxlength="40" class="form-input mt-0.5 py-1.5 text-sm" x-model="state.name" x-on:change="commit()">
+                                    </label>
+                                    <label class="block text-xs text-gray-500">Tinggi <span x-text="state.height"></span>
+                                        <input type="range" min="200" max="3000" step="10" class="w-full" x-model.number="state.height" x-on:change="commit()">
+                                    </label>
+                                </div>
+                            </template>
                             <p class="font-semibold">Latar</p>
                             @include('livewire.invitation.editor.partials.canvas-color', ['label' => 'Warna latar', 'model' => 'state.bg'])
                             @if ($pattern)

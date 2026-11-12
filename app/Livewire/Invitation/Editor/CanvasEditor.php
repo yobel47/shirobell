@@ -12,7 +12,8 @@ use Livewire\Component;
 use Livewire\WithFileUploads;
 
 /**
- * Editor tab "Desain": drag-and-drop cover designer (ADR 012). The canvas
+ * Editor tab "Desain": drag-and-drop designer for the cover and free pages,
+ * plus section order and visibility (ADR 012). The canvas
  * state lives in the browser (resources/js/canvas-editor.js); the server
  * only stores sanitized snapshots of it.
  */
@@ -27,17 +28,20 @@ class CanvasEditor extends Component
     /** Max stored canvas photos per invitation (files, not elements). */
     public const MAX_FILES = 40;
 
-    /** @return array<string, mixed> sanitized cover state */
+    /** @return array<string, mixed> sanitized design document */
     #[Renderless]
-    public function save(array $cover, CanvasService $canvas): array
+    public function save(array $doc, CanvasService $canvas): array
     {
         $this->authorizeUpdate();
         abort_unless(app(ThemeRegistry::class)->isEngine($this->invitation->theme->slug), 422);
 
-        $canvas->save($this->invitation, $cover);
-        $this->notify(($this->invitation->canvas['cover']['enabled'] ?? false) ? 'Desain sampul disimpan dan dipakai.' : 'Desain sampul disimpan (belum dipakai).');
+        $canvas->saveDocument($this->invitation, $doc);
+        $this->notify(($this->invitation->canvas['cover']['enabled'] ?? false)
+            ? 'Desain disimpan. Sampul desain sendiri dipakai.'
+            : 'Desain disimpan. Sampul memakai desain tema.');
+        $this->dispatch('invitation-saved');
 
-        return $this->invitation->canvas['cover'];
+        return $canvas->document($this->invitation);
     }
 
     /** @return array<string, mixed> starting design from the current theme */
@@ -74,7 +78,7 @@ class CanvasEditor extends Component
     {
         $slug = $this->invitation->theme->slug;
         $isEngine = $themes->isEngine($slug);
-        $cover = $canvas->cover($this->invitation) ?? ($isEngine ? $canvas->sanitize($this->invitation, $canvas->template($this->invitation)) : null);
+        $doc = $isEngine ? $canvas->document($this->invitation) : null;
 
         $library = [];
         if ($isEngine) {
@@ -86,17 +90,28 @@ class CanvasEditor extends Component
         }
 
         $images = [];
-        foreach ($cover['elements'] ?? [] as $element) {
-            if ($element['type'] === 'image' && $element['props']['path']) {
-                $images[$element['props']['path']] = $canvas->imageUrl($element['props']['path']);
+        foreach ([$doc['cover'] ?? [], ...($doc['pages'] ?? [])] as $page) {
+            foreach ($page['elements'] ?? [] as $element) {
+                if ($element['type'] === 'image' && $element['props']['path']) {
+                    $images[$element['props']['path']] = $canvas->imageUrl($element['props']['path']);
+                }
             }
         }
+
+        // Where the content of each built-in section is edited.
+        $tabs = ['hero' => 'mempelai', 'opening' => 'teks', 'couple' => 'mempelai', 'countdown' => 'pengaturan', 'events' => 'acara',
+            'story' => 'cerita', 'gallery' => 'galeri', 'gift' => 'amplop', 'rsvp' => 'pengaturan', 'closing' => 'teks'];
+        $sections = collect(CanvasService::SECTIONS)->map(fn ($label, $key) => [
+            'label' => $label,
+            'url' => route('app.invitations.edit', [$this->invitation, $tabs[$key]]),
+        ])->all();
 
         $engine = $themes->engine($slug);
 
         return view('livewire.invitation.editor.canvas-editor', [
             'isEngine' => $isEngine,
-            'cover' => $cover,
+            'doc' => $doc,
+            'sections' => $sections,
             'library' => $library,
             'images' => $images,
             'themeStyle' => $themes->style($slug, $this->invitation->theme_variant, $this->invitation->customization['font_pair'] ?? null),

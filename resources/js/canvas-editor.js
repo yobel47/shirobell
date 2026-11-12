@@ -1,7 +1,9 @@
 /*
- * Drag-and-drop cover designer (ADR 012). State is kept here; the Livewire
+ * Drag-and-drop designer (ADR 012). The document holds the cover, free pages,
+ * the section order and hidden sections. State is kept here; the Livewire
  * component only saves sanitized snapshots. Coordinates are artboard units
- * (390 x 844), converted from screen pixels with the current display scale.
+ * (width 390; cover height 844, page height configurable), converted from
+ * screen pixels with the current display scale.
  */
 const W = 390;
 const H = 844;
@@ -15,11 +17,15 @@ const css = (c) => (TOKENS.includes(c) ? `var(--color-t-${c})` : c === 'none' ? 
 const cqw = (n) => `${(n / W) * 100}cqw`;
 
 document.addEventListener('alpine:init', () => {
-    window.Alpine.data('canvasEditor', (initial, library, images, context) => ({
-        state: clone(initial),
+    window.Alpine.data('canvasEditor', (initial, library, images, context, sections) => ({
+        doc: clone(initial),
+        pageId: 'cover',
+        zoom: 'fit',
+        dragIndex: null,
         library,
         images,
         context,
+        sections,
         selectedId: null,
         history: [],
         future: [],
@@ -31,13 +37,21 @@ document.addEventListener('alpine:init', () => {
         tokens: TOKENS,
 
         init() {
-            this.history = [JSON.stringify(this.state)];
+            this.history = [JSON.stringify(this.doc)];
             this.savedSnapshot = this.history[0];
             window.addEventListener('beforeunload', (e) => { if (this.dirty) { e.preventDefault(); e.returnValue = ''; } });
         },
 
         // ----- helpers -----
-        get dirty() { return JSON.stringify(this.state) !== this.savedSnapshot; },
+        get dirty() { return JSON.stringify(this.doc) !== this.savedSnapshot; },
+        /** The page being edited: the cover or a free page. */
+        get state() { return this.pageId === 'cover' ? this.doc.cover : (this.doc.pages.find((p) => p.id === this.pageId) ?? this.doc.cover); },
+        get boardH() { return this.pageId === 'cover' ? H : this.state.height; },
+        boardStyle() {
+            const h = this.boardH;
+            const fit = this.pageId === 'cover' ? `min(100%, calc((100vh - 240px) * ${W} / ${H}))` : 'min(100%, 430px)';
+            return { backgroundColor: css(this.state.bg), aspectRatio: `${W} / ${h}`, width: this.zoom === 'fit' ? fit : `${W * this.zoom}px` };
+        },
         get selected() { return this.state.elements.find((e) => e.id === this.selectedId) ?? null; },
         get scale() { return this.$refs.board ? this.$refs.board.clientWidth / W : 1; },
         resolve(text) {
@@ -46,7 +60,8 @@ document.addEventListener('alpine:init', () => {
                 .replaceAll('{date}', this.context.date).replaceAll('{guest}', this.context.guest);
         },
         box(e) {
-            return `left:${(e.x / W) * 100}%;top:${(e.y / H) * 100}%;width:${(e.w / W) * 100}%;height:${(e.h / H) * 100}%;transform:rotate(${e.r}deg)`;
+            const h = this.boardH;
+            return `left:${(e.x / W) * 100}%;top:${(e.y / h) * 100}%;width:${(e.w / W) * 100}%;height:${(e.h / h) * 100}%;transform:rotate(${e.r}deg)`;
         },
         textStyle(p) {
             return `color:${css(p.color)};font-size:${cqw(p.size)};text-align:${p.align};font-weight:${p.weight};letter-spacing:${p.spacing}em;font-style:${p.italic ? 'italic' : 'normal'}`;
@@ -68,7 +83,7 @@ document.addEventListener('alpine:init', () => {
 
         // ----- history -----
         commit() {
-            const snap = JSON.stringify(this.state);
+            const snap = JSON.stringify(this.doc);
             if (this.history[this.history.length - 1] === snap) return;
             this.history.push(snap);
             if (this.history.length > HISTORY) this.history.shift();
@@ -77,21 +92,26 @@ document.addEventListener('alpine:init', () => {
         undo() {
             if (this.history.length < 2) return;
             this.future.push(this.history.pop());
-            this.state = JSON.parse(this.history[this.history.length - 1]);
-            if (!this.selected) this.selectedId = null;
+            this.doc = JSON.parse(this.history[this.history.length - 1]);
+            this.fixPage();
         },
         redo() {
             if (!this.future.length) return;
             const snap = this.future.pop();
             this.history.push(snap);
-            this.state = JSON.parse(snap);
+            this.doc = JSON.parse(snap);
+            this.fixPage();
+        },
+        fixPage() {
+            if (this.pageId !== 'cover' && !this.doc.pages.some((p) => p.id === this.pageId)) this.pageId = 'cover';
+            if (!this.selected) this.selectedId = null;
         },
 
         // ----- elements -----
         add(type, props, size = {}) {
             const w = size.w ?? 200;
             const h = size.h ?? 60;
-            const el = { id: uid(), type, x: (W - w) / 2, y: size.y ?? (H - h) / 2, w, h, r: 0, hidden: false, locked: false, props };
+            const el = { id: uid(), type, x: (W - w) / 2, y: size.y ?? Math.max(0, (this.boardH - h) / 2), w, h, r: 0, hidden: false, locked: false, props };
             this.state.elements.push(el);
             this.selectedId = el.id;
             this.commit();
@@ -109,6 +129,7 @@ document.addEventListener('alpine:init', () => {
         },
         addSticker(set, key) {
             const sizes = { corner: { w: 130, h: 130 }, crown: { w: 220, h: 64 }, divider: { w: 224, h: 32 }, scene: { w: 390, h: 195 } };
+            if (set === 'scene') sizes.scene.y = Math.max(0, this.boardH - 195);
             this.add('sticker', { set, key, opacity: 1, flipX: false, flipY: false }, sizes[set]);
         },
         addShape(shape) {
@@ -131,7 +152,7 @@ document.addEventListener('alpine:init', () => {
         remove() {
             const el = this.selected;
             if (!el) return;
-            if (el.type === 'button' && this.state.elements.filter((e) => e.type === 'button').length === 1) {
+            if (this.pageId === 'cover' && el.type === 'button' && this.state.elements.filter((e) => e.type === 'button').length === 1) {
                 window.dispatchEvent(new CustomEvent('notify', { detail: { message: 'Tombol "Buka Undangan" wajib ada.' } }));
                 return;
             }
@@ -158,20 +179,24 @@ document.addEventListener('alpine:init', () => {
         center(axis) {
             const el = this.selected;
             if (!el) return;
-            if (axis === 'x') el.x = (W - el.w) / 2; else el.y = (H - el.h) / 2;
+            if (axis === 'x') el.x = (W - el.w) / 2; else el.y = (this.boardH - el.h) / 2;
             this.commit();
         },
         async useTemplate() {
-            if (!confirm('Ganti desain dengan desain bawaan tema? Desain sekarang bisa dikembalikan dengan Undo selama halaman belum ditutup.')) return;
-            this.state = await this.$wire.template();
+            if (!confirm('Ganti desain sampul dengan desain bawaan tema? Desain sekarang bisa dikembalikan dengan Undo selama halaman belum ditutup.')) return;
+            const enabled = this.doc.cover.enabled;
+            this.doc.cover = await this.$wire.template();
+            this.doc.cover.enabled = enabled;
+            this.pageId = 'cover';
             this.selectedId = null;
             this.commit();
         },
         async save() {
             this.saving = true;
             try {
-                this.state = await this.$wire.save(clone(this.state));
-                this.savedSnapshot = JSON.stringify(this.state);
+                this.doc = await this.$wire.save(clone(this.doc));
+                this.fixPage();
+                this.savedSnapshot = JSON.stringify(this.doc);
                 this.history.push(this.savedSnapshot);
             } finally { this.saving = false; }
         },
@@ -238,7 +263,7 @@ document.addEventListener('alpine:init', () => {
         snap(el, x, y) {
             const guides = [];
             const xs = [0, W / 2, W];
-            const ys = [0, H / 2, H];
+            const ys = [0, this.boardH / 2, this.boardH];
             for (const o of this.state.elements) {
                 if (o.id === el.id || o.hidden) continue;
                 xs.push(o.x, o.x + o.w / 2, o.x + o.w);
@@ -260,7 +285,51 @@ document.addEventListener('alpine:init', () => {
             this.guides = guides;
             return [x, y];
         },
-        guideStyle(g) { return g.axis === 'x' ? `left:${(g.at / W) * 100}%;top:0;bottom:0;width:1px` : `top:${(g.at / H) * 100}%;left:0;right:0;height:1px`; },
+        guideStyle(g) { return g.axis === 'x' ? `left:${(g.at / W) * 100}%;top:0;bottom:0;width:1px` : `top:${(g.at / this.boardH) * 100}%;left:0;right:0;height:1px`; },
+
+        // ----- pages & section order -----
+        openPage(id) { this.pageId = id; this.selectedId = null; },
+        entryLabel(entry) {
+            if (entry.startsWith('page:')) return this.doc.pages.find((p) => 'page:' + p.id === entry)?.name ?? 'Halaman';
+            return this.sections[entry]?.label ?? entry;
+        },
+        isHidden(entry) { return this.doc.hidden.includes(entry); },
+        toggleHidden(entry) {
+            this.doc.hidden = this.isHidden(entry) ? this.doc.hidden.filter((e) => e !== entry) : [...this.doc.hidden, entry];
+            this.commit();
+        },
+        moveEntry(from, to) {
+            if (to < 0 || to >= this.doc.order.length || from === to) return;
+            const [entry] = this.doc.order.splice(from, 1);
+            this.doc.order.splice(to, 0, entry);
+            this.commit();
+        },
+        drop(to) {
+            if (this.dragIndex !== null) this.moveEntry(this.dragIndex, to);
+            this.dragIndex = null;
+        },
+        addPage() {
+            if (this.doc.pages.length >= 10) { window.dispatchEvent(new CustomEvent('notify', { detail: { message: 'Maksimal 10 halaman bebas.' } })); return; }
+            const id = uid();
+            const page = {
+                id, name: `Halaman ${this.doc.pages.length + 1}`, height: 700, bg: 'bg', pattern: false,
+                elements: [{ id: uid(), type: 'text', x: 45, y: 300, w: 300, h: 60, r: 0, hidden: false, locked: false,
+                    props: { text: 'Tulis sesuatu di sini', font: 'heading', size: 24, color: 'primary', align: 'center', weight: 600, spacing: 0, italic: false } }],
+            };
+            this.doc.pages.push(page);
+            const at = this.doc.order.indexOf('closing');
+            this.doc.order.splice(at < 0 ? this.doc.order.length : at, 0, 'page:' + id);
+            this.openPage(id);
+            this.commit();
+        },
+        deletePage(id) {
+            const page = this.doc.pages.find((p) => p.id === id);
+            if (!page || !confirm(`Hapus ${page.name}?`)) return;
+            this.doc.pages = this.doc.pages.filter((p) => p.id !== id);
+            this.doc.order = this.doc.order.filter((e) => e !== 'page:' + id);
+            if (this.pageId === id) this.openPage('cover');
+            this.commit();
+        },
 
         // ----- keyboard -----
         key(event) {
