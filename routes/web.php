@@ -75,6 +75,7 @@ Route::domain(config('app.domain'))->group(function () {
             Route::get('/invitations/{invitation}/preview', [InvitationController::class, 'preview'])->name('invitations.preview');
             Route::get('/invitations/{invitation}/edit/{tab?}', [InvitationController::class, 'edit'])->name('invitations.edit');
             Route::get('/invitations/{invitation}/tamu', [InvitationController::class, 'guests'])->name('invitations.guests');
+            Route::get('/invitations/{invitation}/tamu/contoh.csv', [InvitationController::class, 'guestTemplate'])->name('invitations.guests.template');
             Route::get('/invitations/{invitation}/rsvp', [InvitationController::class, 'wishes'])->name('invitations.wishes');
             Route::get('/invitations/{invitation}/rsvp/export', WishExportController::class)->name('invitations.wishes.export');
             Route::get('/invitations/{invitation}/hari-h', [InvitationController::class, 'eventDay'])->name('invitations.event-day');

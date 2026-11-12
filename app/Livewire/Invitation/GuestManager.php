@@ -3,16 +3,24 @@
 namespace App\Livewire\Invitation;
 
 use App\Livewire\Invitation\Editor\Concerns\EditsInvitation;
+use App\Services\GuestImportService;
 use App\Services\GuestService;
 use App\Services\InvitationService;
 use Livewire\Attributes\Locked;
 use Livewire\Attributes\Url;
 use Livewire\Component;
+use Livewire\WithFileUploads;
 use Livewire\WithPagination;
 
 class GuestManager extends Component
 {
-    use EditsInvitation, WithPagination;
+    use EditsInvitation, WithFileUploads, WithPagination;
+
+    /** CSV or Excel file with guests (Livewire temporary upload). */
+    public $importFile = null;
+
+    /** Summary of the last import, shown under the form. */
+    public ?array $importResult = null;
 
     #[Url(as: 'q')]
     public string $search = '';
@@ -76,6 +84,21 @@ class GuestManager extends Component
         $this->reset('bulk', 'showBulk');
         $this->resetPage();
         $this->notify("{$count} tamu ditambahkan.");
+    }
+
+    public function importGuests(GuestImportService $importer): void
+    {
+        $this->authorizeUpdate();
+        $this->validate(
+            ['importFile' => ['required', 'file', 'max:2048', 'mimes:csv,txt,xlsx']],
+            ['importFile.mimes' => 'Gunakan file CSV atau Excel (.xlsx).'],
+            ['importFile' => 'file'],
+        );
+
+        $this->importResult = $importer->import($this->invitation, $this->importFile->getRealPath(), $this->importFile->getClientOriginalExtension());
+        $this->reset('importFile');
+        $this->resetPage();
+        $this->notify($this->importResult['added'].' tamu ditambahkan dari file.');
     }
 
     public function edit(int $id): void

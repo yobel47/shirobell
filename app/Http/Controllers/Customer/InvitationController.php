@@ -13,6 +13,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\View\View;
 use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\HttpFoundation\StreamedResponse;
 
 class InvitationController extends Controller
 {
@@ -55,6 +56,19 @@ class InvitationController extends Controller
         $this->auditAdminVisit($invitation, 'tamu');
 
         return view('customer.invitations.guests', ['invitation' => $invitation]);
+    }
+
+    /** Sample import file (semicolon separated, opens correctly in Indonesian Excel). */
+    public function guestTemplate(Invitation $invitation): StreamedResponse
+    {
+        Gate::authorize('update', $invitation);
+
+        return response()->streamDownload(function () {
+            echo "\xEF\xBB\xBF";
+            echo "Nama;WhatsApp;Grup;Meja\r\n";
+            echo "Bapak Joko Susilo;081234567890;Keluarga;1\r\n";
+            echo "Ibu Rina Marlina;;Kantor;5\r\n";
+        }, 'contoh-daftar-tamu.csv', ['Content-Type' => 'text/csv; charset=UTF-8']);
     }
 
     public function wishes(Invitation $invitation): View

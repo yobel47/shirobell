@@ -19,7 +19,7 @@
         <div class="flex items-center justify-between gap-3">
             <div>
                 <h2 class="font-serif text-lg font-semibold">Tambah tamu</h2>
-                <p class="text-sm text-gray-500">Tempel banyak nama sekaligus, satu nama per baris.</p>
+                <p class="text-sm text-gray-500">Tempel banyak nama sekaligus, atau impor dari file Excel/CSV.</p>
             </div>
             @unless ($showBulk)
                 <button type="button" wire:click="$set('showBulk', true)" class="btn btn-primary">Tambah tamu</button>
@@ -47,6 +47,33 @@
                 </div>
             </form>
         @endif
+
+        {{-- Import from Excel / CSV --}}
+        <form wire:submit="importGuests" class="space-y-3 border-t border-gray-100 pt-4">
+            <div class="flex flex-wrap items-start justify-between gap-2">
+                <div>
+                    <p class="text-sm font-semibold">Impor dari Excel atau CSV</p>
+                    <p class="text-xs text-gray-500">Kolom: <strong>Nama</strong> (wajib), WhatsApp, Grup, Meja. Nama yang sudah ada di daftar dilewati. Maksimal 1.000 tamu per file.</p>
+                </div>
+                <a href="{{ route('app.invitations.guests.template', $invitation) }}" class="text-sm font-medium text-rose-brand-600 hover:underline">Unduh contoh file</a>
+            </div>
+            <div class="flex flex-wrap items-center gap-2">
+                <input type="file" wire:model="importFile" accept=".xlsx,.csv,text/csv" class="text-sm file:mr-3 file:rounded-full file:border-0 file:bg-rose-brand-50 file:px-4 file:py-2 file:text-sm file:font-medium file:text-rose-brand-700">
+                <button type="submit" class="btn btn-outline" wire:loading.attr="disabled" wire:target="importFile,importGuests" @disabled(! $importFile)>
+                    <span wire:loading.remove wire:target="importGuests">Impor tamu</span>
+                    <span wire:loading wire:target="importGuests">Mengimpor...</span>
+                </button>
+            </div>
+            @error('importFile') <p class="form-error">{{ $message }}</p> @enderror
+            @if ($importResult)
+                <p class="rounded-xl bg-emerald-50 px-4 py-2 text-sm text-emerald-800" role="status">
+                    {{ $importResult['added'] }} tamu ditambahkan.
+                    @if ($importResult['duplicates']) {{ $importResult['duplicates'] }} dilewati karena sudah ada. @endif
+                    @if ($importResult['empty']) {{ $importResult['empty'] }} baris tanpa nama dilewati. @endif
+                    @if ($importResult['over_quota']) {{ $importResult['over_quota'] }} tidak masuk karena kuota tamu penuh. @endif
+                </p>
+            @endif
+        </form>
     </section>
 
     {{-- WhatsApp template --}}
