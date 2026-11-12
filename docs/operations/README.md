@@ -5,7 +5,7 @@ Semua nilai rahasia ada di `.env` server (lihat `prod-docs/`), tidak pernah di f
 
 | Komponen | Kenapa | Dokumen |
 |----------|--------|---------|
-| Deploy Docker (dipakai) | VPS dengan Docker, reverse proxy, dan MySQL yang sudah ada; deploy otomatis via GitHub Actions | [docker-deploy.md](./docker-deploy.md) |
+| Deploy Docker (dipakai) | Production (`main`, shirobell.my.id) dan staging (`dev`, dev.shirobell.my.id) di VPS Docker; deploy otomatis via GitHub Actions | [docker-deploy.md](./docker-deploy.md) |
 | Deploy VPS manual (alternatif) | Nginx dan PHP-FPM langsung di host | [deploy.md](./deploy.md) |
 | Queue worker | Email (konfirmasi bayar, pengingat, berakhir) dikirim lewat queue `database` | [supervisor/queue-worker.md](./supervisor/queue-worker.md) |
 | Scheduler (cron) | Expire undangan & order tiap jam, pengingat H-7 harian | [cronjobs/scheduler.md](./cronjobs/scheduler.md) |

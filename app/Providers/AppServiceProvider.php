@@ -21,8 +21,9 @@ class AppServiceProvider extends ServiceProvider
 
     public function boot(): void
     {
-        // Generated URLs (payment callbacks, invitation links, emails) are always HTTPS in production.
-        if ($this->app->isProduction()) {
+        // Generated URLs (payment callbacks, invitation links, emails) follow APP_URL:
+        // HTTPS in production and staging, plain HTTP only for local development.
+        if ($this->app->isProduction() || str_starts_with((string) config('app.url'), 'https://')) {
             URL::forceScheme('https');
         }
 

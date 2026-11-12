@@ -1,11 +1,17 @@
-# Shirobell production stack (see docs/operations/docker-deploy.md).
-# Lives on the server at $DEPLOY_PATH next to the .env file. Images are built
-# by GitHub Actions and pulled from GHCR; IMAGE_TAG is set by the deploy job.
+# Shirobell stack for one environment (see docs/operations/docker-deploy.md).
+# The same file serves production (branch main) and staging (branch dev);
+# each lives in its own folder with its own .env:
+#   /opt/shirobell      STACK_NAME=shirobell      -> shirobell.my.id
+#   /opt/shirobell-dev  STACK_NAME=shirobell-dev  -> dev.shirobell.my.id
+# Images are built by GitHub Actions and pulled from GHCR; IMAGE_TAG is set by
+# the deploy job (commit sha).
 #
-# - web joins the existing reverse proxy network (PROXY_NETWORK), so the proxy
-#   forwards shirobell.my.id and *.shirobell.my.id to http://shirobell-web:80.
-# - app, worker and scheduler join the existing MySQL network (DB_NETWORK).
+# - web joins the reverse proxy network (PROXY_NETWORK); the proxy forwards
+#   the environment's domains to http://${STACK_NAME}-web:80.
+# - app, worker and scheduler join the MySQL network (DB_NETWORK).
 #   If MySQL runs on the host instead, set DB_HOST=host.docker.internal.
+
+name: ${STACK_NAME:-shirobell}
 
 x-app: &app
   image: ghcr.io/${GHCR_OWNER:-yobel47}/shirobell-app:${IMAGE_TAG:-latest}
@@ -22,7 +28,7 @@ x-app: &app
 services:
   app:
     <<: *app
-    container_name: shirobell-app
+    container_name: ${STACK_NAME:-shirobell}-app
     healthcheck:
       test: ["CMD-SHELL", "SCRIPT_NAME=/fpm-ping SCRIPT_FILENAME=/fpm-ping REQUEST_METHOD=GET cgi-fcgi -bind -connect 127.0.0.1:9000 || exit 1"]
       interval: 30s
@@ -31,33 +37,35 @@ services:
 
   worker:
     <<: *app
-    container_name: shirobell-worker
+    container_name: ${STACK_NAME:-shirobell}-worker
     command: ["php", "artisan", "queue:work", "--queue=default", "--sleep=3", "--tries=3", "--max-time=3600"]
 
   scheduler:
     <<: *app
-    container_name: shirobell-scheduler
+    container_name: ${STACK_NAME:-shirobell}-scheduler
     command: ["php", "artisan", "schedule:work"]
 
   web:
     image: ghcr.io/${GHCR_OWNER:-yobel47}/shirobell-web:${IMAGE_TAG:-latest}
-    container_name: shirobell-web
+    container_name: ${STACK_NAME:-shirobell}-web
     restart: unless-stopped
     depends_on:
       - app
     volumes:
       - storage:/var/www/html/storage:ro
+    # Nginx reaches PHP-FPM as "app" over this stack's internal network only;
+    # the shared proxy network never sees the app containers.
     networks:
       - internal
       - proxy
 
 volumes:
   storage:
-    name: shirobell-storage
+    name: ${STACK_NAME:-shirobell}-storage
 
 networks:
   internal:
-    name: shirobell-internal
+    name: ${STACK_NAME:-shirobell}-internal
   proxy:
     name: ${PROXY_NETWORK:-proxy}
     external: true

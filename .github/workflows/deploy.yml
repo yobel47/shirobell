@@ -1,8 +1,12 @@
-# Every push to dev and main: tests and a Docker build check.
-# Only main pushes images to GHCR and deploys to the VPS.
-# Secrets (Settings > Secrets and variables > Actions):
-#   VPS_HOST, VPS_USER, VPS_SSH_KEY, DEPLOY_PATH, optional VPS_PORT
-# See docs/operations/docker-deploy.md.
+# Two environments on the same VPS (see docs/operations/docker-deploy.md):
+#   branch dev  -> staging    (dev.shirobell.my.id, /opt/shirobell-dev)
+#   branch main -> production (shirobell.my.id,     /opt/shirobell)
+# Every push: tests, build and push images to GHCR, deploy to its environment.
+#
+# Repository secrets (Settings > Secrets and variables > Actions):
+#   VPS_HOST, VPS_USER, VPS_SSH_KEY, optional VPS_PORT
+# Environment secrets (Settings > Environments > production / staging):
+#   DEPLOY_PATH  (/opt/shirobell for production, /opt/shirobell-dev for staging)
 name: CI & Deploy
 
 on:
@@ -20,6 +24,8 @@ concurrency:
 env:
   IMAGE_APP: ghcr.io/${{ github.repository_owner }}/shirobell-app
   IMAGE_WEB: ghcr.io/${{ github.repository_owner }}/shirobell-web
+  # Moving tag per branch, next to the immutable commit sha tag.
+  CHANNEL: ${{ github.ref == 'refs/heads/main' && 'latest' || 'dev' }}
 
 jobs:
   test:
@@ -64,7 +70,6 @@ jobs:
       - uses: docker/setup-buildx-action@v3
 
       - uses: docker/login-action@v3
-        if: github.ref == 'refs/heads/main'
         with:
           registry: ghcr.io
           username: ${{ github.actor }}
@@ -75,8 +80,8 @@ jobs:
         with:
           context: .
           target: app
-          push: ${{ github.ref == 'refs/heads/main' }}
-          tags: ${{ env.IMAGE_APP }}:${{ github.sha }},${{ env.IMAGE_APP }}:latest
+          push: true
+          tags: ${{ env.IMAGE_APP }}:${{ github.sha }},${{ env.IMAGE_APP }}:${{ env.CHANNEL }}
           cache-from: type=gha,scope=app
           cache-to: type=gha,mode=max,scope=app
 
@@ -85,20 +90,34 @@ jobs:
         with:
           context: .
           target: web
-          push: ${{ github.ref == 'refs/heads/main' }}
-          tags: ${{ env.IMAGE_WEB }}:${{ github.sha }},${{ env.IMAGE_WEB }}:latest
+          push: true
+          tags: ${{ env.IMAGE_WEB }}:${{ github.sha }},${{ env.IMAGE_WEB }}:${{ env.CHANNEL }}
           cache-from: type=gha,scope=web
           cache-to: type=gha,mode=max,scope=web
 
   deploy:
-    if: github.ref == 'refs/heads/main'
     needs: build
     runs-on: ubuntu-latest
-    environment: production
+    environment: ${{ github.ref == 'refs/heads/main' && 'production' || 'staging' }}
     steps:
+      - name: Check deploy configuration
+        id: cfg
+        env:
+          VPS_HOST: ${{ secrets.VPS_HOST }}
+          DEPLOY_PATH: ${{ secrets.DEPLOY_PATH }}
+        run: |
+          if [ -z "$VPS_HOST" ] || [ -z "$DEPLOY_PATH" ]; then
+            echo "::warning::Deploy secrets for this environment are not set yet; skipping deploy."
+            echo "ready=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "ready=true" >> "$GITHUB_OUTPUT"
+          fi
+
       - uses: actions/checkout@v4
+        if: steps.cfg.outputs.ready == 'true'
 
       - name: Copy compose file to the server
+        if: steps.cfg.outputs.ready == 'true'
         uses: appleboy/scp-action@v0.1.7
         with:
           host: ${{ secrets.VPS_HOST }}
@@ -109,6 +128,7 @@ jobs:
           target: ${{ secrets.DEPLOY_PATH }}
 
       - name: Pull images, migrate and restart
+        if: steps.cfg.outputs.ready == 'true'
         uses: appleboy/ssh-action@v1.2.0
         env:
           IMAGE_TAG: ${{ github.sha }}
@@ -125,6 +145,7 @@ jobs:
           script: |
             set -e
             cd "$DEPLOY_PATH"
+            test -f .env || { echo "Missing $DEPLOY_PATH/.env"; exit 1; }
             echo "$GHCR_TOKEN" | docker login ghcr.io -u "$GHCR_USER" --password-stdin
             export IMAGE_TAG
             compose="docker compose -f docker-compose.prod.yml"
