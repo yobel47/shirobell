@@ -23,6 +23,8 @@ class ThemeEngineTest extends TestCase
         'sections' => ['cards', 'plain', 'bordered'],
         'ornament' => ['floral', 'leaf', 'kawung', 'parang', 'cloud', 'lotus', 'tenun', 'songket', 'deco', 'star', 'wave', 'line'],
         'pattern' => ['none', 'kawung', 'parang', 'cloud', 'tenun', 'songket', 'star', 'deco', 'dots', 'leaf', 'wave'],
+        'illustration' => [null, 'bouquet', 'wildflowers', 'eucalyptus', 'frangipani', 'gunungan', 'candi', 'masjid', 'pantai', 'sawah',
+            'rumah-gadang', 'joglo', 'pinisi', 'lampion', 'kota', 'pegunungan', 'taman', 'melati', 'bambu'],
     ];
 
     protected function setUp(): void
@@ -37,7 +39,7 @@ class ThemeEngineTest extends TestCase
         $fonts = config('themes.fonts');
         $css = file_get_contents(resource_path('css/themes/patterns.css'));
 
-        $this->assertGreaterThanOrEqual(25, count($registry->all()));
+        $this->assertGreaterThanOrEqual(65, count($registry->all()));
 
         foreach ($registry->all() as $slug => $definition) {
             $this->assertMatchesRegularExpression('/^[a-z0-9-]+$/', $slug);
