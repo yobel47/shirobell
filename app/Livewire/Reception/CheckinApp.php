@@ -20,6 +20,15 @@ class CheckinApp extends Component
 
     public string $search = '';
 
+    /** Guest list filters: all | pending | arrived, and a group name. */
+    public string $status = 'pending';
+
+    public string $group = '';
+
+    public int $limit = self::PAGE;
+
+    public const PAGE = 50;
+
     public string $walkInName = '';
 
     public int $walkInPax = 1;
@@ -121,18 +130,36 @@ class CheckinApp extends Component
         $this->reset('walkInName', 'walkInPax');
     }
 
+    public function updated(string $property): void
+    {
+        if (in_array($property, ['search', 'status', 'group'], true)) {
+            $this->limit = self::PAGE;
+        }
+    }
+
+    public function loadMore(): void
+    {
+        $this->limit = min($this->limit + self::PAGE, 2000);
+    }
+
     public function render(EventDayService $eventDay)
     {
+        // Full guest list for picking guests manually; search and filters are optional.
         $term = trim($this->search);
-        $matches = mb_strlen($term) >= 2
-            ? $this->invitation->guests()->with('rsvp')
-                ->where(fn ($q) => $q->where('name', 'like', '%'.addcslashes($term, '%_\\').'%')->orWhere('group_name', 'like', '%'.addcslashes($term, '%_\\').'%'))
-                ->orderBy('name')->take(20)->get()
-            : collect();
+        $query = $this->invitation->guests()
+            ->when($term !== '', fn ($q) => $q->where(fn ($q) => $q->where('name', 'like', '%'.addcslashes($term, '%_\\').'%')
+                ->orWhere('group_name', 'like', '%'.addcslashes($term, '%_\\').'%')))
+            ->when($this->status === 'pending', fn ($q) => $q->whereNull('checked_in_at'))
+            ->when($this->status === 'arrived', fn ($q) => $q->whereNotNull('checked_in_at'))
+            ->when($this->group !== '', fn ($q) => $q->where('group_name', $this->group));
+        $total = (clone $query)->count();
+        $matches = $query->with('rsvp')->orderBy('name')->take($this->limit)->get();
 
         return view('livewire.reception.checkin-app', [
             'stats' => $eventDay->stats($this->invitation),
             'matches' => $matches,
+            'total' => $total,
+            'groups' => $this->invitation->guests()->whereNotNull('group_name')->distinct()->orderBy('group_name')->pluck('group_name'),
             'maxPax' => EventDayService::MAX_PAX,
             'giftKinds' => EventGift::KINDS,
         ]);

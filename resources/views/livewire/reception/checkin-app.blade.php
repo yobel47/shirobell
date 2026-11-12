@@ -92,7 +92,7 @@
 
     {{-- Modes --}}
     <div class="grid grid-cols-3 gap-1 rounded-full bg-gray-200 p-1 text-sm font-medium">
-        @foreach (['scan' => 'Pindai QR', 'search' => 'Cari nama', 'walkin' => 'Tamu dadakan'] as $key => $label)
+        @foreach (['scan' => 'Pindai QR', 'search' => 'Daftar tamu', 'walkin' => 'Tamu dadakan'] as $key => $label)
             <button type="button" wire:click="$set('mode', '{{ $key }}')" @class([
                 'rounded-full px-2 py-2',
                 'bg-white shadow-sm' => $mode === $key,
@@ -113,19 +113,37 @@
         </div>
     @elseif ($mode === 'search')
         <div class="space-y-3" wire:key="search">
-            <input type="search" wire:model.live.debounce.300ms="search" placeholder="Ketik minimal 2 huruf nama atau grup" class="form-input" autofocus>
+            <input type="search" wire:model.live.debounce.300ms="search" placeholder="Cari nama atau grup (opsional)" class="form-input">
+            <div class="flex flex-wrap items-center gap-2">
+                @foreach (['pending' => 'Belum hadir', 'arrived' => 'Sudah hadir', 'all' => 'Semua'] as $key => $label)
+                    <button type="button" wire:click="$set('status', '{{ $key }}')" @class([
+                        'rounded-full px-3 py-1.5 text-sm font-medium',
+                        'bg-ink text-white' => $status === $key,
+                        'bg-white text-gray-600 ring-1 ring-gray-200' => $status !== $key,
+                    ])>{{ $label }}</button>
+                @endforeach
+                @if ($groups->isNotEmpty())
+                    <select wire:model.live="group" class="ml-auto rounded-full border-gray-200 py-1.5 text-sm" aria-label="Filter grup">
+                        <option value="">Semua grup</option>
+                        @foreach ($groups as $name)
+                            <option value="{{ $name }}">{{ $name }}</option>
+                        @endforeach
+                    </select>
+                @endif
+            </div>
+            <p class="text-xs text-gray-500">{{ $total }} tamu &middot; urut nama</p>
             <ul class="divide-y divide-gray-100 rounded-2xl bg-white shadow-sm">
                 @forelse ($matches as $guest)
                     <li wire:key="g-{{ $guest->id }}" class="flex items-center justify-between gap-3 px-4 py-3" x-data="{ pax: {{ max(1, (int) ($guest->rsvp?->pax ?? 1)) }} }">
                         <div class="min-w-0">
                             <p class="truncate font-medium">{{ $guest->name }}</p>
                             <p class="text-xs text-gray-500">
-                                {{ $guest->group_name ?: 'Tanpa grup' }}
+                                {{ $guest->group_name ?: 'Tanpa grup' }}@if ($guest->table_number) &middot; Meja {{ $guest->table_number }}@endif
                                 @if ($guest->rsvp) &middot; RSVP: {{ $guest->rsvp->attendance->label() }}@if ($guest->rsvp->pax) ({{ $guest->rsvp->pax }})@endif @endif
                             </p>
                         </div>
                         @if ($guest->checked_in_at)
-                            <span class="shrink-0 rounded-full bg-emerald-50 px-3 py-1 text-xs font-semibold text-emerald-700">Hadir {{ $guest->checked_in_at->format('H.i') }}</span>
+                            <button type="button" wire:click="checkIn({{ $guest->id }}, {{ $guest->checked_in_pax ?? 1 }})" class="shrink-0 rounded-full bg-emerald-50 px-3 py-1 text-xs font-semibold text-emerald-700" title="Lihat detail">Hadir {{ $guest->checked_in_at->format('H.i') }}</button>
                         @else
                             <div class="flex shrink-0 items-center gap-2">
                                 <select x-model.number="pax" class="rounded-lg border-gray-200 py-1 text-sm" aria-label="Jumlah orang">
@@ -139,10 +157,13 @@
                     </li>
                 @empty
                     <li class="px-4 py-6 text-center text-sm text-gray-500">
-                        {{ mb_strlen(trim($search)) >= 2 ? 'Tidak ditemukan. Tambahkan sebagai tamu dadakan.' : 'Ketik nama tamu untuk mencari.' }}
+                        {{ trim($search) !== '' ? 'Tidak ditemukan. Tambahkan sebagai tamu dadakan.' : ($status === 'pending' ? 'Semua tamu sudah hadir.' : 'Belum ada tamu.') }}
                     </li>
                 @endforelse
             </ul>
+            @if ($total > $matches->count())
+                <button type="button" wire:click="loadMore" class="btn btn-outline w-full">Muat lebih banyak ({{ $total - $matches->count() }} lagi)</button>
+            @endif
         </div>
     @else
         <form wire:submit="addWalkIn" class="space-y-3 rounded-2xl bg-white p-4 shadow-sm" wire:key="walkin">
