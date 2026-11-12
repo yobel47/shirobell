@@ -152,6 +152,11 @@ jobs:
             export IMAGE_TAG
             compose="docker compose --env-file .env -f docker-compose.prod.yml"
             $compose pull
+            # Remember the deployed tag in .env, so manual commands
+            # (docker compose run ... app php artisan ...) use the same image.
+            if grep -q '^IMAGE_TAG=' .env; then sed -i "s/^IMAGE_TAG=.*/IMAGE_TAG=$IMAGE_TAG/" .env; else printf '
+IMAGE_TAG=%s
+' "$IMAGE_TAG" >> .env; fi
             $compose run --rm --no-deps app php artisan migrate --force
             $compose run --rm --no-deps app php artisan db:seed --class=ThemeSeeder --force
             $compose up -d --remove-orphans
