@@ -110,7 +110,10 @@
 
     @endif
 
-    <main id="mulai" class="relative mx-auto max-w-md overflow-hidden bg-t-bg sm:border-x sm:border-t-soft">
+    @include('themes._engine.partials.desktop-panel')
+
+    {{-- On large screens the column docks right and the panel above fills the rest. --}}
+    <main id="mulai" class="relative z-10 mx-auto max-w-md overflow-hidden bg-t-bg sm:border-x sm:border-t-soft lg:mr-0 lg:shadow-2xl">
         {{-- Sections in the customer's order; "page:{id}" entries are free canvas pages (ADR 012). --}}
         @foreach ($sectionOrder as $block)
             @if (str_starts_with($block, 'page:'))

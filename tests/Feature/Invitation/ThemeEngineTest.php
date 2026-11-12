@@ -156,4 +156,13 @@ class ThemeEngineTest extends TestCase
             ->assertOk()
             ->assertSee('opened: true', false);
     }
+
+    public function test_engine_themes_have_a_desktop_panel_only_on_large_screens(): void
+    {
+        $this->get(route('themes.demo', ['theme' => 'sakinah', 'buka' => 1]))
+            ->assertOk()
+            ->assertSee('Gulir undangan di sebelah kanan')
+            ->assertSee('hidden overflow-hidden lg:flex', false)
+            ->assertSee('lg:mr-0', false);
+    }
 }
