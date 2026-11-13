@@ -60,6 +60,8 @@ class ManageSettings extends Page
                 TextInput::make('site_name')->label('Nama situs')->required()->maxLength(50),
                 TextInput::make('support_whatsapp')->label('WhatsApp support')->tel()->maxLength(20)->regex('/^\+?[0-9]{8,15}$/'),
                 TextInput::make('support_email')->label('Email support')->email()->maxLength(150),
+                TextInput::make('support_instagram')->label('Instagram')->prefix('@')->maxLength(30)
+                    ->regex('/^@?[A-Za-z0-9._]{1,30}$/')->helperText('Username saja, tanpa tautan.'),
             ]),
             Section::make('Identitas usaha')->description('Tampil di halaman Kontak, Syarat & Ketentuan, Kebijakan Privasi, dan Kebijakan Refund. Wajib diisi sebelum mengajukan Midtrans production.')
                 ->columns(2)->schema([

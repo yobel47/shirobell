@@ -25,6 +25,7 @@ class SettingService
         'gallery_max_photos' => 20,
         'support_whatsapp' => '',
         'support_email' => '',
+        'support_instagram' => '',
         'business_name' => '',
         'business_address' => '',
         // Event-day module (ADR 011): 'included' in the package, or a paid 'addon'.
@@ -57,6 +58,29 @@ class SettingService
             self::CACHE_KEY,
             fn () => Setting::query()->pluck('value', 'key')->all()
         );
+    }
+
+    /**
+     * Public support contacts with ready-to-use links (empty values stay null).
+     *
+     * @return array{whatsapp: ?string, whatsapp_url: ?string, instagram: ?string, instagram_url: ?string, email: ?string}
+     */
+    public function supportContacts(): array
+    {
+        $whatsapp = trim((string) $this->get('support_whatsapp')) ?: null;
+        $instagram = ltrim(trim((string) $this->get('support_instagram')), '@') ?: null;
+        $email = trim((string) $this->get('support_email')) ?: null;
+
+        $digits = $whatsapp ? preg_replace('/\D/', '', $whatsapp) : '';
+        $waNumber = str_starts_with($digits, '0') ? '62'.substr($digits, 1) : $digits;
+
+        return [
+            'whatsapp' => $whatsapp,
+            'whatsapp_url' => $waNumber !== '' ? 'https://wa.me/'.$waNumber : null,
+            'instagram' => $instagram,
+            'instagram_url' => $instagram ? 'https://instagram.com/'.$instagram : null,
+            'email' => $email,
+        ];
     }
 
     public function packagePrice(): int

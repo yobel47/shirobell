@@ -3,8 +3,10 @@
 namespace Tests\Feature\Core;
 
 use App\Filament\Pages\ManageSettings;
+use App\Models\Invitation;
 use App\Models\User;
 use App\Services\SettingService;
+use Database\Seeders\ThemeSeeder;
 use Filament\Facades\Filament;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Livewire\Livewire;
@@ -92,5 +94,56 @@ class LegalPagesTest extends TestCase
 
         $this->assertSame('CV Lonceng Putih', app(SettingService::class)->get('business_name'));
         $this->assertSame('Jl. Melati No. 1, Bandung', app(SettingService::class)->get('business_address'));
+    }
+
+    public function test_instagram_and_footer_contacts_with_floating_whatsapp_button(): void
+    {
+        $settings = app(SettingService::class);
+        $settings->set('support_whatsapp', '081234567890');
+        $settings->set('support_instagram', '@shirobell.id');
+        $settings->set('support_email', 'halo@shirobell.test');
+
+        $this->get('/kontak')
+            ->assertSee('https://instagram.com/shirobell.id', false)
+            ->assertSee('@shirobell.id');
+
+        $this->get('/')
+            ->assertSee('Hubungi kami')
+            ->assertSee('https://instagram.com/shirobell.id', false)
+            ->assertSee('mailto:halo@shirobell.test', false)
+            ->assertSee('Tanya kami')
+            ->assertSee('https://wa.me/6281234567890?text=', false);
+    }
+
+    public function test_no_contact_block_or_chat_button_when_contacts_are_empty(): void
+    {
+        $this->get('/')->assertDontSee('Hubungi kami')->assertDontSee('Tanya kami');
+    }
+
+    public function test_guest_invitations_never_show_the_platform_chat_button(): void
+    {
+        $this->seed(ThemeSeeder::class);
+        app(SettingService::class)->set('support_whatsapp', '081234567890');
+        Invitation::factory()->active()->create(['slug' => 'budi-ani']);
+
+        $this->get('http://budi-ani.'.config('app.domain'))->assertOk()->assertDontSee('Tanya kami');
+    }
+
+    public function test_admin_saves_instagram_username(): void
+    {
+        Filament::setCurrentPanel('admin');
+
+        Livewire::actingAs(User::factory()->admin()->create())
+            ->test(ManageSettings::class)
+            ->set('data.support_instagram', 'shirobell.id')
+            ->call('save')
+            ->assertHasNoErrors();
+        $this->assertSame('shirobell.id', app(SettingService::class)->get('support_instagram'));
+
+        Livewire::actingAs(User::factory()->admin()->create())
+            ->test(ManageSettings::class)
+            ->set('data.support_instagram', 'https://instagram.com/x')
+            ->call('save')
+            ->assertHasErrors('data.support_instagram');
     }
 }
