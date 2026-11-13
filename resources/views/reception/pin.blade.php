@@ -1,5 +1,4 @@
-<x-layouts.base title="Penerima Tamu">
-    <x-slot:head><meta name="robots" content="noindex, nofollow"></x-slot:head>
+<x-layouts.base title="Penerima Tamu" robots="noindex, nofollow">
     <main class="flex min-h-screen items-center justify-center px-4 py-12">
         <div class="card w-full max-w-sm text-center">
             <p class="text-xs font-semibold tracking-[0.25em] text-rose-brand-500 uppercase">Penerima Tamu</p>

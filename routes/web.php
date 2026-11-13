@@ -10,6 +10,7 @@ use App\Http\Controllers\HomeController;
 use App\Http\Controllers\LegalPageController;
 use App\Http\Controllers\PublicInvitationController;
 use App\Http\Controllers\Reception\ReceptionController;
+use App\Http\Controllers\SeoController;
 use App\Http\Controllers\ThemeCatalogController;
 use App\Http\Controllers\ThemeDemoController;
 use App\Http\Controllers\Webhook\MidtransNotificationController;
@@ -33,6 +34,8 @@ Route::domain('{slug}.'.config('app.domain'))
 Route::domain(config('app.domain'))->group(function () {
     Route::get('/', HomeController::class)->name('home');
     Route::get('/health', HealthController::class)->name('health');
+    Route::get('/robots.txt', [SeoController::class, 'robots'])->name('seo.robots');
+    Route::get('/sitemap.xml', [SeoController::class, 'sitemap'])->name('seo.sitemap');
     Route::get('/tema', ThemeCatalogController::class)->name('themes.index');
     Route::get('/tema/{theme:slug}', ThemeDemoController::class)->name('themes.demo');
 

@@ -1,6 +1,5 @@
-<x-layouts.base title="Penerima Tamu" class="min-h-screen bg-gray-50 font-sans text-ink antialiased">
+<x-layouts.base title="Penerima Tamu" robots="noindex, nofollow" class="min-h-screen bg-gray-50 font-sans text-ink antialiased">
     <x-slot:head>
-        <meta name="robots" content="noindex, nofollow">
         @vite('resources/js/checkin.js')
     </x-slot:head>
     <header class="sticky top-0 z-30 border-b border-gray-200 bg-white">

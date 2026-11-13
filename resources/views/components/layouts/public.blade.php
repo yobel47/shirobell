@@ -1,5 +1,8 @@
-@props(['title' => null, 'description' => null])
-<x-layouts.base :title="$title" :description="$description">
+@props(['title' => null, 'description' => null, 'canonical' => null, 'image' => null])
+<x-layouts.base :title="$title" :description="$description" :canonical="$canonical" :image="$image">
+    @isset($head)
+        <x-slot:head>{{ $head }}</x-slot:head>
+    @endisset
     <header x-data="{ open: false }" class="sticky top-0 z-40 border-b border-rose-brand-100/70 bg-cream/90 backdrop-blur">
         <nav class="mx-auto flex max-w-6xl items-center justify-between px-4 py-3 sm:px-6">
             <a href="{{ route('home') }}" class="font-serif text-2xl font-semibold text-rose-brand-600">{{ $siteName }}</a>
@@ -71,7 +74,7 @@
                 @endif
             </div>
         @endif
-        <p class="border-t border-rose-brand-50 px-4 py-4 text-center text-xs text-gray-400">&copy; {{ now()->year }} {{ $siteName }}. Hak cipta dilindungi.</p>
+        <p @class(["border-t border-rose-brand-50 px-4 pt-4 text-center text-xs text-gray-400", "pb-24 sm:pb-4" => $supportContacts['whatsapp_url'], "pb-4" => ! $supportContacts['whatsapp_url']])>&copy; {{ now()->year }} {{ $siteName }}. Hak cipta dilindungi.</p>
     </footer>
 
     @if ($supportContacts['whatsapp_url'])

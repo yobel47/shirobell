@@ -1,5 +1,5 @@
 @props(['title' => null, 'wide' => false])
-<x-layouts.base :title="$title">
+<x-layouts.base :title="$title" robots="noindex, nofollow">
     <header x-data="{ open: false }" class="sticky top-0 z-40 border-b border-rose-brand-100 bg-white">
         <nav class="mx-auto flex max-w-6xl items-center justify-between px-4 py-3 sm:px-6">
             <div class="flex items-center gap-6">

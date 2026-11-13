@@ -4,16 +4,35 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    @unless ($demo)
+    @if ($demo)
+        {{-- Public theme demo: an indexable catalog page (production only). --}}
+        @php
+            $demoTitle = 'Tema Undangan '.$invitation->theme->name.' - Contoh Undangan Pernikahan Online | '.($siteName ?? config('app.name'));
+            $demoDescription = trim(($invitation->theme->description ?? '').' Lihat contoh undangan pernikahan online tema '.$invitation->theme->name.', lalu buat undanganmu sendiri dalam hitungan menit.');
+            $demoUrl = route('themes.demo', $invitation->theme);
+        @endphp
+        <meta name="robots" content="{{ app()->isProduction() ? 'index, follow' : 'noindex, nofollow' }}">
+        <title>{{ $demoTitle }}</title>
+        <meta name="description" content="{{ $demoDescription }}">
+        <link rel="canonical" href="{{ $demoUrl }}">
+        <meta property="og:type" content="website">
+        <meta property="og:title" content="{{ $demoTitle }}">
+        <meta property="og:description" content="{{ $demoDescription }}">
+        <meta property="og:url" content="{{ $demoUrl }}">
+        <meta property="og:image" content="{{ asset('og-image.png') }}">
+        <meta name="twitter:card" content="summary_large_image">
+    @else
+        {{-- Customer invitations are private links: never indexed. --}}
         <meta name="robots" content="noindex, nofollow">
-    @endunless
-    <title>{{ $title ?? 'Undangan Pernikahan '.$invitation->coupleName() }}</title>
-    <meta name="description" content="Undangan pernikahan {{ $invitation->coupleName() }}">
-    <meta property="og:title" content="The Wedding of {{ $invitation->coupleName() }}">
-    <meta property="og:description" content="Kami mengundang Anda untuk hadir di hari bahagia kami.">
-    @if ($coverUrl)
-        <meta property="og:image" content="{{ url($coverUrl) }}">
+        <title>{{ $title ?? 'Undangan Pernikahan '.$invitation->coupleName() }}</title>
+        <meta name="description" content="Undangan pernikahan {{ $invitation->coupleName() }}">
+        <meta property="og:title" content="The Wedding of {{ $invitation->coupleName() }}">
+        <meta property="og:description" content="Kami mengundang Anda untuk hadir di hari bahagia kami.">
+        @if ($coverUrl)
+            <meta property="og:image" content="{{ url($coverUrl) }}">
+        @endif
     @endif
+    <link rel="icon" href="{{ asset('favicon.svg') }}" type="image/svg+xml">
     @fonts
     @vite([$css])
     @livewireStyles

@@ -1,6 +1,13 @@
-<x-layouts.public title="Katalog Tema" description="Pilih dari {{ $total }} tema undangan pernikahan online: minimalis, floral, adat, luxury, islami, dan lainnya. Setiap tema punya beberapa pilihan warna.">
+@php
+    $categoryLabel = $category ? $categories[$category] : null;
+    $seoTitle = $categoryLabel ? 'Tema Undangan Pernikahan '.$categoryLabel : 'Katalog Tema Undangan Pernikahan Online';
+    $seoDescription = $categoryLabel
+        ? $themes->count().' tema undangan pernikahan online kategori '.$categoryLabel.', lengkap dengan pilihan warna. Lihat demo dan buat undanganmu sendiri.'
+        : 'Pilih dari '.$total.' tema undangan pernikahan online: minimalis, floral, adat, luxury, islami, dan lainnya. Setiap tema punya beberapa pilihan warna.';
+@endphp
+<x-layouts.public :title="$seoTitle" :description="$seoDescription" :canonical="$category ? route('themes.index', ['kategori' => $category]) : route('themes.index')">
     <section class="mx-auto max-w-6xl px-4 py-12 sm:px-6 sm:py-16">
-        <h1 class="font-serif text-3xl font-semibold sm:text-4xl">Katalog tema</h1>
+        <h1 class="font-serif text-3xl font-semibold sm:text-4xl">{{ $categoryLabel ? 'Tema undangan '.$categoryLabel : 'Katalog tema undangan' }}</h1>
         <p class="mt-2 max-w-2xl text-gray-600">{{ $total }} tema, masing-masing dengan beberapa pilihan warna. Semua tema termasuk dalam paket dan bisa diganti kapan saja tanpa mengisi ulang data.</p>
 
         <nav class="mt-8 flex gap-2 overflow-x-auto pb-2" aria-label="Kategori tema">

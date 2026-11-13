@@ -7,8 +7,7 @@
     ];
     [$heading, $body] = $messages[$state] ?? $messages['not-found'];
 @endphp
-<x-layouts.base :title="$heading">
-    <x-slot:head><meta name="robots" content="noindex, nofollow"></x-slot:head>
+<x-layouts.base :title="$heading" robots="noindex, nofollow">
     <main class="flex min-h-screen flex-col items-center justify-center px-4 py-16 text-center">
         <p class="font-serif text-2xl text-rose-brand-500 italic">{{ $siteName ?? config('app.name') }}</p>
         <h1 class="mt-6 font-serif text-3xl font-semibold">{{ $heading }}</h1>
