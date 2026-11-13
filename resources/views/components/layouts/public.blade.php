@@ -5,7 +5,7 @@
     @endisset
     <header x-data="{ open: false }" class="sticky top-0 z-40 border-b border-rose-brand-100/70 bg-cream/90 backdrop-blur">
         <nav class="mx-auto flex max-w-6xl items-center justify-between px-4 py-3 sm:px-6">
-            <a href="{{ route('home') }}" class="font-serif text-2xl font-semibold text-rose-brand-600">{{ $siteName }}</a>
+            <a href="{{ route('home') }}" aria-label="{{ $siteName }}"><x-brand.logo :name="$siteName"/></a>
 
             <div class="hidden items-center gap-1 md:flex">
                 <a href="{{ route('themes.index') }}" class="btn btn-ghost">Tema</a>
@@ -52,7 +52,10 @@
 
     <footer class="border-t border-rose-brand-100 bg-white">
         <div class="mx-auto flex max-w-6xl flex-col gap-4 px-4 py-8 text-sm text-gray-500 sm:flex-row sm:items-center sm:justify-between sm:px-6">
-            <p><span class="font-serif text-lg text-rose-brand-600">{{ $siteName }}</span> &middot; Undangan pernikahan online</p>
+            <div>
+                <x-brand.logo :name="$siteName" size="sm"/>
+                <p class="mt-2">Undangan pernikahan online</p>
+            </div>
             <nav class="flex flex-wrap gap-x-4 gap-y-2" aria-label="Informasi">
                 <a href="{{ route('legal.terms') }}" class="hover:text-rose-brand-600">Syarat & Ketentuan</a>
                 <a href="{{ route('legal.privacy') }}" class="hover:text-rose-brand-600">Kebijakan Privasi</a>

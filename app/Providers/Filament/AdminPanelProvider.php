@@ -10,12 +10,14 @@ use Filament\Pages\Dashboard;
 use Filament\Panel;
 use Filament\PanelProvider;
 use Filament\Support\Colors\Color;
+use Filament\View\PanelsRenderHook;
 use Filament\Widgets\AccountWidget;
 use Illuminate\Cookie\Middleware\AddQueuedCookiesToResponse;
 use Illuminate\Cookie\Middleware\EncryptCookies;
 use Illuminate\Foundation\Http\Middleware\PreventRequestForgery;
 use Illuminate\Routing\Middleware\SubstituteBindings;
 use Illuminate\Session\Middleware\StartSession;
+use Illuminate\Support\Facades\Blade;
 use Illuminate\View\Middleware\ShareErrorsFromSession;
 
 class AdminPanelProvider extends PanelProvider
@@ -29,6 +31,11 @@ class AdminPanelProvider extends PanelProvider
             ->domain(config('app.domain'))
             ->login()
             ->brandName('Shirobell Admin')
+            ->brandLogo(fn () => view('filament.brand'))
+            ->brandLogoHeight('2rem')
+            ->favicon(asset('favicon.svg'))
+            // Self-hosted fonts so the brand wordmark renders in Cormorant Garamond.
+            ->renderHook(PanelsRenderHook::HEAD_END, fn (): string => Blade::render('@fonts'))
             ->colors([
                 'primary' => Color::hex('#b76e79'),
             ])
