@@ -52,7 +52,8 @@
     @livewireStyles
 </head>
 <body {{ $attributes->merge(['class' => 'antialiased']) }} @if ($themeStyle) style="{{ $themeStyle }}" @endif>
-    @if ($demo)
+    {{-- ?frame=1 (editor frame, catalog thumbnail capture) hides the demo banner. --}}
+    @if ($demo && ! request()->boolean('frame'))
         <div class="fixed inset-x-0 top-0 z-[70] flex items-center justify-center gap-3 bg-black/85 px-4 py-2 text-xs text-white">
             <span>Contoh tema {{ $invitation->theme->name }}</span>
             <a href="{{ route('register') }}" class="rounded-full bg-white px-3 py-1 font-semibold text-black">Buat undangan seperti ini</a>
