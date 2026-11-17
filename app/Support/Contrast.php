@@ -43,19 +43,29 @@ final class Contrast
         return self::hex(self::fromOklab($mixed));
     }
 
-    /** @return array{float, float, float} linear sRGB */
-    private static function linear(string $hex): array
+    /**
+     * 0-255 channels of #rgb, #rgba, #rrggbb or #rrggbbaa (alpha ignored).
+     *
+     * @return array{int, int, int}
+     */
+    public static function rgb(string $hex): array
     {
         $hex = ltrim($hex, '#');
-        if (strlen($hex) === 3) {
+        if (strlen($hex) <= 4) {
             $hex = $hex[0].$hex[0].$hex[1].$hex[1].$hex[2].$hex[2];
         }
 
-        return array_map(function (int $i) use ($hex) {
-            $v = hexdec(substr($hex, $i, 2)) / 255;
+        return [hexdec(substr($hex, 0, 2)), hexdec(substr($hex, 2, 2)), hexdec(substr($hex, 4, 2))];
+    }
+
+    /** @return array{float, float, float} linear sRGB */
+    private static function linear(string $hex): array
+    {
+        return array_map(function (int $c) {
+            $v = $c / 255;
 
             return $v <= 0.04045 ? $v / 12.92 : (($v + 0.055) / 1.055) ** 2.4;
-        }, [0, 2, 4]);
+        }, self::rgb($hex));
     }
 
     /** @param  array{float, float, float}  $c */

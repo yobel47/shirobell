@@ -41,8 +41,9 @@ html {
     background-image: repeating-linear-gradient(-30deg, transparent 0 90px, rgb(138 74 82 / 0.06) 90px 92px);
 }
 
-/* craft.css tokens mapped to this theme's palette. */
-:root {
+/* craft.css tokens mapped to this theme's palette. Declared on body, where a
+   color variant's inline custom properties live, so variants resolve here too. */
+body {
     --tc-primary: var(--color-rg-deep);
     --tc-accent: var(--color-rg-rose);
     --tc-ink: var(--color-rg-ink);

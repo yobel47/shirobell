@@ -61,6 +61,17 @@ class Invitation extends Model
         static::creating(function (Invitation $invitation): void {
             $invitation->uuid ??= (string) Str::uuid();
         });
+
+        // Link-preview card: redraw after changes to what it shows, remove it with the invitation.
+        static::saved(function (Invitation $invitation): void {
+            if ($invitation->wasChanged(['groom_nickname', 'bride_nickname', 'theme_id', 'theme_variant', 'cover_photo_path', 'status', 'active_until'])) {
+                app(\App\Services\OgImageService::class)->warm($invitation);
+            }
+        });
+
+        static::deleted(function (Invitation $invitation): void {
+            app(\App\Services\OgImageService::class)->forget($invitation);
+        });
     }
 
     public function getRouteKeyName(): string

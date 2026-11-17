@@ -3,6 +3,7 @@
 namespace App\Services;
 
 use App\Models\Invitation;
+use App\Support\Contrast;
 use Carbon\CarbonInterface;
 use Illuminate\Support\Facades\Storage;
 
@@ -11,9 +12,9 @@ use Illuminate\Support\Facades\Storage;
  * invitation's own theme colors: frame, "The Wedding of", names, ornament, date,
  * and the cover photo on the left when there is one.
  *
- * Cached on the public disk; the file name carries a hash of everything drawn,
- * so editing names, date, theme or cover produces a fresh image (and a fresh URL,
- * which also busts WhatsApp's preview cache).
+ * Cached on the public disk under og/{uuid}/; the file name hashes everything
+ * drawn (names, date, palette, cover), so edits produce a fresh image and URL,
+ * which also busts WhatsApp's preview cache. Page views never render it inline.
  */
 class OgImageService
 {
@@ -32,43 +33,85 @@ class OgImageService
 
     public function __construct(private ThemeRegistry $themes) {}
 
+    /**
+     * URL of the card when it is already rendered; otherwise null, and the card
+     * is rendered after the response is sent so page views never wait for GD.
+     */
+    public function cachedUrl(Invitation $invitation): ?string
+    {
+        $path = $this->path($invitation);
+        if (Storage::disk('public')->exists($path)) {
+            return url(Storage::disk('public')->url($path));
+        }
+
+        $this->warm($invitation);
+
+        return null;
+    }
+
+    /**
+     * Render the card after the current response (published invitations only),
+     * so it exists before the couple shares the link.
+     */
+    public function warm(Invitation $invitation): void
+    {
+        if (! config('shirobell.og_images') || ! $invitation->isActive()) {
+            return;
+        }
+
+        $id = $invitation->getKey();
+        dispatch(function () use ($id): void {
+            if ($invitation = Invitation::query()->find($id)) {
+                app(self::class)->url($invitation);
+            }
+        })->afterResponse();
+    }
+
     /** Public URL of the card, rendering it first when it does not exist yet. */
     public function url(Invitation $invitation): string
     {
-        $invitation->loadMissing(['theme', 'events']);
-        $date = $invitation->events->first()?->date;
-
-        $hash = substr(md5(implode('|', [
-            self::VERSION,
-            $invitation->groom_nickname,
-            $invitation->bride_nickname,
-            $date?->toDateString(),
-            $invitation->theme->slug,
-            $invitation->theme_variant,
-            $invitation->cover_photo_path,
-        ])), 0, 12);
-
         $disk = Storage::disk('public');
-        $path = "og/{$invitation->uuid}-{$hash}.png";
+        $path = $this->path($invitation);
 
         if (! $disk->exists($path)) {
-            // Drop this invitation's previous cards before writing the new one.
-            foreach ($disk->files('og') as $old) {
-                if (str_starts_with(basename($old), $invitation->uuid.'-')) {
-                    $disk->delete($old);
-                }
+            // One folder per invitation: replace its previous card only.
+            foreach ($disk->files(dirname($path)) as $old) {
+                $disk->delete($old);
             }
-            $disk->put($path, $this->render($invitation, $date));
+            $disk->put($path, $this->render($invitation, $invitation->events->first()?->date));
         }
 
         // Link previews need an absolute URL.
         return url($disk->url($path));
     }
 
+    /** Delete every card of the invitation (on delete). */
+    public function forget(Invitation $invitation): void
+    {
+        Storage::disk('public')->deleteDirectory('og/'.$invitation->uuid);
+    }
+
+    /** og/{uuid}/{hash}.png; the hash covers everything drawn, colors included. */
+    private function path(Invitation $invitation): string
+    {
+        $invitation->loadMissing(['theme', 'events']);
+
+        $hash = substr(md5(implode('|', [
+            self::VERSION,
+            $invitation->groom_nickname,
+            $invitation->bride_nickname,
+            $invitation->events->first()?->date?->toDateString(),
+            implode(',', $this->themes->swatch($invitation->theme->slug, $invitation->theme_variant)),
+            $invitation->cover_photo_path,
+        ])), 0, 12);
+
+        return "og/{$invitation->uuid}/{$hash}.png";
+    }
+
     /** PNG bytes of the card. */
     public function render(Invitation $invitation, ?CarbonInterface $date): string
     {
-        [$bg, $primary, $accent] = array_map($this->rgb(...), $this->themes->swatch($invitation->theme->slug, $invitation->theme_variant));
+        [$bg, $primary, $accent] = array_map(Contrast::rgb(...), $this->themes->swatch($invitation->theme->slug, $invitation->theme_variant));
 
         $im = imagecreatetruecolor(self::W, self::H);
         imagealphablending($im, true);
@@ -199,17 +242,6 @@ class OgImageService
             imagettftext($im, $size, 0, $x, $baseline, $color, $this->font($style), $c);
             $x += $this->width($c, $style, $size) + $spacing;
         }
-    }
-
-    /** @return array{int, int, int} */
-    private function rgb(string $hex): array
-    {
-        $hex = ltrim($hex, '#');
-        if (strlen($hex) === 3) {
-            $hex = $hex[0].$hex[0].$hex[1].$hex[1].$hex[2].$hex[2];
-        }
-
-        return [hexdec(substr($hex, 0, 2)), hexdec(substr($hex, 2, 2)), hexdec(substr($hex, 4, 2))];
     }
 
     /**

@@ -38,7 +38,7 @@
         <div class="pointer-events-none absolute inset-5 border border-cg-gold/60"></div>
         <div class="relative mx-auto flex max-w-md flex-col items-center px-6 text-center">
             <p class="tc-eyebrow tc-rise text-white/85!" style="--i: 0">The Wedding of</p>
-            <h1 class="mt-4 font-serif text-4xl font-semibold tracking-[0.15em] uppercase leading-tight text-cg-gold sm:text-5xl">{{ $groom }} <span class="block text-2xl font-normal italic">&amp;</span> {{ $bride }}</h1>
+            <h1 class="tc-title tc-rise mt-4 font-serif text-4xl font-semibold tracking-[0.15em] uppercase leading-tight text-cg-gold sm:text-5xl" style="--i: 1">{{ $groom }} <span class="block text-2xl font-normal italic">&amp;</span> {{ $bride }}</h1>
             @if ($dateLabel)
                 <p class="tc-num tc-rise mt-4 text-sm tracking-[0.2em]" style="--i: 2">{{ $dateLabel }}</p>
             @endif
@@ -46,7 +46,7 @@
                 <p class="text-[11px] tracking-[0.18em] uppercase opacity-80">Kepada Yth. Bapak/Ibu/Saudara/i</p>
                 <p class="tc-title mt-2 font-serif text-2xl font-semibold">{{ $guestName ?: 'Tamu Undangan' }}</p>
             </div>
-            <button type="button" x-on:click="open()" class="mt-8 inline-flex items-center gap-2 border border-cg-gold bg-cg-gold px-7 py-3 text-xs font-semibold tracking-[0.2em] uppercase text-cg-deep transition hover:bg-transparent hover:text-cg-gold">
+            <button type="button" x-on:click="open()" class="tc-rise mt-8 inline-flex items-center gap-2 border border-cg-gold bg-cg-gold px-7 py-3 text-xs font-semibold tracking-[0.2em] uppercase text-cg-deep transition hover:bg-transparent hover:text-cg-gold active:scale-[0.97]" style="--i: 4">
                 <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M21.75 9v.906a2.25 2.25 0 0 1-1.183 1.981l-6.478 3.488M2.25 9v.906a2.25 2.25 0 0 0 1.183 1.981l6.478 3.488m8.839 2.51-4.66-2.51m0 0-1.023-.55a2.25 2.25 0 0 0-2.134 0l-1.022.55m0 0-4.661 2.51m16.5 1.615a2.25 2.25 0 0 1-2.25 2.25h-15a2.25 2.25 0 0 1-2.25-2.25V8.844a2.25 2.25 0 0 1 1.183-1.981l7.5-4.039a2.25 2.25 0 0 1 2.134 0l7.5 4.039a2.25 2.25 0 0 1 1.183 1.98V19.5Z"/></svg>
                 Buka Undangan
             </button>

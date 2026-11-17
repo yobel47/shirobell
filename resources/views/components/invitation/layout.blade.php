@@ -29,11 +29,13 @@
         <meta property="og:title" content="The Wedding of {{ $invitation->coupleName() }}">
         <meta property="og:description" content="Kami mengundang Anda untuk hadir di hari bahagia kami.">
         @php
-            // Themed preview card for WhatsApp and other link previews; falls back to the cover photo.
+            // Themed preview card for WhatsApp and other link previews (published
+            // invitations only). Never rendered inline: until the card exists it is
+            // drawn after the response and this request falls back to the cover photo.
             $ogImage = $coverUrl ? url($coverUrl) : null;
-            if (config('shirobell.og_images') && $invitation->exists) {
+            if (config('shirobell.og_images') && $invitation->exists && ! $preview) {
                 try {
-                    $ogImage = app(\App\Services\OgImageService::class)->url($invitation);
+                    $ogImage = app(\App\Services\OgImageService::class)->cachedUrl($invitation) ?? $ogImage;
                 } catch (\Throwable $e) {
                     report($e);
                 }

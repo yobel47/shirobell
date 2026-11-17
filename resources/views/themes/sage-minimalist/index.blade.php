@@ -45,7 +45,7 @@
                 <p class="text-xs opacity-90">Kepada Yth. Bapak/Ibu/Saudara/i</p>
                 <p class="mt-1 font-serif text-xl font-semibold">{{ $guestName ?: 'Tamu Undangan' }}</p>
             </div>
-            <button type="button" x-on:click="open()" class="tc-rise mt-8 inline-flex items-center gap-2 rounded-full px-8! py-3.5! transition active:scale-[0.97] bg-sm-deep px-7 py-3 text-sm font-medium text-white transition hover:bg-sm-rose" style="--i: 4">
+            <button type="button" x-on:click="open()" class="tc-rise mt-8 inline-flex items-center gap-2 rounded-full bg-sm-deep px-8 py-3.5 text-sm font-medium text-white transition hover:bg-sm-rose active:scale-[0.97]" style="--i: 4">
                 <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M21.75 9v.906a2.25 2.25 0 0 1-1.183 1.981l-6.478 3.488M2.25 9v.906a2.25 2.25 0 0 0 1.183 1.981l6.478 3.488m8.839 2.51-4.66-2.51m0 0-1.023-.55a2.25 2.25 0 0 0-2.134 0l-1.022.55m0 0-4.661 2.51m16.5 1.615a2.25 2.25 0 0 1-2.25 2.25h-15a2.25 2.25 0 0 1-2.25-2.25V8.844a2.25 2.25 0 0 1 1.183-1.981l7.5-4.039a2.25 2.25 0 0 1 2.134 0l7.5 4.039a2.25 2.25 0 0 1 1.183 1.98V19.5Z"/></svg>
                 Buka Undangan
             </button>
