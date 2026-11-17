@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\Support\Contrast;
 use Illuminate\Support\Str;
 
 /**
@@ -11,6 +12,16 @@ use Illuminate\Support\Str;
  */
 class ThemeRegistry
 {
+    /**
+     * Legacy themes keep their default palette in CSS (@theme), not in config:
+     * the values craft.css contrast checks need for their first variant.
+     */
+    private const LEGACY_DEFAULTS = [
+        'rose-garden' => ['bg' => '#fdf7f5', 'accent' => '#c77f86', 'ink' => '#4a3438', 'primary' => '#8a4a52'],
+        'classic-gold' => ['bg' => '#faf7f0', 'accent' => '#a8823f', 'ink' => '#2a251e', 'primary' => '#1f1b16'],
+        'sage-minimalist' => ['bg' => '#f7f8f4', 'accent' => '#7f9a7a', 'ink' => '#2f3a33', 'primary' => '#44564a'],
+    ];
+
     /** Shared tokens of engine themes, mapped to --color-t-{token}. */
     public const ENGINE_TOKENS = ['bg', 'surface', 'soft', 'primary', 'accent', 'ink', 'on'];
 
@@ -143,7 +154,54 @@ class ThemeRegistry
             }
         }
 
-        return implode('; ', $vars);
+        return implode('; ', array_merge($vars, $this->accessibleVars($slug, $variant)));
+    }
+
+    /**
+     * Contrast-safe variants of decorative colors for craft.css, computed per
+     * theme and variant so each palette changes only as much as needed:
+     *  --tc-label  accent pulled toward ink until small labels reach 4.5:1
+     *  --tc-strong primary pulled toward ink for small text (only when needed)
+     *  --tc-btn    primary pushed away from the button text color (only when
+     *              the original pair is below 4.5:1)
+     *
+     * @return list<string>
+     */
+    public function accessibleVars(string $slug, ?string $variant = null): array
+    {
+        $c = $this->colors($slug, $variant);
+        if ($this->isEngine($slug)) {
+            $bg = $c['bg'] ?? null;
+            $accent = $c['accent'] ?? null;
+            $ink = $c['ink'] ?? null;
+            $primary = $c['primary'] ?? null;
+            $on = $c['on'] ?? '#ffffff';
+        } else {
+            $d = self::LEGACY_DEFAULTS[$slug] ?? null;
+            $prefix = $this->tokenPrefix($c);
+            $get = fn (string $token, string $key) => ($prefix !== null ? ($c[$prefix.'-'.$token] ?? null) : null) ?? $d[$key] ?? null;
+            $bg = $get('cream', 'bg');
+            $accent = $get('rose', 'accent');
+            $ink = $get('ink', 'ink');
+            $primary = $get('deep', 'primary');
+            $on = '#ffffff';
+        }
+
+        if (! $bg || ! $accent || ! $ink || ! $primary || ! $this->isColor($bg) || ! $this->isColor($accent) || ! $this->isColor($ink) || ! $this->isColor($primary) || ! $this->isColor($on)) {
+            return [];
+        }
+
+        $vars = ['--tc-label: '.Contrast::ensure($accent, $ink, $bg)];
+        // Primary as small text (form labels, outline buttons); large headings keep the original.
+        if (Contrast::ratio($primary, $bg) < 4.5) {
+            $vars[] = '--tc-strong: '.Contrast::ensure($primary, $ink, $bg);
+        }
+        if (Contrast::ratio($on, $primary) < 4.5) {
+            $away = Contrast::ratio($on, '#000000') > Contrast::ratio($on, '#ffffff') ? '#000000' : '#ffffff';
+            $vars[] = '--tc-btn: '.Contrast::ensure($primary, $away, $on);
+        }
+
+        return $vars;
     }
 
     /**
