@@ -3,7 +3,7 @@
     @isset($head)
         <x-slot:head>{{ $head }}</x-slot:head>
     @endisset
-    <header x-data="{ open: false }" class="sticky top-0 z-40 border-b border-rose-brand-900/8 bg-cream/85 backdrop-blur-md">
+    <header x-data="{ open: false }" class="vt-header sticky top-0 z-40 border-b border-rose-brand-900/8 bg-cream/85 backdrop-blur-md">
         <nav class="mx-auto flex max-w-6xl items-center justify-between px-4 py-3.5 sm:px-6">
             <a href="{{ route('home') }}" aria-label="{{ $siteName }}"><x-brand.logo :name="$siteName"/></a>
 

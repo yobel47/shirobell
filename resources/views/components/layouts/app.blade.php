@@ -3,7 +3,7 @@
     @isset($headStart)
         <x-slot:headStart>{{ $headStart }}</x-slot:headStart>
     @endisset
-    <header x-data="{ open: false }" class="sticky top-0 z-40 border-b border-rose-brand-900/8 bg-cream/85 backdrop-blur-md">
+    <header x-data="{ open: false }" class="vt-header sticky top-0 z-40 border-b border-rose-brand-900/8 bg-cream/85 backdrop-blur-md">
         {{-- Same width as <main>, so the logo lines up with the page title on wide pages. --}}
         <nav @class(["mx-auto flex items-center justify-between px-4 py-3 sm:px-6", "max-w-[88rem]" => $wide, "max-w-6xl" => ! $wide])>
             <div class="flex items-center gap-10">

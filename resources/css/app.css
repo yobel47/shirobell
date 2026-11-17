@@ -229,3 +229,38 @@
 [x-cloak] {
     display: none !important;
 }
+
+/*
+ * Cross-document view transitions between platform pages (same origin only;
+ * invitations live on subdomains and are unaffected). The page crossfades with
+ * a slight rise while the header, named below, stays put.
+ */
+@view-transition {
+    navigation: auto;
+}
+
+::view-transition-old(root) {
+    animation: 180ms ease-out both vt-fade-out;
+}
+
+::view-transition-new(root) {
+    animation: 420ms cubic-bezier(0.16, 1, 0.3, 1) both vt-rise-in;
+}
+
+.vt-header {
+    view-transition-name: site-header;
+}
+
+@keyframes vt-fade-out {
+    to { opacity: 0; }
+}
+
+@keyframes vt-rise-in {
+    from { opacity: 0; transform: translateY(8px); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    @view-transition {
+        navigation: none;
+    }
+}
