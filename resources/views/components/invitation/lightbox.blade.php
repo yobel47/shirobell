@@ -5,7 +5,7 @@
 --}}
 <div x-show="show" x-cloak
      x-transition:enter="transition duration-300" x-transition:enter-start="opacity-0" x-transition:leave="transition duration-200" x-transition:leave-end="opacity-0"
-     class="fixed inset-0 z-50 flex flex-col bg-black/92 text-white" role="dialog" aria-modal="true" aria-label="Galeri foto"
+     class="fixed inset-0 z-50 flex flex-col bg-black/95 text-white backdrop-blur-sm" role="dialog" aria-modal="true" aria-label="Galeri foto"
      x-data="{
         sx: null,
         go(step) { this.index = (this.index + step + this.photos.length) % this.photos.length },

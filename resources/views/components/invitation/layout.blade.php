@@ -28,8 +28,22 @@
         <meta name="description" content="Undangan pernikahan {{ $invitation->coupleName() }}">
         <meta property="og:title" content="The Wedding of {{ $invitation->coupleName() }}">
         <meta property="og:description" content="Kami mengundang Anda untuk hadir di hari bahagia kami.">
-        @if ($coverUrl)
-            <meta property="og:image" content="{{ url($coverUrl) }}">
+        @php
+            // Themed preview card for WhatsApp and other link previews; falls back to the cover photo.
+            $ogImage = $coverUrl ? url($coverUrl) : null;
+            if (config('shirobell.og_images') && $invitation->exists) {
+                try {
+                    $ogImage = app(\App\Services\OgImageService::class)->url($invitation);
+                } catch (\Throwable $e) {
+                    report($e);
+                }
+            }
+        @endphp
+        @if ($ogImage)
+            <meta property="og:image" content="{{ $ogImage }}">
+            <meta property="og:image:width" content="1200">
+            <meta property="og:image:height" content="630">
+            <meta name="twitter:card" content="summary_large_image">
         @endif
     @endif
     <link rel="icon" href="{{ asset('favicon.svg') }}" type="image/svg+xml">
