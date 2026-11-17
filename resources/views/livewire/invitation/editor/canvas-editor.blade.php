@@ -1,9 +1,10 @@
 <div>
-    @vite(['resources/css/themes/engine.css', 'resources/js/canvas-editor.js'])
+    {{-- engine.css is loaded in <head> by customer/invitations/edit (before app.css). --}}
+    @vite('resources/js/canvas-editor.js')
 
     @if (! $isEngine)
         <div class="card">
-            <h2 class="font-serif text-lg font-semibold">Desain sampul</h2>
+            <h2 class="font-serif text-xl font-semibold">Desain sampul</h2>
             <p class="mt-1 text-sm text-gray-500">Desain bebas tersedia untuk tema selain Rose Garden, Classic Gold, dan Sage Minimalist. Ganti tema di tab Tema untuk memakainya.</p>
         </div>
     @else
@@ -128,7 +129,7 @@
                         <template x-for="el in state.elements" :key="el.id">
                             <div class="absolute cursor-move" :style="box(el)" x-show="!el.hidden"
                                  x-on:pointerdown="begin($event, el, 'move')"
-                                 :class="selectedId === el.id ? 'outline-2 outline-sky-500 outline' : 'hover:outline hover:outline-1 hover:outline-sky-300'">
+                                 :class="selectedId === el.id ? 'outline-2 outline-rose-brand-500 outline' : 'hover:outline hover:outline-1 hover:outline-rose-brand-300'">
                                 <template x-if="el.type === 'text'">
                                     <p class="h-full w-full leading-[1.15] whitespace-pre-line" :class="fontClass(el.props)" :style="textStyle(el.props)" x-text="resolve(el.props.text)"></p>
                                 </template>
@@ -148,17 +149,17 @@
                                 <template x-if="selectedId === el.id && !el.locked">
                                     <div>
                                         @foreach (['nw' => '-top-1.5 -left-1.5 cursor-nwse-resize', 'ne' => '-top-1.5 -right-1.5 cursor-nesw-resize', 'sw' => '-bottom-1.5 -left-1.5 cursor-nesw-resize', 'se' => '-bottom-1.5 -right-1.5 cursor-nwse-resize', 'n' => '-top-1.5 left-1/2 -ml-1.5 cursor-ns-resize', 's' => '-bottom-1.5 left-1/2 -ml-1.5 cursor-ns-resize', 'e' => 'top-1/2 -right-1.5 -mt-1.5 cursor-ew-resize', 'w' => 'top-1/2 -left-1.5 -mt-1.5 cursor-ew-resize'] as $handle => $pos)
-                                            <span class="absolute z-10 h-3 w-3 rounded-full border-2 border-sky-500 bg-white {{ $pos }}" x-on:pointerdown="begin($event, el, 'resize', '{{ $handle }}')"></span>
+                                            <span class="absolute z-10 h-3 w-3 rounded-full border-2 border-rose-brand-500 bg-white {{ $pos }}" x-on:pointerdown="begin($event, el, 'resize', '{{ $handle }}')"></span>
                                         @endforeach
-                                        <span class="absolute -top-8 left-1/2 z-10 -ml-2.5 h-5 w-5 cursor-grab rounded-full border-2 border-sky-500 bg-white" title="Putar (Shift: 15 derajat)" x-on:pointerdown="begin($event, el, 'rotate')"></span>
-                                        <span class="absolute -top-3 left-1/2 h-3 w-px bg-sky-500"></span>
+                                        <span class="absolute -top-8 left-1/2 z-10 -ml-2.5 h-5 w-5 cursor-grab rounded-full border-2 border-rose-brand-500 bg-white" title="Putar (Shift: 15 derajat)" x-on:pointerdown="begin($event, el, 'rotate')"></span>
+                                        <span class="absolute -top-3 left-1/2 h-3 w-px bg-rose-brand-500"></span>
                                     </div>
                                 </template>
                             </div>
                         </template>
 
                         <template x-for="(g, i) in guides" :key="i">
-                            <div class="pointer-events-none absolute z-20 bg-pink-500" :style="guideStyle(g)"></div>
+                            <div class="pointer-events-none absolute z-20 bg-rose-brand-500" :style="guideStyle(g)"></div>
                         </template>
                     </div>
                 </div>
@@ -240,9 +241,9 @@
                                     </label>
                                     <div class="flex gap-1">
                                         <template x-for="a in ['left', 'center', 'right']" :key="a">
-                                            <button type="button" class="flex-1 rounded-md py-1 text-xs" :class="selected.props.align === a ? 'bg-sky-100 text-sky-800' : 'bg-gray-100'" x-on:click="selected.props.align = a; commit()" x-text="{ left: 'Kiri', center: 'Tengah', right: 'Kanan' }[a]"></button>
+                                            <button type="button" class="flex-1 rounded-md py-1 text-xs" :class="selected.props.align === a ? 'bg-ink text-cream' : 'bg-gray-100'" x-on:click="selected.props.align = a; commit()" x-text="{ left: 'Kiri', center: 'Tengah', right: 'Kanan' }[a]"></button>
                                         </template>
-                                        <button type="button" class="flex-1 rounded-md py-1 text-xs italic" :class="selected.props.italic ? 'bg-sky-100 text-sky-800' : 'bg-gray-100'" x-on:click="selected.props.italic = !selected.props.italic; commit()">Miring</button>
+                                        <button type="button" class="flex-1 rounded-md py-1 text-xs italic" :class="selected.props.italic ? 'bg-ink text-cream' : 'bg-gray-100'" x-on:click="selected.props.italic = !selected.props.italic; commit()">Miring</button>
                                     </div>
                                     @include('livewire.invitation.editor.partials.canvas-color', ['label' => 'Warna', 'model' => 'selected.props.color'])
                                 </div>
@@ -252,8 +253,8 @@
                             <template x-if="selected.type === 'image'">
                                 <div class="space-y-3 border-t border-gray-100 pt-3">
                                     <div class="flex gap-1">
-                                        <button type="button" class="flex-1 rounded-md py-1 text-xs" :class="selected.props.fit === 'cover' ? 'bg-sky-100 text-sky-800' : 'bg-gray-100'" x-on:click="selected.props.fit = 'cover'; commit()">Penuhi</button>
-                                        <button type="button" class="flex-1 rounded-md py-1 text-xs" :class="selected.props.fit === 'contain' ? 'bg-sky-100 text-sky-800' : 'bg-gray-100'" x-on:click="selected.props.fit = 'contain'; commit()">Utuh</button>
+                                        <button type="button" class="flex-1 rounded-md py-1 text-xs" :class="selected.props.fit === 'cover' ? 'bg-ink text-cream' : 'bg-gray-100'" x-on:click="selected.props.fit = 'cover'; commit()">Penuhi</button>
+                                        <button type="button" class="flex-1 rounded-md py-1 text-xs" :class="selected.props.fit === 'contain' ? 'bg-ink text-cream' : 'bg-gray-100'" x-on:click="selected.props.fit = 'contain'; commit()">Utuh</button>
                                     </div>
                                     <label class="block text-xs text-gray-500">Sudut membulat <input type="range" min="0" max="200" class="w-full" x-model.number="selected.props.radius" x-on:change="commit()"></label>
                                     <label class="block text-xs text-gray-500">Bingkai <input type="range" min="0" max="12" class="w-full" x-model.number="selected.props.border" x-on:change="commit()"></label>
@@ -305,7 +306,7 @@
                         <p class="mb-2 font-semibold">Layer</p>
                         <ul class="max-h-64 space-y-1 overflow-y-auto">
                             <template x-for="el in [...state.elements].reverse()" :key="el.id">
-                                <li class="flex items-center gap-1 rounded-md px-2 py-1" :class="selectedId === el.id ? 'bg-sky-50 text-sky-900' : 'hover:bg-gray-50'">
+                                <li class="flex items-center gap-1 rounded-md px-2 py-1" :class="selectedId === el.id ? 'bg-rose-brand-50 text-rose-brand-800' : 'hover:bg-gray-50'">
                                     <button type="button" class="min-w-0 flex-1 truncate text-left text-xs" :class="el.hidden && 'opacity-40'" x-on:click="selectedId = el.id" x-text="label(el)"></button>
                                     <span x-show="el.locked" class="text-[10px] text-amber-700">kunci</span>
                                 </li>

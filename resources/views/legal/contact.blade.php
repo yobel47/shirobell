@@ -7,21 +7,21 @@
 
     <div class="grid gap-4 sm:grid-cols-2">
         @if ($legal['whatsapp_url'])
-            <a href="{{ $legal['whatsapp_url'] }}" target="_blank" rel="noopener" class="card block no-underline hover:border-rose-brand-300">
-                <span class="block text-sm text-gray-500">WhatsApp</span>
-                <span class="mt-1 block text-lg font-semibold text-ink">{{ $legal['whatsapp'] }}</span>
+            <a href="{{ $legal['whatsapp_url'] }}" target="_blank" rel="noopener" class="card group block no-underline! transition duration-300 ease-out-expo hover:-translate-y-0.5 hover:border-rose-brand-300">
+                <span class="block text-xs font-semibold tracking-[0.12em] text-rose-brand-600 uppercase">WhatsApp</span>
+                <span class="mt-3 block font-serif text-2xl font-medium text-ink">{{ $legal['whatsapp'] }}</span>
             </a>
         @endif
         @if ($legal['instagram_url'])
-            <a href="{{ $legal['instagram_url'] }}" target="_blank" rel="noopener" class="card block no-underline hover:border-rose-brand-300">
-                <span class="block text-sm text-gray-500">Instagram</span>
-                <span class="mt-1 block text-lg font-semibold text-ink">{{ '@'.$legal['instagram'] }}</span>
+            <a href="{{ $legal['instagram_url'] }}" target="_blank" rel="noopener" class="card group block no-underline! transition duration-300 ease-out-expo hover:-translate-y-0.5 hover:border-rose-brand-300">
+                <span class="block text-xs font-semibold tracking-[0.12em] text-rose-brand-600 uppercase">Instagram</span>
+                <span class="mt-3 block font-serif text-2xl font-medium text-ink">{{ '@'.$legal['instagram'] }}</span>
             </a>
         @endif
         @if ($legal['email'])
-            <a href="mailto:{{ $legal['email'] }}" class="card block no-underline hover:border-rose-brand-300">
-                <span class="block text-sm text-gray-500">Email</span>
-                <span class="mt-1 block text-lg font-semibold break-all text-ink">{{ $legal['email'] }}</span>
+            <a href="mailto:{{ $legal['email'] }}" class="card group block no-underline! transition duration-300 ease-out-expo hover:-translate-y-0.5 hover:border-rose-brand-300">
+                <span class="block text-xs font-semibold tracking-[0.12em] text-rose-brand-600 uppercase">Email</span>
+                <span class="mt-3 block font-serif text-2xl font-medium break-all text-ink">{{ $legal['email'] }}</span>
             </a>
         @endif
     </div>

@@ -4,6 +4,10 @@
     $previewUrl = route('app.invitations.preview', [$invitation, 'buka' => 1, 'frame' => 1]);
 @endphp
 <x-layouts.app :title="'Edit '.$invitation->coupleName()" wide>
+    @if ($tab === 'desain')
+        {{-- Canvas theme styles load before app.css (see layouts/base). --}}
+        <x-slot:headStart>@vite('resources/css/themes/engine.css')</x-slot:headStart>
+    @endif
     <x-invitation-header :invitation="$invitation" active="editor" />
 
     {{--
@@ -28,9 +32,9 @@
                         <a href="{{ route('app.invitations.edit', [$invitation, $key]) }}"
                            @if ($tab === $key) aria-current="page" @endif
                            @class([
-                               'block rounded-full px-4 py-2 text-sm font-medium whitespace-nowrap lg:rounded-xl',
-                               'bg-rose-brand-500 text-white' => $tab === $key,
-                               'text-ink hover:bg-rose-brand-50' => $tab !== $key,
+                               'block rounded-full px-4 py-2 text-sm font-medium whitespace-nowrap transition-colors',
+                               'bg-ink text-cream' => $tab === $key,
+                               'text-ink/75 hover:bg-rose-brand-50 hover:text-ink' => $tab !== $key,
                            ])>{{ $label }}</a>
                     </li>
                 @endforeach
@@ -67,7 +71,7 @@
         </aside>
 
         {{-- Mobile / tablet: floating button + full-screen preview --}}
-        <button type="button" x-on:click="open = true" class="btn btn-primary fixed right-4 bottom-4 z-30 shadow-lg xl:hidden">Preview</button>
+        <button type="button" x-on:click="open = true" class="btn btn-primary fixed right-4 bottom-[5.25rem] z-30 shadow-lg sm:bottom-4 xl:hidden">Preview</button>
         <div x-show="open" x-cloak class="fixed inset-0 z-50 flex flex-col bg-white xl:hidden" x-on:keydown.escape.window="open = false">
             <div class="flex items-center justify-between border-b border-gray-100 px-4 py-3">
                 <p class="text-sm font-semibold">Preview</p>

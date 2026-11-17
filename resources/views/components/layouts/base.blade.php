@@ -37,6 +37,12 @@
     <link rel="apple-touch-icon" href="{{ asset('apple-touch-icon.png') }}">
     <meta name="theme-color" content="#b76e79">
     @fonts
+    {{--
+        Stylesheets that must lose to the platform CSS go first: the invitation
+        theme build (engine.css) is a full Tailwind build, and loaded after app.css
+        its plain utilities (hidden, flex-col...) override responsive md:/sm: ones.
+    --}}
+    {{ $headStart ?? '' }}
     @vite(['resources/css/app.css', 'resources/js/app.js'])
     @livewireStyles
     {{ $head ?? '' }}

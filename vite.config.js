@@ -21,7 +21,8 @@ export default defineConfig({
                 }),
                 // Engine theme fonts (config/themes.php). Not preloaded: the
                 // browser only downloads a family when a theme uses it.
-                bunny('Cormorant Garamond', { weights: [500, 600], styles: ['normal', 'italic'], preload: false }),
+                // Also the landing page display face (400 for large headlines).
+                bunny('Cormorant Garamond', { weights: [400, 500, 600], styles: ['normal', 'italic'], preload: false }),
                 bunny('Cinzel', { weights: [500, 600], preload: false }),
                 bunny('Marcellus', { weights: [400], preload: false }),
                 bunny('DM Serif Display', { weights: [400], styles: ['normal', 'italic'], preload: false }),

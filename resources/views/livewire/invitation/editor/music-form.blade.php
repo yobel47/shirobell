@@ -1,7 +1,7 @@
 <div class="space-y-6">
     <section class="card space-y-4">
         <div>
-            <h2 class="font-serif text-lg font-semibold">Unggah musik sendiri</h2>
+            <h2 class="font-serif text-xl font-semibold">Unggah musik sendiri</h2>
             <p class="text-sm text-gray-500">File MP3, maksimal 10 MB. Jika diisi, musik ini yang diputar. Pastikan Anda berhak memakai lagu tersebut.</p>
         </div>
 
@@ -24,7 +24,7 @@
 
     <section class="card space-y-4">
         <div>
-            <h2 class="font-serif text-lg font-semibold">Pilih dari perpustakaan</h2>
+            <h2 class="font-serif text-xl font-semibold">Pilih dari perpustakaan</h2>
             <p class="text-sm text-gray-500">Dipakai jika Anda tidak mengunggah musik sendiri.</p>
         </div>
 

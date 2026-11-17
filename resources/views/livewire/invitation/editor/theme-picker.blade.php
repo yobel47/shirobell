@@ -1,6 +1,6 @@
 <div class="space-y-4">
     <div>
-        <h2 class="font-serif text-lg font-semibold">Tema</h2>
+        <h2 class="font-serif text-xl font-semibold">Tema</h2>
         <p class="text-sm text-gray-500">{{ $themes->count() }} tema, semua termasuk dalam paket. Data undangan tetap sama saat tema atau warna diganti.</p>
     </div>
     @error('theme_id') <p class="form-error">{{ $message }}</p> @enderror
@@ -86,7 +86,7 @@
                         </div>
                     @endif
                     <div class="flex gap-2">
-                        <a x-bind:href="@js(route('themes.demo', $theme)) + '?varian=' + variant" target="_blank" class="btn btn-ghost flex-1 px-3 py-1.5">Lihat demo</a>
+                        <a x-bind:href="@js(route('themes.demo', $theme)) + '?varian=' + variant" target="_blank" class="btn btn-ghost flex-1 px-3 py-1.5 whitespace-nowrap">Lihat demo</a>
                         @if ($selected)
                             <button type="button" x-show="variant !== @js($currentVariant ?? '')" x-cloak x-on:click="$wire.choose({{ $theme->id }}, variant)" class="btn btn-primary flex-1 px-3 py-1.5">Pakai warna ini</button>
                             <span x-show="variant === @js($currentVariant ?? '')" class="flex flex-1 items-center justify-center rounded-full bg-rose-brand-50 px-3 py-1.5 text-xs font-semibold text-rose-brand-700">Dipakai</span>

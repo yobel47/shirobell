@@ -12,10 +12,10 @@
             <a href="{{ route('password.request') }}" class="font-medium text-rose-brand-600 hover:underline">Lupa kata sandi?</a>
         </div>
 
-        <button type="submit" class="btn btn-primary w-full">Masuk</button>
+        <button type="submit" class="btn btn-primary btn-lg w-full">Masuk</button>
     </form>
 
     <x-slot:footer>
-        <p class="mt-6 text-sm text-gray-500">Belum punya akun? <a href="{{ route('register') }}" class="font-medium text-rose-brand-600 hover:underline">Daftar gratis</a></p>
+        <p class="mt-10 border-t border-rose-brand-900/8 pt-6 text-sm text-gray-500">Belum punya akun? <a href="{{ route('register') }}" class="font-medium text-rose-brand-600 hover:underline">Daftar gratis</a></p>
     </x-slot:footer>
 </x-layouts.auth>

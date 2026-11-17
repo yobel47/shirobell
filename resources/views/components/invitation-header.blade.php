@@ -23,9 +23,9 @@
 
 <div class="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
     <div class="min-w-0">
-        <a href="{{ $backUrl }}" class="text-sm text-gray-500 hover:text-rose-brand-600">&larr; {{ $adminMode ? 'Kembali ke panel admin' : 'Undangan Saya' }}</a>
-        <h1 class="mt-1 truncate font-serif text-2xl font-semibold sm:text-3xl">{{ $invitation->coupleName() }}</h1>
-        <p class="mt-1 truncate text-sm text-gray-500">{{ $invitation->slug }}.{{ config('app.domain') }}</p>
+        <a href="{{ $backUrl }}" class="back-link">&larr; {{ $adminMode ? 'Kembali ke panel admin' : 'Undangan Saya' }}</a>
+        <h1 class="page-title mt-3 truncate pb-1">{{ $invitation->coupleName() }}</h1>
+        <p class="mt-2 truncate font-mono text-xs text-gray-500">{{ $invitation->slug }}.{{ config('app.domain') }}</p>
     </div>
     <div class="flex shrink-0 gap-2">
         <a href="{{ route('app.invitations.preview', $invitation) }}" target="_blank" rel="noopener" class="btn btn-outline">Preview</a>
@@ -36,7 +36,7 @@
 </div>
 
 <div @class([
-    'mt-5 flex flex-col gap-3 rounded-xl px-4 py-3 text-sm sm:flex-row sm:items-center sm:justify-between',
+    'mt-6 flex flex-col gap-3 rounded-xl px-5 py-3.5 text-sm sm:flex-row sm:items-center sm:justify-between',
     'bg-amber-50 text-amber-800' => $status === InvitationStatus::Draft,
     'bg-emerald-50 text-emerald-800' => $status === InvitationStatus::Active,
     'bg-gray-100 text-gray-700' => $status === InvitationStatus::Expired,
@@ -66,13 +66,13 @@
     @endif
 </div>
 
-<nav aria-label="Menu undangan" class="mt-5 border-b border-rose-brand-100">
-    <ul class="-mb-px flex gap-4 overflow-x-auto">
+<nav aria-label="Menu undangan" class="mt-6 border-b border-rose-brand-900/10">
+    <ul class="-mb-px flex gap-7 overflow-x-auto">
         @foreach ($sections as $key => [$label, $url])
             <li>
                 <a href="{{ $url }}" @if ($active === $key) aria-current="page" @endif @class([
-                    'block border-b-2 px-1 py-2.5 text-sm font-medium whitespace-nowrap',
-                    'border-rose-brand-500 text-rose-brand-700' => $active === $key,
+                    'block border-b-2 py-3.5 text-sm font-medium whitespace-nowrap transition-colors',
+                    'border-rose-brand-500 text-ink' => $active === $key,
                     'border-transparent text-gray-500 hover:text-ink' => $active !== $key,
                 ])>{{ $label }}</a>
             </li>

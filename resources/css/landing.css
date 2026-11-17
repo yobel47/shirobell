@@ -1,0 +1,263 @@
+/*
+ * Editorial art direction shared by the landing page and the platform pages
+ * Motion is CSS-first; resources/js/app.js only toggles .is-in for [data-reveal].
+ * Everything animated has a prefers-reduced-motion fallback at the bottom.
+ */
+
+/* Components layer: Tailwind utilities can still override these. */
+@layer components {
+    /* ---------- Type ---------- */
+    .display {
+        font-family: var(--font-display);
+        font-weight: 400;
+        letter-spacing: -0.03em;
+        line-height: 0.92;
+    }
+
+    /* Cormorant defaults to old-style figures; prices and counts need even heights. */
+    .display,
+    .font-display,
+    .price-figure {
+        font-variant-numeric: lining-nums;
+    }
+
+    .display em {
+        font-style: italic;
+        color: var(--color-rose-brand-500);
+    }
+
+    .eyebrow {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.75rem;
+        font-size: 0.75rem;
+        font-weight: 600;
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
+        color: var(--color-rose-brand-600);
+    }
+
+    .eyebrow::before {
+        content: '';
+        width: 2rem;
+        height: 1px;
+        background: currentColor;
+        opacity: 0.6;
+    }
+
+    /* ---------- Buttons ---------- */
+    .btn.btn-lg {
+        padding: 0.95rem 1.75rem;
+        font-size: 1rem;
+    }
+
+    .btn-arrow svg {
+        transition: transform 250ms var(--ease-out-expo);
+    }
+
+    .btn-light {
+        background: var(--color-cream);
+        color: var(--color-wine);
+    }
+
+    @media (hover: hover) {
+        .btn-arrow:hover svg {
+            transform: translateX(4px);
+        }
+
+        .btn-light:hover {
+            background: #fff;
+        }
+    }
+
+    /* ---------- Hero ---------- */
+    .hero-glow {
+        background:
+            radial-gradient(40% 50% at 78% 45%, rgb(236 200 206 / 0.55), transparent 70%),
+            radial-gradient(30% 40% at 10% 90%, rgb(246 228 231 / 0.7), transparent 70%);
+    }
+
+    /* Each headline line rises out of its own mask. Padding keeps descenders unclipped. */
+    .hero-line {
+        display: block;
+        overflow: hidden;
+        padding-bottom: 0.1em;
+        margin-bottom: -0.1em;
+    }
+
+    .hero-line > span {
+        display: block;
+        animation: hero-rise 1.1s var(--ease-out-expo) both;
+        animation-delay: calc(var(--i, 0) * 90ms + 120ms);
+    }
+
+    .hero-fade {
+        animation: hero-fade 0.9s var(--ease-out-expo) both;
+        animation-delay: var(--d, 500ms);
+    }
+
+    @keyframes hero-rise {
+        from { transform: translateY(105%); }
+        to { transform: translateY(0); }
+    }
+
+    @keyframes hero-fade {
+        from { opacity: 0; transform: translateY(16px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+
+    /* ---------- Phone mockup ---------- */
+    .phone {
+        border-radius: 2.75rem;
+        background: var(--color-wine);
+        padding: 0.55rem;
+        box-shadow:
+            0 1px 0 rgb(255 255 255 / 0.08) inset,
+            0 40px 80px -30px rgb(89 52 59 / 0.45),
+            0 18px 36px -18px rgb(47 62 70 / 0.35);
+    }
+
+    .phone-screen {
+        position: relative;
+        overflow: hidden;
+        border-radius: 2.25rem;
+        aspect-ratio: 9 / 18.5;
+        background: var(--color-cream);
+    }
+
+    .phone-cover {
+        transition: transform 900ms var(--ease-in-out-expo);
+    }
+
+    .phone-cover.is-open {
+        transform: translateY(-101%);
+    }
+
+    .phone-inside > * {
+        opacity: 0;
+        transform: translateY(14px);
+        transition: opacity 600ms var(--ease-out-expo), transform 600ms var(--ease-out-expo);
+    }
+
+    .phone-inside.is-open > * {
+        opacity: 1;
+        transform: none;
+        transition-delay: calc(var(--i, 0) * 70ms + 450ms);
+    }
+
+    /* ---------- Cycling words (subdomain, guest names) ---------- */
+    .cycle {
+        display: inline-grid;
+        overflow: hidden;
+        vertical-align: bottom;
+    }
+
+    .cycle > span {
+        grid-area: 1 / 1;
+        /* Tailwind v4 translate-* utilities set `translate`, not `transform`. */
+        transition: translate 600ms var(--ease-out-expo), opacity 600ms var(--ease-out-expo);
+    }
+
+    /* ---------- Bento ---------- */
+    .tile {
+        position: relative;
+        overflow: hidden;
+        border-radius: 1.5rem;
+        border: 1px solid rgb(89 52 59 / 0.08);
+        background: #fff;
+        padding: 1.75rem;
+    }
+
+    .qr-cell {
+        border-radius: 2px;
+        background: var(--color-ink);
+    }
+
+    /* ---------- Theme rail ---------- */
+    .rail {
+        scrollbar-width: none;
+        /* Align the first card with the 72rem content column. */
+        --rail-gutter: max(1rem, calc((100% - 72rem) / 2 + 1.5rem));
+        padding-inline: var(--rail-gutter);
+        scroll-padding-inline: var(--rail-gutter);
+    }
+
+    .rail::-webkit-scrollbar {
+        display: none;
+    }
+
+    /* ---------- Pricing ---------- */
+    .price-figure {
+        font-family: var(--font-display);
+        font-weight: 400;
+        letter-spacing: -0.04em;
+        line-height: 0.85;
+        font-size: clamp(4.5rem, 12vw, 10rem);
+    }
+
+    /* ---------- Bell ---------- */
+    .bell {
+        transform-origin: 50% 12%;
+    }
+
+    /* Rings once on render (payment success); safe inside Livewire re-renders. */
+    .bell-auto {
+        transform-origin: 50% 12%;
+        animation: bell-ring 1.6s var(--ease-out-expo) 300ms both;
+    }
+
+    .is-in .bell {
+        animation: bell-ring 1.6s var(--ease-out-expo) 300ms both;
+    }
+
+    @media (hover: hover) {
+        .bell-trigger:hover .bell {
+            animation: bell-ring 1.2s var(--ease-out-expo) both;
+        }
+    }
+
+    @keyframes bell-ring {
+        0% { transform: rotate(0); }
+        15% { transform: rotate(14deg); }
+        30% { transform: rotate(-11deg); }
+        45% { transform: rotate(7deg); }
+        60% { transform: rotate(-4deg); }
+        75% { transform: rotate(2deg); }
+        100% { transform: rotate(0); }
+    }
+
+    /* ---------- Scroll reveal ---------- */
+    .reveal-ready [data-reveal] {
+        transition: opacity 800ms var(--ease-out-expo), transform 800ms var(--ease-out-expo);
+        transition-delay: var(--d, 0ms);
+    }
+
+    .reveal-ready [data-reveal]:not(.is-in) {
+        opacity: 0;
+        transform: translateY(28px);
+    }
+
+    /* ---------- Reduced motion: same layout, no movement ---------- */
+    @media (prefers-reduced-motion: reduce) {
+        .hero-line > span,
+        .hero-fade,
+        .is-in .bell,
+        .bell-auto,
+        .bell-trigger:hover .bell {
+            animation: none;
+        }
+
+        .phone-cover,
+        .phone-inside > *,
+        .cycle > span,
+        .btn-arrow svg,
+        .reveal-ready [data-reveal] {
+            transition: none;
+        }
+
+        .reveal-ready [data-reveal]:not(.is-in) {
+            opacity: 1;
+            transform: none;
+        }
+    }
+}

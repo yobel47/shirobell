@@ -38,6 +38,8 @@ class AdminPanelProvider extends PanelProvider
             ->renderHook(PanelsRenderHook::HEAD_END, fn (): string => Blade::render('@fonts'))
             ->colors([
                 'primary' => Color::hex('#b76e79'),
+                // Warm neutrals, matching the platform's warm gray scale.
+                'gray' => Color::Stone,
             ])
             ->navigationGroups(['Penjualan', 'Undangan', 'Katalog', 'Sistem'])
             ->sidebarCollapsibleOnDesktop()

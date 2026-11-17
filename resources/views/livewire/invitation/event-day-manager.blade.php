@@ -1,7 +1,7 @@
 <div class="space-y-6">
     @if (! $invitation->isActive())
         <div class="card">
-            <h2 class="font-serif text-lg font-semibold">Fitur hari-H</h2>
+            <h2 class="font-serif text-xl font-semibold">Fitur hari-H</h2>
             <p class="mt-1 text-sm text-gray-500">Aplikasi penerima tamu, tiket QR, cetak kartu QR, dan layar sapa tersedia setelah undangan aktif.</p>
             @unless (\App\Policies\InvitationPolicy::actingAsAdmin(auth()->user(), $invitation))
                 <a href="{{ route('app.checkout', $invitation) }}" class="btn btn-primary mt-4">Aktifkan undangan</a>
@@ -9,7 +9,7 @@
         </div>
     @elseif (! $unlocked)
         <div class="card">
-            <h2 class="font-serif text-lg font-semibold">Add-on Hari-H</h2>
+            <h2 class="font-serif text-xl font-semibold">Add-on Hari-H</h2>
             <p class="mt-1 text-sm text-gray-500">Aplikasi penerima tamu dengan scan QR, tiket QR untuk setiap tamu, cetak kartu QR, dan layar sapa yang menampilkan nama tamu saat tiba.</p>
             <p class="mt-4 font-serif text-3xl font-semibold">Rp {{ number_format($addonPrice, 0, ',', '.') }}</p>
             <p class="text-sm text-gray-500">Sekali bayar, berlaku selama undangan aktif.</p>
@@ -19,7 +19,7 @@
         </div>
     @elseif (! $open)
         <div class="card">
-            <h2 class="font-serif text-lg font-semibold">Penerima tamu</h2>
+            <h2 class="font-serif text-xl font-semibold">Penerima tamu</h2>
             <p class="mt-1 text-sm text-gray-500">Aktifkan untuk mendapatkan tautan dan PIN bagi petugas penerima tamu. Setelah aktif, setiap tamu juga mendapat tiket QR di undangan personalnya.</p>
             <button type="button" wire:click="enable" class="btn btn-primary mt-4">Aktifkan penerima tamu</button>
         </div>
@@ -41,7 +41,7 @@
 
         <div class="card space-y-4">
             <div>
-                <h2 class="font-serif text-lg font-semibold">Akses petugas penerima tamu</h2>
+                <h2 class="font-serif text-xl font-semibold">Akses petugas penerima tamu</h2>
                 <p class="text-sm text-gray-500">Bagikan tautan dan PIN hanya kepada petugas. Satu tautan bisa dipakai di beberapa HP sekaligus.</p>
             </div>
             <div class="grid gap-3 sm:grid-cols-[1fr_auto]"
@@ -78,7 +78,7 @@
         <div class="card space-y-4">
             <div class="flex flex-wrap items-start justify-between gap-3">
                 <div>
-                    <h2 class="font-serif text-lg font-semibold">Rekap hari-H</h2>
+                    <h2 class="font-serif text-xl font-semibold">Rekap hari-H</h2>
                     <p class="text-sm text-gray-500">Perkiraan porsi dihitung dari RSVP "Hadir"; jumlah datang dari check-in.</p>
                 </div>
                 <div class="flex gap-2">
@@ -115,7 +115,7 @@
         <div class="card space-y-4">
             <div class="flex flex-wrap items-start justify-between gap-3">
                 <div>
-                    <h2 class="font-serif text-lg font-semibold">Selfie check-in</h2>
+                    <h2 class="font-serif text-xl font-semibold">Selfie check-in</h2>
                     <p class="max-w-xl text-sm text-gray-500">Petugas bisa memotret tamu saat check-in. Foto tampil di layar sapa dan tersimpan di sini sebagai kenang-kenangan. Mintalah izin tamu sebelum memotret.</p>
                 </div>
                 <button type="button" wire:click="toggleSelfie" @class(['btn shrink-0', 'btn-primary' => ! $invitation->checkin_selfie, 'btn-outline' => $invitation->checkin_selfie])>
@@ -140,7 +140,7 @@
         </div>
 
         <div class="card">
-            <h2 class="font-serif text-lg font-semibold">Baru tiba</h2>
+            <h2 class="font-serif text-xl font-semibold">Baru tiba</h2>
             <ul class="mt-3 divide-y divide-gray-100" wire:poll.20s>
                 @forelse ($arrivals as $guest)
                     <li class="flex items-center justify-between gap-3 py-2 text-sm">

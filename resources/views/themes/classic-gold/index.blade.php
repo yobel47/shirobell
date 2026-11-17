@@ -24,10 +24,12 @@
         $dateLabel = $mainDate?->translatedFormat('l, d F Y');
         $groom = $invitation->groom_nickname ?: 'Mempelai Pria';
         $bride = $invitation->bride_nickname ?: 'Mempelai Wanita';
+        // Scroll reveal (craft.css). Off in previews (?buka=1) so the editor frame shows everything.
+        $reveal = request()->boolean('buka') ? '' : 'x-data="{ v: false }" x-intersect.once="v = true" x-bind:class="v ? \'t-in\' : \'t-reveal\'"';
     @endphp
 
     {{-- Cover --}}
-    <section x-show="!opened" @if (request()->boolean('buka')) x-cloak @endif x-transition:leave="transition duration-700" x-transition:leave-end="-translate-y-full opacity-0"
+    <section x-show="!opened" @if (request()->boolean('buka')) x-cloak @endif x-transition:leave="transition duration-[1100ms] ease-[cubic-bezier(0.76,0,0.24,1)]" x-transition:leave-end="-translate-y-full"
              class="fixed inset-0 z-40 flex items-center justify-center overflow-hidden bg-cg-deep text-cg-cream">
         @if ($coverUrl)
             <img src="{{ $coverUrl }}" alt="" class="absolute inset-0 h-full w-full object-cover opacity-60">
@@ -35,14 +37,14 @@
         <div class="absolute inset-0 bg-gradient-to-b from-cg-deep/60 via-cg-deep/50 to-cg-deep/90"></div>
         <div class="pointer-events-none absolute inset-5 border border-cg-gold/60"></div>
         <div class="relative mx-auto flex max-w-md flex-col items-center px-6 text-center">
-            <p class="text-xs tracking-[0.35em] uppercase opacity-90">The Wedding of</p>
+            <p class="tc-eyebrow tc-rise text-white/85!" style="--i: 0">The Wedding of</p>
             <h1 class="mt-4 font-serif text-4xl font-semibold tracking-[0.15em] uppercase leading-tight text-cg-gold sm:text-5xl">{{ $groom }} <span class="block text-2xl font-normal italic">&amp;</span> {{ $bride }}</h1>
             @if ($dateLabel)
-                <p class="mt-3 text-sm tracking-widest">{{ $dateLabel }}</p>
+                <p class="tc-num tc-rise mt-4 text-sm tracking-[0.2em]" style="--i: 2">{{ $dateLabel }}</p>
             @endif
-            <div class="mt-10 rounded-2xl bg-white/15 px-6 py-4 backdrop-blur-sm">
-                <p class="text-xs opacity-90">Kepada Yth. Bapak/Ibu/Saudara/i</p>
-                <p class="mt-1 font-serif text-xl font-semibold">{{ $guestName ?: 'Tamu Undangan' }}</p>
+            <div class="tc-rise mt-10 rounded-2xl bg-white/15 px-6 py-4 backdrop-blur-sm" style="--i: 3">
+                <p class="text-[11px] tracking-[0.18em] uppercase opacity-80">Kepada Yth. Bapak/Ibu/Saudara/i</p>
+                <p class="tc-title mt-2 font-serif text-2xl font-semibold">{{ $guestName ?: 'Tamu Undangan' }}</p>
             </div>
             <button type="button" x-on:click="open()" class="mt-8 inline-flex items-center gap-2 border border-cg-gold bg-cg-gold px-7 py-3 text-xs font-semibold tracking-[0.2em] uppercase text-cg-deep transition hover:bg-transparent hover:text-cg-gold">
                 <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M21.75 9v.906a2.25 2.25 0 0 1-1.183 1.981l-6.478 3.488M2.25 9v.906a2.25 2.25 0 0 0 1.183 1.981l6.478 3.488m8.839 2.51-4.66-2.51m0 0-1.023-.55a2.25 2.25 0 0 0-2.134 0l-1.022.55m0 0-4.661 2.51m16.5 1.615a2.25 2.25 0 0 1-2.25 2.25h-15a2.25 2.25 0 0 1-2.25-2.25V8.844a2.25 2.25 0 0 1 1.183-1.981l7.5-4.039a2.25 2.25 0 0 1 2.134 0l7.5 4.039a2.25 2.25 0 0 1 1.183 1.98V19.5Z"/></svg>
@@ -54,37 +56,43 @@
     <main id="mulai" class="mx-auto max-w-md bg-cg-cream shadow-2xl shadow-cg-rose/10 sm:my-0">
         {{-- Hero --}}
         <section class="relative px-6 pt-16 pb-14 text-center">
-            <p class="text-xs tracking-[0.35em] text-cg-rose uppercase">The Wedding of</p>
+            <p class="tc-eyebrow">The Wedding of</p>
             <div class="cg-arch mx-auto mt-8 h-80 w-60 overflow-hidden border-4 border-white bg-cg-blush shadow-xl">
                 @if ($coverUrl)
                     <img src="{{ $coverUrl }}" alt="Foto {{ $invitation->coupleName() }}" class="h-full w-full object-cover">
                 @endif
             </div>
-            <h2 class="mt-8 font-script text-6xl text-cg-deep">{{ $groom }} <span class="text-4xl text-cg-gold">&amp;</span> {{ $bride }}</h2>
+            <h2 class="tc-title mt-8 font-script text-6xl text-cg-deep">{{ $groom }} <span class="text-4xl text-cg-gold">&amp;</span> {{ $bride }}</h2>
             @if ($dateLabel)
-                <p class="mt-3 text-sm tracking-widest text-cg-ink/80">{{ $dateLabel }}</p>
+                <p class="tc-num mt-4 text-sm tracking-[0.2em] text-cg-ink/80">{{ $dateLabel }}</p>
             @endif
         </section>
 
         @include('themes.classic-gold.partials.ornament')
 
         {{-- Opening & quote --}}
-        <section class="px-8 py-12 text-center">
+        <section class="px-8 py-14 text-center" {!! $reveal !!}>
             @if ($invitation->quote_text)
-                <blockquote class="text-sm leading-relaxed text-cg-ink/80 italic">"{{ $invitation->quote_text }}"</blockquote>
+                <span class="block font-serif text-7xl leading-[0.5] text-cg-gold/60" aria-hidden="true">&ldquo;</span>
+                <blockquote class="tc-pretty mt-4 font-serif text-lg leading-relaxed text-cg-ink/85 italic">{{ $invitation->quote_text }}</blockquote>
                 @if ($invitation->quote_source)
-                    <p class="mt-3 text-xs font-semibold tracking-widest text-cg-rose uppercase">{{ $invitation->quote_source }}</p>
+                    <p class="tc-eyebrow mt-5">{{ $invitation->quote_source }}</p>
                 @endif
             @endif
             @if ($invitation->opening_text)
-                <p @class(['text-sm leading-relaxed', 'mt-10' => $invitation->quote_text])>{{ $invitation->opening_text }}</p>
+                <p @class(['tc-pretty mx-auto max-w-sm text-[0.95rem] leading-[1.8]', 'mt-12' => $invitation->quote_text])>{{ $invitation->opening_text }}</p>
             @endif
         </section>
 
         {{-- Couple --}}
-        <section class="space-y-12 px-8 pb-16 text-center">
+        <section class="space-y-14 px-8 pb-20 text-center">
+            <p class="tc-eyebrow" {!! $reveal !!}>Mempelai</p>
             @include('themes.classic-gold.partials.person', ['side' => 'groom', 'photo' => $groomPhotoUrl])
-            <p class="font-script text-5xl text-cg-gold">&amp;</p>
+            <div class="flex items-center justify-center gap-5 text-cg-gold" aria-hidden="true">
+                <span class="h-px w-16 bg-current opacity-50"></span>
+                <span class="font-script text-5xl">&amp;</span>
+                <span class="h-px w-16 bg-current opacity-50"></span>
+            </div>
             @include('themes.classic-gold.partials.person', ['side' => 'bride', 'photo' => $bridePhotoUrl])
         </section>
 
@@ -100,11 +108,13 @@
                         },
                         init() { this.tick(); setInterval(() => this.tick(), 1000); },
                      }">
-                <h2 class="font-script text-5xl">Menuju Hari Bahagia</h2>
-                <div class="mt-8 grid grid-cols-4 gap-3">
+                <p class="tc-eyebrow text-cg-gold!">Save the Date</p>
+                <h2 class="tc-title mt-3 font-script text-5xl">Menuju Hari Bahagia</h2>
+                {{-- Gold-framed boxes are Classic Gold's signature; fixed-width digits stop the jumping. --}}
+                <div class="mt-10 grid grid-cols-4 gap-3">
                     @foreach (['d' => 'Hari', 'h' => 'Jam', 'm' => 'Menit', 's' => 'Detik'] as $unit => $label)
                         <div class="border border-cg-gold/40 py-4">
-                            <p class="font-serif text-3xl font-semibold text-cg-gold" x-text="{{ $unit }}">0</p>
+                            <p class="tc-num font-serif text-3xl font-semibold text-cg-gold" x-text="String({{ $unit }}).padStart(2, '0')">00</p>
                             <p class="mt-1 text-[11px] tracking-widest uppercase opacity-80">{{ $label }}</p>
                         </div>
                     @endforeach
@@ -114,23 +124,26 @@
 
         {{-- Events --}}
         @if ($events->isNotEmpty())
-            <section class="space-y-6 px-6 py-16">
-                <h2 class="text-center font-script text-5xl text-cg-deep">Waktu &amp; Tempat</h2>
+            <section class="space-y-8 px-6 py-20">
+                <p class="tc-eyebrow" {!! $reveal !!}>Save the Date</p>
+                <h2 class="tc-title mt-3 text-center font-script text-5xl text-cg-deep">Waktu &amp; Tempat</h2>
                 @foreach ($events as $event)
                     <article class="border border-cg-gold/50 bg-white px-6 py-8 text-center shadow-sm">
-                        <h3 class="font-serif text-2xl font-semibold text-cg-deep">{{ $event->name }}</h3>
-                        <p class="mt-4 font-medium">{{ $event->date->translatedFormat('l, d F Y') }}</p>
-                        <p class="text-sm text-cg-ink/80">Pukul {{ $event->timeLabel() }}</p>
-                        <div class="mx-auto my-5 h-px w-16 bg-cg-gold/50"></div>
-                        <p class="font-semibold">{{ $event->venue_name }}</p>
-                        @if ($event->address)
-                            <p class="mt-1 text-sm whitespace-pre-line text-cg-ink/80">{{ $event->address }}</p>
-                        @endif
-                        <div class="mt-6 flex flex-wrap justify-center gap-2">
-                            @if ($event->maps_url)
-                                <a href="{{ $event->maps_url }}" target="_blank" rel="noopener noreferrer" class="bg-cg-deep px-5 py-2 text-xs font-semibold tracking-wider uppercase text-cg-cream hover:bg-cg-rose">Lihat Lokasi</a>
+                        <h3 class="tc-title font-serif text-2xl font-semibold text-cg-deep">{{ $event->name }}</h3>
+                        <x-invitation.event-date :date="$event->date" class="mx-auto mt-6 max-w-[17rem]" />
+                        <p class="tc-num mt-5 inline-flex items-center gap-2 text-sm text-cg-ink/85"><svg class="h-4 w-4 text-cg-rose" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path stroke-linecap="round" d="M12 7v5l3 2"/></svg>Pukul {{ $event->timeLabel() }}</p>
+                        <div class="mx-auto my-6 h-px w-12 bg-cg-gold/60"></div>
+                        <div>
+                            <p class="tc-title inline-flex items-start gap-2 font-semibold"><svg class="mt-0.5 h-4 w-4 shrink-0 text-cg-rose" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M12 21s-7-5.5-7-11a7 7 0 1 1 14 0c0 5.5-7 11-7 11Z"/><circle cx="12" cy="10" r="2.5"/></svg>{{ $event->venue_name }}</p>
+                            @if ($event->address)
+                                <p class="tc-pretty mx-auto mt-2 max-w-xs text-sm leading-relaxed whitespace-pre-line text-cg-ink/80">{{ $event->address }}</p>
                             @endif
-                            <a href="{{ $event->googleCalendarUrl($calendarTitle) }}" target="_blank" rel="noopener noreferrer" class="rounded-full border border-cg-deep/40 px-5 py-2 text-xs font-semibold text-cg-deep hover:bg-cg-blush">Simpan ke Kalender</a>
+                        </div>
+                        <div class="mt-7 flex flex-wrap justify-center gap-2">
+                            @if ($event->maps_url)
+                                <a href="{{ $event->maps_url }}" target="_blank" rel="noopener noreferrer" class="tc-btn">Lihat Lokasi</a>
+                            @endif
+                            <a href="{{ $event->googleCalendarUrl($calendarTitle) }}" target="_blank" rel="noopener noreferrer" class="tc-btn-outline">Simpan ke Kalender</a>
                         </div>
                     </article>
                 @endforeach
@@ -140,19 +153,20 @@
         {{-- Love story --}}
         @if ($stories->isNotEmpty())
             <section class="bg-cg-blush/50 px-6 py-16">
-                <h2 class="text-center font-script text-5xl text-cg-deep">Cerita Kami</h2>
+                <p class="tc-eyebrow" {!! $reveal !!}>Perjalanan Kami</p>
+                <h2 class="tc-title mt-3 text-center font-script text-5xl text-cg-deep">Cerita Kami</h2>
                 <ol class="relative mt-10 space-y-10 border-l border-cg-rose/40 pl-6">
                     @foreach ($stories as $story)
-                        <li class="relative">
+                        <li class="relative" {!! $reveal !!}>
                             <span class="absolute top-1.5 -left-[31px] h-3 w-3 rounded-full bg-cg-rose ring-4 ring-cg-blush"></span>
                             @if ($story->story_date)
-                                <p class="text-xs font-semibold tracking-widest text-cg-rose uppercase">{{ $story->story_date }}</p>
+                                <p class="tc-eyebrow tc-eyebrow-start tc-num">{{ $story->story_date }}</p>
                             @endif
-                            <h3 class="mt-1 font-serif text-xl font-semibold text-cg-deep">{{ $story->title }}</h3>
+                            <h3 class="tc-title mt-2 font-serif text-2xl font-semibold text-cg-deep">{{ $story->title }}</h3>
                             @if ($story->photoUrl())
                                 <img src="{{ $story->photoUrl() }}" alt="" class="mt-3 w-full rounded-2xl object-cover" loading="lazy">
                             @endif
-                            <p class="mt-3 text-sm leading-relaxed whitespace-pre-line">{{ $story->body }}</p>
+                            <p class="tc-pretty mt-4 text-sm leading-[1.8] whitespace-pre-line">{{ $story->body }}</p>
                         </li>
                     @endforeach
                 </ol>
@@ -164,22 +178,18 @@
             <section class="px-4 py-16"
                      x-data="{ show: false, index: 0, photos: @js($photos->map->url()->values()) }"
                      x-on:keydown.escape.window="show = false">
-                <h2 class="text-center font-script text-5xl text-cg-deep">Galeri</h2>
-                <div class="mt-8 grid grid-cols-2 gap-2">
+                <p class="tc-eyebrow" {!! $reveal !!}>Momen Kami</p>
+                <h2 class="tc-title mt-3 text-center font-script text-5xl text-cg-deep">Galeri</h2>
+                <div class="mt-10 grid grid-cols-2 gap-2" {!! $reveal !!}>
                     @foreach ($photos as $photo)
-                        <button type="button" x-on:click="index = {{ $loop->index }}; show = true"
-                                @class(['overflow-hidden rounded-2xl', 'col-span-2' => $loop->index % 5 === 0])>
+                        <button type="button" x-on:click="index = {{ $loop->index }}; show = true" aria-label="Buka foto {{ $loop->iteration }}"
+                                @class(['tc-zoom overflow-hidden rounded-2xl', 'col-span-2' => $loop->index % 5 === 0])>
                             <img src="{{ $photo->url() }}" alt="{{ $photo->caption ?: 'Foto '.$loop->iteration }}" loading="lazy"
-                                 @class(['w-full object-cover transition duration-500 hover:scale-105', 'aspect-[4/3]' => $loop->index % 5 === 0, 'aspect-square' => $loop->index % 5 !== 0])>
+                                 @class(['w-full object-cover', 'aspect-[4/3]' => $loop->index % 5 === 0, 'aspect-square' => $loop->index % 5 !== 0])>
                         </button>
                     @endforeach
                 </div>
-                <div x-show="show" x-cloak x-transition.opacity class="fixed inset-0 z-50 flex items-center justify-center bg-black/90 p-4" x-on:click.self="show = false">
-                    <img x-bind:src="photos[index]" alt="" class="max-h-[85vh] max-w-full rounded-lg object-contain">
-                    <button type="button" x-on:click="show = false" class="absolute top-4 right-4 rounded-full bg-white/10 px-3 py-1 text-sm text-white" aria-label="Tutup">Tutup</button>
-                    <button type="button" x-on:click="index = (index - 1 + photos.length) % photos.length" class="absolute left-2 rounded-full bg-white/10 px-3 py-2 text-white" aria-label="Sebelumnya">&lsaquo;</button>
-                    <button type="button" x-on:click="index = (index + 1) % photos.length" class="absolute right-2 rounded-full bg-white/10 px-3 py-2 text-white" aria-label="Berikutnya">&rsaquo;</button>
-                </div>
+                <x-invitation.lightbox />
             </section>
         @endif
 
@@ -194,11 +204,12 @@
 
         {{-- RSVP & wishes --}}
         @if ($showInteraction)
-            <section id="rsvp" class="px-6 py-16 text-center">
-                <h2 class="font-script text-5xl text-cg-deep">
+            <section id="rsvp" class="px-6 py-20 text-center">
+                <p class="tc-eyebrow" {!! $reveal !!}>Kehadiran</p>
+                <h2 class="tc-title mt-3 font-script text-5xl text-cg-deep">
                     {{ $invitation->sectionEnabled('rsvp') && $invitation->sectionEnabled('wishes') ? 'Konfirmasi & Ucapan' : ($invitation->sectionEnabled('rsvp') ? 'Konfirmasi Kehadiran' : 'Ucapan & Doa') }}
                 </h2>
-                <p class="mx-auto mt-3 mb-8 max-w-xs text-sm text-cg-ink/80">Kehadiran dan doa restu Anda sangat berarti bagi kami.</p>
+                <p class="tc-pretty mx-auto mt-4 mb-10 max-w-xs text-sm leading-relaxed text-cg-ink/80">Kehadiran dan doa restu Anda sangat berarti bagi kami.</p>
                 @if ($demo ?? false)
                     @include('themes.classic-gold.livewire.wishes', [
                         'submitted' => false, 'rsvpEnabled' => true, 'wishesEnabled' => true, 'attendance' => 'yes',
@@ -214,15 +225,16 @@
         @include('themes.classic-gold.partials.ornament')
 
         {{-- Closing --}}
-        <section class="px-8 pt-10 pb-16 text-center">
+        <section class="tc-stagger px-8 pt-12 pb-20 text-center" {!! $reveal !!}>
+            <p class="tc-eyebrow">Terima Kasih</p>
             @if ($invitation->closing_text)
-                <p class="text-sm leading-relaxed">{{ $invitation->closing_text }}</p>
+                <p class="tc-pretty mx-auto mt-6 max-w-sm text-[0.95rem] leading-[1.8]">{{ $invitation->closing_text }}</p>
             @endif
-            <p class="mt-8 text-sm">Kami yang berbahagia,</p>
-            <p class="mt-2 font-script text-5xl text-cg-deep">{{ $groom }} &amp; {{ $bride }}</p>
+            <p class="mt-10 text-xs tracking-[0.2em] uppercase opacity-70">Kami yang berbahagia,</p>
+            <p class="tc-title mt-3 font-script text-5xl text-cg-deep">{{ $groom }} &amp; {{ $bride }}</p>
         </section>
 
-        <footer class="bg-cg-deep px-6 py-6 text-center text-xs text-white/80">
+        <footer class="bg-cg-deep px-6 py-7 text-center text-[11px] tracking-[0.18em] uppercase text-white/80">
             Dibuat dengan <a href="{{ config('app.url') }}" class="font-semibold text-white">{{ $siteName ?? config('app.name') }}</a>
         </footer>
     </main>

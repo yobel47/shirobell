@@ -1,7 +1,7 @@
 <div class="space-y-6">
     <form wire:submit="save" class="card space-y-4">
         <div>
-            <h2 class="font-serif text-lg font-semibold">Bagian yang ditampilkan</h2>
+            <h2 class="font-serif text-xl font-semibold">Bagian yang ditampilkan</h2>
             <p class="text-sm text-gray-500">Matikan bagian yang tidak ingin ditampilkan di undangan.</p>
         </div>
         <div class="grid gap-2 sm:grid-cols-2">
@@ -22,7 +22,7 @@
 
     <form wire:submit="saveSlug" class="card space-y-4">
         <div>
-            <h2 class="font-serif text-lg font-semibold">Alamat undangan</h2>
+            <h2 class="font-serif text-xl font-semibold">Alamat undangan</h2>
             <p class="text-sm text-gray-500">
                 @if ($canChangeSlug)
                     Bisa diubah selama undangan belum diterbitkan.
@@ -43,7 +43,7 @@
 
     @if ($canDelete)
         <section class="card space-y-3 border-red-100">
-            <h2 class="font-serif text-lg font-semibold text-red-700">Hapus undangan</h2>
+            <h2 class="font-serif text-xl font-semibold text-red-700">Hapus undangan</h2>
             <p class="text-sm text-gray-500">Undangan draft beserta semua foto dan datanya akan dihapus permanen.</p>
             <button type="button" wire:click="deleteInvitation" wire:confirm="Yakin hapus undangan ini? Tindakan ini tidak bisa dibatalkan." class="btn border border-red-200 bg-white text-red-600 hover:bg-red-50">Hapus undangan</button>
         </section>
