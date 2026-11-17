@@ -2,6 +2,8 @@
 
 namespace App\Services;
 
+use Illuminate\Support\Str;
+
 /**
  * Reads config/themes.php (ADR 009): categories, color variants and engine
  * recipes. Colors and fonts become CSS custom properties on <body>, which
@@ -142,6 +144,35 @@ class ThemeRegistry
         }
 
         return implode('; ', $vars);
+    }
+
+    /**
+     * Font families (Vite font aliases, e.g. "playfair-display") a theme renders
+     * with, so invitation pages declare and preload only those (@fonts($aliases)).
+     * Resolves the customer's font pair the same way style() does.
+     *
+     * @return list<string>
+     */
+    public function fontAliases(string $slug, ?string $fontPair = null): array
+    {
+        $engine = $this->engine($slug);
+        if ($engine === null) {
+            // Legacy themes (rose-garden, classic-gold, sage-minimalist) set these in their CSS.
+            return ['inter', 'playfair-display', 'great-vibes'];
+        }
+
+        $fonts = config('themes.fonts', []);
+        $pair = $fontPair ? (config("themes.font_pairs.{$fontPair}.fonts") ?? null) : null;
+
+        $aliases = [];
+        foreach (array_pad($pair ?? $engine['fonts'], 3, 'inter') as $key) {
+            // "'Playfair Display', Georgia, serif" -> "playfair-display"
+            if (isset($fonts[$key]) && preg_match("/'([^']+)'/", $fonts[$key], $m)) {
+                $aliases[] = Str::slug($m[1]);
+            }
+        }
+
+        return array_values(array_unique($aliases));
     }
 
     private function isColor(string $value): bool

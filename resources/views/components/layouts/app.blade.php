@@ -1,5 +1,5 @@
-@props(['title' => null, 'wide' => false])
-<x-layouts.base :title="$title" robots="noindex, nofollow">
+@props(['title' => null, 'wide' => false, 'fonts' => ['inter', 'cormorant-garamond']])
+<x-layouts.base :title="$title" :fonts="$fonts" robots="noindex, nofollow">
     @isset($headStart)
         <x-slot:headStart>{{ $headStart }}</x-slot:headStart>
     @endisset

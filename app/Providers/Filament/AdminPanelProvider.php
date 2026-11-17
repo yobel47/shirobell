@@ -35,7 +35,7 @@ class AdminPanelProvider extends PanelProvider
             ->brandLogoHeight('2rem')
             ->favicon(asset('favicon.svg'))
             // Self-hosted fonts so the brand wordmark renders in Cormorant Garamond.
-            ->renderHook(PanelsRenderHook::HEAD_END, fn (): string => Blade::render('@fonts'))
+            ->renderHook(PanelsRenderHook::HEAD_END, fn (): string => Blade::render("@fonts(['inter', 'cormorant-garamond'])"))
             ->colors([
                 'primary' => Color::hex('#b76e79'),
                 // Warm neutrals, matching the platform's warm gray scale.

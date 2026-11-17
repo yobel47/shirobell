@@ -47,7 +47,7 @@
         @endif
     @endif
     <link rel="icon" href="{{ asset('favicon.svg') }}" type="image/svg+xml">
-    @fonts
+    @fonts(app(\App\Services\ThemeRegistry::class)->fontAliases($invitation->theme->slug, $invitation->customization['font_pair'] ?? null))
     @vite([$css])
     @livewireStyles
 </head>

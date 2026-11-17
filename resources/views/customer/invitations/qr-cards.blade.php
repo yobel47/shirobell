@@ -6,7 +6,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="robots" content="noindex, nofollow">
     <title>Kartu QR - {{ $invitation->coupleName() }}</title>
-    @fonts
+    @fonts(['inter', 'cormorant-garamond'])
     @vite('resources/css/app.css')
 </head>
 <body class="bg-rose-brand-50 font-sans text-ink antialiased print:bg-white">
