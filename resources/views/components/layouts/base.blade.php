@@ -36,8 +36,11 @@
     <link rel="icon" href="{{ asset('favicon.ico') }}" sizes="any">
     <link rel="apple-touch-icon" href="{{ asset('apple-touch-icon.png') }}">
     <meta name="theme-color" content="#b76e79">
-    {{-- Platform fonts only; null (editor theme/design tabs) loads every family. --}}
-    @fonts($fonts)
+    {{--
+        Platform fonts only. 'all' (editor theme/design tabs: font pair previews,
+        canvas) loads every family; a sentinel, because @props turns null into the default.
+    --}}
+    @fonts($fonts === 'all' ? null : $fonts)
     {{--
         Stylesheets that must lose to the platform CSS go first: the invitation
         theme build (engine.css) is a full Tailwind build, and loaded after app.css

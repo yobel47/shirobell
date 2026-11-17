@@ -3,7 +3,7 @@
     $showPreview = $tab !== 'desain';
     $previewUrl = route('app.invitations.preview', [$invitation, 'buka' => 1, 'frame' => 1]);
 @endphp
-<x-layouts.app :title="'Edit '.$invitation->coupleName()" wide :fonts="in_array($tab, ['tema', 'desain'], true) ? null : ['inter', 'cormorant-garamond']">
+<x-layouts.app :title="'Edit '.$invitation->coupleName()" wide :fonts="in_array($tab, ['tema', 'desain'], true) ? 'all' : ['inter', 'cormorant-garamond']">
     @if ($tab === 'desain')
         {{-- Canvas theme styles load before app.css (see layouts/base). --}}
         <x-slot:headStart>@vite('resources/css/themes/engine.css')</x-slot:headStart>
