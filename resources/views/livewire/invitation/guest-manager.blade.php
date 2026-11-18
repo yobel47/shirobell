@@ -33,14 +33,18 @@
                     <p class="mt-1.5 text-xs text-gray-500">Nomor WhatsApp opsional, tulis setelah tanda "-". Maksimal {{ config('shirobell.invitation.bulk_guest_lines') }} nama sekali tambah.</p>
                     @error('bulk') <p class="form-error">{{ $message }}</p> @enderror
                 </div>
-                <div class="max-w-xs">
-                    <x-editor.field model="bulkGroup" label="Grup (opsional)" placeholder="Keluarga, Kantor, ..." maxlength="50" list="guest-groups" />
-                    <datalist id="guest-groups">
-                        @foreach ($groups as $name)
-                            <option value="{{ $name }}"></option>
-                        @endforeach
-                    </datalist>
+                <div class="grid max-w-md gap-3 sm:grid-cols-[2fr_1fr]">
+                    <div>
+                        <x-editor.field model="bulkGroup" label="Grup (opsional)" placeholder="Keluarga, Kantor, ..." maxlength="50" list="guest-groups" />
+                        <datalist id="guest-groups">
+                            @foreach ($groups as $name)
+                                <option value="{{ $name }}"></option>
+                            @endforeach
+                        </datalist>
+                    </div>
+                    <x-editor.field model="bulkTable" label="Meja (opsional)" placeholder="Contoh: 5" maxlength="20" />
                 </div>
+                <p class="-mt-2 text-xs text-gray-500">Grup dan meja berlaku untuk semua nama di atas. Meja tiap tamu juga bisa diubah nanti lewat tombol ubah.</p>
                 <div class="flex justify-end gap-2">
                     <button type="button" wire:click="$set('showBulk', false)" class="btn btn-ghost">Batal</button>
                     <button type="submit" class="btn btn-primary" wire:loading.attr="disabled" wire:target="addBulk">Simpan tamu</button>
@@ -48,23 +52,33 @@
             </form>
         @endif
 
-        {{-- Import from Excel / CSV --}}
-        <form wire:submit="importGuests" class="space-y-3 border-t border-gray-100 pt-4">
+        {{-- Import from Excel / CSV. Upload state is tracked client-side so the
+             button reflects the upload as it happens and a failed upload says so. --}}
+        <form class="space-y-3 border-t border-gray-100 pt-4"
+              x-data="{ uploading: false, importing: false, progress: 0, ready: @js((bool) $importFile), failed: false }"
+              x-on:submit.prevent="if (ready && ! uploading && ! importing) { importing = true; $wire.importGuests().finally(() => importing = false) }"
+              x-on:livewire-upload-start="uploading = true; ready = false; failed = false; progress = 0"
+              x-on:livewire-upload-progress="progress = $event.detail.progress"
+              x-on:livewire-upload-finish="uploading = false; ready = true"
+              x-on:livewire-upload-error="uploading = false; ready = false; failed = true"
+              x-on:livewire-upload-cancel="uploading = false"
+              x-on:guests-imported.window="ready = false; $refs.importFile.value = ''">
             <div class="flex flex-wrap items-start justify-between gap-2">
                 <div>
                     <p class="text-sm font-semibold">Impor dari Excel atau CSV</p>
-                    <p class="text-xs text-gray-500">Kolom: <strong>Nama</strong> (wajib), WhatsApp, Grup, Meja. Nama yang sudah ada di daftar dilewati. Maksimal 1.000 tamu per file.</p>
+                    <p class="text-xs text-gray-500">Kolom: <strong>Nama</strong> (wajib), WhatsApp, Grup, Meja. WhatsApp, Grup, dan Meja boleh dikosongkan. Nama yang sudah ada di daftar dilewati. Maksimal 1.000 tamu per file.</p>
                 </div>
-                <a href="{{ route('app.invitations.guests.template', $invitation) }}" class="text-sm font-medium text-rose-brand-600 hover:underline">Unduh contoh file</a>
+                <a href="{{ route('app.invitations.guests.template', $invitation) }}" class="text-sm font-medium text-rose-brand-600 hover:underline">Unduh contoh file Excel</a>
             </div>
             <div class="flex flex-wrap items-center gap-2">
-                <input type="file" wire:model="importFile" accept=".xlsx,.csv,text/csv" class="text-sm file:mr-3 file:rounded-full file:border-0 file:bg-rose-brand-50 file:px-4 file:py-2 file:text-sm file:font-medium file:text-rose-brand-700">
-                <button type="submit" class="btn btn-outline" wire:loading.attr="disabled" wire:target="importFile,importGuests" @disabled(! $importFile)>
-                    <span wire:loading.remove wire:target="importGuests">Impor tamu</span>
-                    <span wire:loading wire:target="importGuests">Mengimpor...</span>
+                <input type="file" x-ref="importFile" wire:model="importFile" accept=".xlsx,.csv,text/csv" aria-label="Pilih file daftar tamu" class="text-sm file:mr-3 file:rounded-full file:border-0 file:bg-rose-brand-50 file:px-4 file:py-2 file:text-sm file:font-medium file:text-rose-brand-700">
+                <button type="submit" class="btn btn-outline" x-bind:disabled="uploading || importing || ! ready" @disabled(! $importFile)>
+                    <span x-text="importing ? 'Mengimpor...' : (uploading ? 'Mengunggah ' + progress + '%' : 'Impor tamu')">Impor tamu</span>
                 </button>
             </div>
+            <p class="text-xs text-gray-500">Membuat file sendiri di Excel? Format kolom WhatsApp sebagai <strong>Teks</strong> dulu, supaya angka 0 di depan tidak hilang dan nomor tidak berubah menjadi 6,28E+11.</p>
             @error('importFile') <p class="form-error">{{ $message }}</p> @enderror
+            <p x-show="failed" x-cloak class="form-error [.form-error+&]:hidden" role="alert">File gagal diunggah. Periksa koneksi Anda, lalu pilih file sekali lagi.</p>
             @if ($importResult)
                 <p class="rounded-xl bg-emerald-50 px-4 py-2 text-sm text-emerald-800" role="status">
                     {{ $importResult['added'] }} tamu ditambahkan.
@@ -72,6 +86,11 @@
                     @if ($importResult['empty']) {{ $importResult['empty'] }} baris tanpa nama dilewati. @endif
                     @if ($importResult['over_quota']) {{ $importResult['over_quota'] }} tidak masuk karena kuota tamu penuh. @endif
                 </p>
+                @if ($importResult['bad_phones'] ?? 0)
+                    <p class="rounded-xl bg-amber-50 px-4 py-2 text-sm text-amber-800" role="status">
+                        {{ $importResult['bad_phones'] }} nomor WhatsApp tidak terbaca karena Excel menyimpannya sebagai angka bulat (contoh 6,28E+11). Tamunya tetap ditambahkan tanpa nomor. Isi nomornya lewat tombol ubah pada tamu tersebut.
+                    </p>
+                @endif
             @endif
         </form>
     </section>

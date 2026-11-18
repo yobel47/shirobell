@@ -8,12 +8,13 @@ use App\Models\Invitation;
 use App\Policies\InvitationPolicy;
 use App\Services\Admin\AuditLogger;
 use App\Services\EventDayService;
+use App\Services\GuestTemplateXlsx;
 use App\Services\InvitationRenderer;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\View\View;
+use Symfony\Component\HttpFoundation\BinaryFileResponse;
 use Symfony\Component\HttpFoundation\Response;
-use Symfony\Component\HttpFoundation\StreamedResponse;
 
 class InvitationController extends Controller
 {
@@ -58,17 +59,14 @@ class InvitationController extends Controller
         return view('customer.invitations.guests', ['invitation' => $invitation]);
     }
 
-    /** Sample import file (semicolon separated, opens correctly in Indonesian Excel). */
-    public function guestTemplate(Invitation $invitation): StreamedResponse
+    /** Sample import file as .xlsx, with the WhatsApp and Meja columns formatted as Text. */
+    public function guestTemplate(Invitation $invitation, GuestTemplateXlsx $template): BinaryFileResponse
     {
         Gate::authorize('update', $invitation);
 
-        return response()->streamDownload(function () {
-            echo "\xEF\xBB\xBF";
-            echo "Nama;WhatsApp;Grup;Meja\r\n";
-            echo "Bapak Joko Susilo;081234567890;Keluarga;1\r\n";
-            echo "Ibu Rina Marlina;;Kantor;5\r\n";
-        }, 'contoh-daftar-tamu.csv', ['Content-Type' => 'text/csv; charset=UTF-8']);
+        return response()->download($template->build(), 'contoh-daftar-tamu.xlsx', [
+            'Content-Type' => 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+        ])->deleteFileAfterSend();
     }
 
     public function wishes(Invitation $invitation): View

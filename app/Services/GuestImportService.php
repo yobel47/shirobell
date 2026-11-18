@@ -32,7 +32,7 @@ class GuestImportService
     public function __construct(private readonly GuestService $guests) {}
 
     /**
-     * @return array{added: int, empty: int, duplicates: int, over_quota: int}
+     * @return array{added: int, empty: int, duplicates: int, over_quota: int, bad_phones: int}
      */
     public function import(Invitation $invitation, string $path, string $extension): array
     {
@@ -45,7 +45,7 @@ class GuestImportService
 
         $existing = $invitation->guests()->pluck('name')->map(fn ($n) => mb_strtolower(trim($n)))->flip();
         $remaining = (int) config('shirobell.invitation.max_guests', 1000) - $invitation->guests()->count();
-        $result = ['added' => 0, 'empty' => 0, 'duplicates' => 0, 'over_quota' => 0];
+        $result = ['added' => 0, 'empty' => 0, 'duplicates' => 0, 'over_quota' => 0, 'bad_phones' => 0];
         $toCreate = [];
 
         foreach (array_slice($rows, 0, self::MAX_ROWS) as $row) {
@@ -67,9 +67,15 @@ class GuestImportService
                 continue;
             }
             $existing[$key] = true;
+            $phone = $map['phone'] !== null ? $this->phone((string) ($row[$map['phone']] ?? '')) : null;
+            if ($phone === false) {
+                // Saved by Excel as a rounded number (6,28123E+11): the digits are gone.
+                $result['bad_phones']++;
+                $phone = null;
+            }
             $toCreate[] = [
                 'name' => $name,
-                'phone' => $map['phone'] !== null ? $this->phone((string) ($row[$map['phone']] ?? '')) : null,
+                'phone' => $phone,
                 'group_name' => $map['group'] !== null ? (mb_substr(trim((string) ($row[$map['group']] ?? '')), 0, 50) ?: null) : null,
                 'table_number' => $map['table'] !== null ? (mb_substr(trim((string) ($row[$map['table']] ?? '')), 0, 20) ?: null) : null,
             ];
@@ -208,9 +214,22 @@ class GuestImportService
         return $xml === false ? null : $xml;
     }
 
-    /** Excel drops the leading zero of numbers typed as numbers (812... -> 0812...). */
-    private function phone(string $value): ?string
+    /**
+     * Excel drops the leading zero of numbers typed as numbers (812... -> 0812...)
+     * and may write long numbers in scientific notation. Returns false when
+     * that notation lost digits (6,28123E+11), so the number can't be trusted.
+     */
+    private function phone(string $value): string|false|null
     {
+        $compact = str_replace(' ', '', trim($value));
+        if (preg_match('/^(\d+)(?:[.,](\d*))?E\+?(\d+)$/i', $compact, $m)) {
+            [$int, $fraction, $exponent] = [$m[1], $m[2] ?? '', (int) $m[3]];
+            if (strlen($fraction) < $exponent) {
+                return false;
+            }
+            $value = $int.substr($fraction, 0, $exponent);
+        }
+
         $digits = $this->guests->normalizePhone($value);
 
         return $digits !== null && str_starts_with($digits, '8') && strlen($digits) >= 9 ? '0'.$digits : $digits;

@@ -43,7 +43,7 @@ class GuestService
     /**
      * @param  array<int, array{name: string, phone: ?string}>  $rows
      */
-    public function bulkCreate(Invitation $invitation, array $rows, ?string $group = null): int
+    public function bulkCreate(Invitation $invitation, array $rows, ?string $group = null, ?string $table = null): int
     {
         $max = (int) config('shirobell.invitation.max_guests', 1000);
         $remaining = $max - $invitation->guests()->count();
@@ -56,16 +56,16 @@ class GuestService
             ]);
         }
 
-        DB::transaction(function () use ($invitation, $rows, $group) {
+        DB::transaction(function () use ($invitation, $rows, $group, $table) {
             foreach ($rows as $row) {
-                $this->create($invitation, ['name' => $row['name'], 'phone' => $row['phone'], 'group_name' => $group]);
+                $this->create($invitation, ['name' => $row['name'], 'phone' => $row['phone'], 'group_name' => $group, 'table_number' => $table]);
             }
         });
 
         return count($rows);
     }
 
-    /** @param array{name: string, phone?: ?string, group_name?: ?string} $data */
+    /** @param array{name: string, phone?: ?string, group_name?: ?string, table_number?: ?string} $data */
     public function create(Invitation $invitation, array $data): Guest
     {
         $guest = new Guest($data);
