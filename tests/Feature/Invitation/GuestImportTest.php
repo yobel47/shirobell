@@ -125,12 +125,62 @@ class GuestImportTest extends TestCase
             ->assertForbidden();
     }
 
-    public function test_owner_downloads_sample_file(): void
+    public function test_owner_downloads_xlsx_sample_with_text_formatted_phone_column(): void
     {
         $response = $this->actingAs($this->owner)->get(route('app.invitations.guests.template', $this->invitation));
 
-        $response->assertOk();
-        $this->assertStringContainsString('Nama;WhatsApp;Grup;Meja', $response->streamedContent());
+        $response->assertOk()->assertDownload('contoh-daftar-tamu.xlsx');
+        $path = $response->baseResponse->getFile()->getPathname();
+        $zip = new ZipArchive;
+        $this->assertTrue($zip->open($path));
+        $this->assertStringContainsString('numFmtId="49"', $zip->getFromName('xl/styles.xml'));
+        $this->assertStringContainsString('<col min="2" max="2" width="20" style="1"', $zip->getFromName('xl/worksheets/sheet1.xml'));
+        $zip->close();
+
+        // The sample itself imports cleanly, leading zero intact.
+        $content = (string) file_get_contents($path);
+        unlink($path); // deleteFileAfterSend never runs in tests
+        $this->upload(UploadedFile::fake()->createWithContent('contoh-daftar-tamu.xlsx', $content))->assertHasNoErrors();
+        $this->assertSame('081234567890', $this->invitation->guests()->where('name', 'Bapak Joko Susilo')->value('phone'));
+        $this->assertSame('A3', $this->invitation->guests()->where('name', 'Keluarga Besar Hartono')->value('table_number'));
+
         $this->actingAs(User::factory()->create())->get(route('app.invitations.guests.template', $this->invitation))->assertForbidden();
+    }
+
+    public function test_phone_in_scientific_notation_is_recovered_or_reported(): void
+    {
+        $component = $this->upload($this->csv("Nama;WhatsApp;Meja\nAndi;6,28123E+11;\nBudi;6.28123456789E+11;2\nCitra;;\n"));
+
+        $component->assertHasNoErrors()->assertSet('importResult.bad_phones', 1)->assertSee('nomor WhatsApp tidak terbaca');
+        $guests = $this->invitation->guests()->pluck('phone', 'name');
+        $this->assertNull($guests['Andi']);
+        $this->assertSame('628123456789', $guests['Budi']);
+        $this->assertNull($guests['Citra']);
+        $this->assertNull($this->invitation->guests()->where('name', 'Andi')->value('table_number'));
+    }
+
+    public function test_manual_bulk_add_can_set_a_table_for_the_batch(): void
+    {
+        Livewire::actingAs($this->owner)
+            ->test(GuestManager::class, ['invitation' => $this->invitation])
+            ->set('bulk', "Andi\nBudi - 081234567890")
+            ->set('bulkGroup', 'Keluarga')
+            ->set('bulkTable', '7')
+            ->call('addBulk')
+            ->assertHasNoErrors()
+            ->assertSet('bulkTable', '');
+
+        $this->assertSame(['7', '7'], $this->invitation->guests()->orderBy('name')->pluck('table_number')->all());
+
+        Livewire::actingAs($this->owner)
+            ->test(GuestManager::class, ['invitation' => $this->invitation])
+            ->set('bulk', 'Citra')
+            ->call('addBulk');
+        $this->assertNull($this->invitation->guests()->where('name', 'Citra')->value('table_number'));
+    }
+
+    public function test_successful_import_tells_the_page_to_reset_the_file_picker(): void
+    {
+        $this->upload($this->csv("Nama\nAndi\n"))->assertDispatched('guests-imported');
     }
 }
