@@ -22,6 +22,9 @@ class GuestManager extends Component
     /** Summary of the last import, shown under the form. */
     public ?array $importResult = null;
 
+    /** Livewire's own upload errors ("... gagal diunggah") use this name too. */
+    protected array $validationAttributes = ['importFile' => 'file'];
+
     #[Url(as: 'q')]
     public string $search = '';
 
@@ -31,6 +34,8 @@ class GuestManager extends Component
     public string $bulk = '';
 
     public string $bulkGroup = '';
+
+    public string $bulkTable = '';
 
     public bool $showBulk = false;
 
@@ -63,7 +68,8 @@ class GuestManager extends Component
         $this->validate([
             'bulk' => ['required', 'string', 'max:20000'],
             'bulkGroup' => ['nullable', 'string', 'max:50'],
-        ], [], ['bulk' => 'daftar nama', 'bulkGroup' => 'grup']);
+            'bulkTable' => ['nullable', 'string', 'max:20'],
+        ], [], ['bulk' => 'daftar nama', 'bulkGroup' => 'grup', 'bulkTable' => 'nomor meja']);
 
         $rows = $guests->parseLines($this->bulk);
         $maxLines = (int) config('shirobell.invitation.bulk_guest_lines', 200);
@@ -79,9 +85,9 @@ class GuestManager extends Component
             return;
         }
 
-        $count = $guests->bulkCreate($this->invitation, $rows, trim($this->bulkGroup) ?: null);
+        $count = $guests->bulkCreate($this->invitation, $rows, trim($this->bulkGroup) ?: null, trim($this->bulkTable) ?: null);
 
-        $this->reset('bulk', 'showBulk');
+        $this->reset('bulk', 'showBulk', 'bulkTable');
         $this->resetPage();
         $this->notify("{$count} tamu ditambahkan.");
     }
@@ -97,6 +103,7 @@ class GuestManager extends Component
 
         $this->importResult = $importer->import($this->invitation, $this->importFile->getRealPath(), $this->importFile->getClientOriginalExtension());
         $this->reset('importFile');
+        $this->dispatch('guests-imported');
         $this->resetPage();
         $this->notify($this->importResult['added'].' tamu ditambahkan dari file.');
     }

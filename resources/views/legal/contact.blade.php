@@ -12,6 +12,12 @@
                 <span class="mt-1 block text-lg font-semibold text-ink">{{ $legal['whatsapp'] }}</span>
             </a>
         @endif
+        @if ($legal['instagram_url'])
+            <a href="{{ $legal['instagram_url'] }}" target="_blank" rel="noopener" class="card block no-underline hover:border-rose-brand-300">
+                <span class="block text-sm text-gray-500">Instagram</span>
+                <span class="mt-1 block text-lg font-semibold text-ink">{{ '@'.$legal['instagram'] }}</span>
+            </a>
+        @endif
         @if ($legal['email'])
             <a href="mailto:{{ $legal['email'] }}" class="card block no-underline hover:border-rose-brand-300">
                 <span class="block text-sm text-gray-500">Email</span>
@@ -20,7 +26,7 @@
         @endif
     </div>
 
-    @if (! $legal['email'] && ! $legal['whatsapp_url'])
+    @if (! $legal['email'] && ! $legal['whatsapp_url'] && ! $legal['instagram_url'])
         <p>Kontak support belum tersedia. Silakan kembali lagi nanti.</p>
     @endif
 

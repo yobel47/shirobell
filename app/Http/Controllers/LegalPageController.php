@@ -38,29 +38,23 @@ class LegalPageController extends Controller
     private function page(string $view): View
     {
         $siteName = (string) $this->settings->get('site_name');
-        $whatsapp = (string) $this->settings->get('support_whatsapp');
+        $contacts = $this->settings->supportContacts();
 
         return view($view, [
             'legal' => [
                 'site' => $siteName,
                 'business' => trim((string) $this->settings->get('business_name')) ?: $siteName,
                 'address' => trim((string) $this->settings->get('business_address')),
-                'email' => trim((string) $this->settings->get('support_email')),
-                'whatsapp' => $whatsapp,
-                'whatsapp_url' => $whatsapp !== '' ? 'https://wa.me/'.self::waNumber($whatsapp) : null,
+                'email' => $contacts['email'] ?? '',
+                'whatsapp' => $contacts['whatsapp'] ?? '',
+                'whatsapp_url' => $contacts['whatsapp_url'],
+                'instagram' => $contacts['instagram'],
+                'instagram_url' => $contacts['instagram_url'],
                 'domain' => config('app.domain'),
                 'price' => $this->settings->packagePrice(),
                 'days' => $this->settings->packageDurationDays(),
                 'updated_at' => Carbon::parse(config('shirobell.legal_updated_at'))->translatedFormat('j F Y'),
             ],
         ]);
-    }
-
-    /** 0812... or +62812... becomes 62812... for wa.me links. */
-    private static function waNumber(string $number): string
-    {
-        $digits = preg_replace('/\D/', '', $number);
-
-        return str_starts_with($digits, '0') ? '62'.substr($digits, 1) : $digits;
     }
 }

@@ -1,4 +1,56 @@
-<x-layouts.public>
+@php
+    // One source for the visible FAQ and its structured data.
+    $faqs = [
+        ['Apakah saya bisa mencoba dulu sebelum membayar?', 'Bisa. Daftar gratis, buat undangan, dan lihat preview-nya. Pembayaran hanya diperlukan saat Anda ingin menerbitkan undangan.'],
+        ['Metode pembayaran apa saja yang tersedia?', 'QRIS, transfer bank melalui virtual account, dan e-wallet. Undangan aktif otomatis begitu pembayaran berhasil.'],
+        ['Berapa lama undangan aktif?', 'Undangan aktif selama '.$durationDays.' hari sejak pembayaran, dan bisa diperpanjang kapan saja.'],
+        ['Bagaimana cara kerja amplop digital?', 'Anda mengunggah QRIS atau mencantumkan rekening milik Anda sendiri. Tamu mengirim hadiah langsung ke Anda, tanpa perantara.'],
+        ['Apakah bisa ganti tema setelah membayar?', 'Bisa, kapan saja dan tanpa biaya tambahan. Data undangan Anda tetap tersimpan.'],
+    ];
+    $settingService = app(\App\Services\SettingService::class);
+    $siteName = (string) $settingService->get('site_name');
+    $contacts = $settingService->supportContacts();
+    $organization = array_filter([
+        '@type' => 'Organization',
+        '@id' => route('home').'#organization',
+        'name' => $siteName,
+        'url' => route('home'),
+        'logo' => asset('apple-touch-icon.png'),
+        'sameAs' => array_values(array_filter([$contacts['instagram_url']])) ?: null,
+        'contactPoint' => ($contacts['whatsapp'] || $contacts['email']) ? array_filter([
+            '@type' => 'ContactPoint',
+            'contactType' => 'customer support',
+            'telephone' => $contacts['whatsapp'],
+            'email' => $contacts['email'],
+            'availableLanguage' => ['Indonesian'],
+        ]) : null,
+    ]);
+    $structuredData = [
+        '@context' => 'https://schema.org',
+        '@graph' => [
+            $organization,
+            ['@type' => 'WebSite', '@id' => route('home').'#website', 'name' => $siteName, 'url' => route('home'), 'inLanguage' => 'id-ID', 'publisher' => ['@id' => route('home').'#organization']],
+            [
+                '@type' => 'Service',
+                'name' => 'Undangan pernikahan online',
+                'serviceType' => 'Undangan pernikahan digital',
+                'provider' => ['@id' => route('home').'#organization'],
+                'areaServed' => 'ID',
+                'offers' => ['@type' => 'Offer', 'price' => $price, 'priceCurrency' => 'IDR', 'url' => route('register'), 'availability' => 'https://schema.org/InStock'],
+            ],
+            [
+                '@type' => 'FAQPage',
+                'mainEntity' => array_map(fn ($f) => ['@type' => 'Question', 'name' => $f[0], 'acceptedAnswer' => ['@type' => 'Answer', 'text' => $f[1]]], $faqs),
+            ],
+        ],
+    ];
+@endphp
+<x-layouts.public title="Undangan Pernikahan Online, Buat Sendiri dalam Hitungan Menit"
+                  description="Buat undangan pernikahan online sendiri dengan {{ $themes->count() }} tema elegan: galeri, RSVP, amplop digital, dan link personal untuk setiap tamu. Mulai Rp {{ number_format($price, 0, ',', '.') }}, aktif {{ $durationDays }} hari."
+                  :canonical="route('home')">
+    <x-slot:head>
+        <script type="application/ld+json" nonce="{{ \Illuminate\Support\Facades\Vite::cspNonce() }}">@json($structuredData, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE)</script>
+    </x-slot:head>
     {{-- Hero --}}
     <section class="relative overflow-hidden">
         <div class="mx-auto grid max-w-6xl items-center gap-10 px-4 pt-12 pb-16 sm:px-6 md:grid-cols-2 md:pt-20 md:pb-24">
@@ -134,13 +186,7 @@
         <div class="mx-auto max-w-3xl px-4 sm:px-6">
             <h2 class="text-center font-serif text-3xl font-semibold">Pertanyaan umum</h2>
             <div class="mt-8 divide-y divide-rose-brand-100 rounded-2xl border border-rose-brand-100">
-                @foreach ([
-                    ['Apakah saya bisa mencoba dulu sebelum membayar?', 'Bisa. Daftar gratis, buat undangan, dan lihat preview-nya. Pembayaran hanya diperlukan saat Anda ingin menerbitkan undangan.'],
-                    ['Metode pembayaran apa saja yang tersedia?', 'QRIS, transfer bank melalui virtual account, dan e-wallet. Undangan aktif otomatis begitu pembayaran berhasil.'],
-                    ['Berapa lama undangan aktif?', 'Undangan aktif selama '.$durationDays.' hari sejak pembayaran, dan bisa diperpanjang kapan saja.'],
-                    ['Bagaimana cara kerja amplop digital?', 'Anda mengunggah QRIS atau mencantumkan rekening milik Anda sendiri. Tamu mengirim hadiah langsung ke Anda, tanpa perantara.'],
-                    ['Apakah bisa ganti tema setelah membayar?', 'Bisa, kapan saja dan tanpa biaya tambahan. Data undangan Anda tetap tersimpan.'],
-                ] as [$question, $answer])
+                @foreach ($faqs as [$question, $answer])
                     <details class="group p-5">
                         <summary class="flex cursor-pointer list-none items-center justify-between gap-4 font-medium">
                             {{ $question }}

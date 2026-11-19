@@ -31,6 +31,9 @@ class AppServiceProvider extends ServiceProvider
         View::composer(['components.layouts.*', 'components.invitation.*', 'themes.*', 'invitation-status'], function ($view): void {
             $view->with('siteName', app(SettingService::class)->get('site_name'));
         });
+        View::composer('components.layouts.public', function ($view): void {
+            $view->with('supportContacts', app(SettingService::class)->supportContacts());
+        });
 
         // Admin edits made through the customer editor (see AdminEditAudit).
         Event::listen(['eloquent.saved: *', 'eloquent.deleted: *'], function (string $event, array $payload): void {
