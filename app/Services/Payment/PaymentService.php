@@ -23,6 +23,11 @@ class PaymentService
 
     public const RESULT_UNKNOWN_ORDER = 'unknown_order';
 
+    public const RESULT_TEST = 'test_notification';
+
+    /** Order id prefix of the dashboard's "Test notification URL" button. */
+    private const TEST_ORDER_PREFIX = 'payment_notif_test_';
+
     public function __construct(
         private readonly MidtransClient $midtrans,
         private readonly InvitationService $invitations,
@@ -34,6 +39,16 @@ class PaymentService
     {
         $order = Order::query()->where('uuid', (string) ($payload['order_id'] ?? ''))->first();
         $log = $this->log($order, $payload['transaction_status'] ?? null, $payload);
+
+        // The dashboard's test button sends a fictitious order whose signature
+        // is not made with the merchant key. Acknowledge it so the URL check
+        // passes; nothing is processed. Real order ids are UUIDs, so a real
+        // notification can never take this path.
+        if (! $order && str_starts_with((string) ($payload['order_id'] ?? ''), self::TEST_ORDER_PREFIX)) {
+            $log->forceFill(['error' => 'dashboard test notification'])->save();
+
+            return self::RESULT_TEST;
+        }
 
         if (! $this->midtrans->verifySignature($payload)) {
             $log->forceFill(['error' => 'invalid signature'])->save();

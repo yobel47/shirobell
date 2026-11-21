@@ -255,6 +255,20 @@ class PaymentTest extends TestCase
         $this->assertSame(InvitationStatus::Draft, $this->invitation->refresh()->status);
     }
 
+    public function test_dashboard_test_notification_is_acknowledged_without_processing(): void
+    {
+        $this->postJson('/webhooks/midtrans', [
+            'order_id' => 'payment_notif_test_M073327827_b9e5b8f3-131f-45b2-ac80-ef9eac2894ec',
+            'transaction_status' => 'settlement',
+            'status_code' => '200',
+            'gross_amount' => '105000.00',
+            'signature_key' => str_repeat('a', 128),
+        ])->assertOk()->assertJson(['status' => 'test_notification']);
+
+        $this->assertDatabaseHas('payment_logs', ['order_id' => null, 'error' => 'dashboard test notification']);
+        $this->assertSame(InvitationStatus::Draft, $this->invitation->refresh()->status);
+    }
+
     public function test_unknown_order_notification_is_acknowledged(): void
     {
         $this->postJson('/webhooks/midtrans', ['order_id' => 'nope', 'status_code' => '200', 'gross_amount' => '1.00', 'signature_key' => hash('sha512', 'nope2001.00'.self::KEY)])
