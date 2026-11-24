@@ -82,6 +82,30 @@ class MidtransClient
         return $data;
     }
 
+    /**
+     * Expire a pending transaction so its payment method (VA number, QRIS,
+     * e-wallet link) can no longer be paid. Returns true when nothing can be
+     * paid on this order id anymore: expired now, already expired, or never
+     * started at the gateway (customer opened Snap but picked no method).
+     * Returns false when Midtrans refuses, e.g. the payment already settled.
+     */
+    public function expire(string $orderId): bool
+    {
+        $response = $this->http($this->apiBase())->post('/v2/'.rawurlencode($orderId).'/expire');
+
+        if ($response->serverError() || $response->status() === 0) {
+            throw new RuntimeException('Midtrans expire request failed ('.$response->status().')');
+        }
+
+        $code = (string) ($response->json('status_code') ?? $response->status());
+        if (in_array($code, ['200', '407', '404'], true)) {
+            return true;
+        }
+
+        // 412: the transaction can no longer be modified. Already expired is fine.
+        return $response->json('transaction_status') === 'expire';
+    }
+
     public function verifySignature(array $payload): bool
     {
         $expected = hash('sha512',

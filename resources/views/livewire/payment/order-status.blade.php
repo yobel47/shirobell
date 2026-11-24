@@ -33,6 +33,14 @@
                         <span wire:loading wire:target="check">Mengecek...</span>
                     </button>
                 </div>
+                @if ($order->canContinuePayment())
+                    <button type="button" wire:click="changeMethod" wire:loading.attr="disabled" wire:target="changeMethod"
+                            wire:confirm="Ganti metode pembayaran? Kode bayar atau nomor virtual account yang lama akan dibatalkan, jadi jangan dibayar lagi."
+                            class="mt-4 text-sm font-medium text-rose-brand-600 underline-offset-2 hover:underline disabled:opacity-60">
+                        <span wire:loading.remove wire:target="changeMethod">Salah pilih metode? Ganti metode pembayaran</span>
+                        <span wire:loading wire:target="changeMethod">Membatalkan pembayaran lama...</span>
+                    </button>
+                @endif
                 @break
             @default
                 <h2 class="font-serif text-4xl font-medium">{{ $order->status->label() }}</h2>
