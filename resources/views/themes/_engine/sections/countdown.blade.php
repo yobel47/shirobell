@@ -11,14 +11,20 @@
                 },
                 init() { this.tick(); setInterval(() => this.tick(), 1000); },
              }">
-        <h2 class="relative font-script text-5xl">Menuju Hari Bahagia</h2>
-        <div class="relative mt-8 grid grid-cols-4 gap-3">
+        @if ($pattern)<div class="{{ $pattern }} absolute inset-0 opacity-40 mix-blend-overlay"></div>@endif
+        <p class="tc-eyebrow relative text-t-on/75!">Save the Date</p>
+        <h2 class="tc-title relative mt-3 font-script text-5xl">Menuju Hari Bahagia</h2>
+        {{-- Fixed-width digits so the numbers do not jump every second. --}}
+        <div class="relative mx-auto mt-10 grid max-w-xs grid-cols-4 divide-x divide-t-on/20" {!! $reveal !!}>
             @foreach (['d' => 'Hari', 'h' => 'Jam', 'm' => 'Menit', 's' => 'Detik'] as $unit => $label)
-                <div class="rounded-2xl border border-t-on/20 py-4">
-                    <p class="font-heading text-3xl font-semibold" x-text="{{ $unit }}">0</p>
-                    <p class="mt-1 text-[11px] tracking-widest uppercase opacity-80">{{ $label }}</p>
+                <div class="px-1">
+                    <p class="tc-num font-heading text-4xl leading-none font-semibold" x-text="String({{ $unit }}).padStart(2, '0')">00</p>
+                    <p class="mt-2 text-[10px] tracking-[0.2em] uppercase opacity-75">{{ $label }}</p>
                 </div>
             @endforeach
         </div>
+        @if ($mainDate)
+            <p class="tc-num relative mt-10 text-xs tracking-[0.25em] uppercase opacity-80">{{ $mainDate->translatedFormat('d F Y') }}</p>
+        @endif
     </section>
 @endif

@@ -1,5 +1,6 @@
 @import 'tailwindcss';
 @import './themes/patterns.css';
+@import './landing.css';
 
 @source '../../vendor/laravel/framework/src/Illuminate/Pagination/resources/views/*.blade.php';
 @source '../../storage/framework/views/*.php';
@@ -7,8 +8,16 @@
 /* Platform identity (landing, auth, customer area). Invitation themes define their own styles. */
 @theme {
     --font-sans: 'Inter', ui-sans-serif, system-ui, sans-serif;
-    --font-serif: 'Playfair Display', ui-serif, Georgia, serif;
+    /* Platform headings share the landing display face (themes keep their own fonts). */
+    --font-serif: 'Cormorant Garamond', ui-serif, Georgia, serif;
     --font-logo: 'Cormorant Garamond', ui-serif, Georgia, serif;
+    --font-display: 'Cormorant Garamond', ui-serif, Georgia, serif;
+
+    --ease-out-expo: cubic-bezier(0.16, 1, 0.3, 1);
+    --ease-in-out-expo: cubic-bezier(0.76, 0, 0.24, 1);
+
+    /* Warm near-black for dark sections (never pure black). */
+    --color-wine: #2e1c21;
 
     --color-rose-brand-50: #fbf3f4;
     --color-rose-brand-100: #f6e4e7;
@@ -23,19 +32,138 @@
 
     --color-ink: #2f3e46;
     --color-cream: #fff9f7;
+
+    /*
+     * Warm neutrals. Same lightness steps as Tailwind's gray (so text contrast is
+     * unchanged), with the hue moved from cool blue to the brand's rose. Every
+     * gray-* utility on platform pages picks this up; themes have their own build.
+     */
+    --color-gray-50: oklch(98.5% 0.004 15);
+    --color-gray-100: oklch(96.7% 0.006 15);
+    --color-gray-200: oklch(92.8% 0.008 15);
+    --color-gray-300: oklch(87.2% 0.011 15);
+    --color-gray-400: oklch(70.7% 0.016 15);
+    --color-gray-500: oklch(55.1% 0.02 15);
+    --color-gray-600: oklch(44.6% 0.022 15);
+    --color-gray-700: oklch(37.3% 0.024 15);
+    --color-gray-800: oklch(27.8% 0.022 15);
+    --color-gray-900: oklch(21% 0.02 15);
+    --color-gray-950: oklch(13% 0.016 15);
+
+    /* One radius scale: lg for small controls, xl for inputs, 2xl for cards. */
+    --radius-lg: 0.75rem;
+    --radius-xl: 0.9rem;
+    --radius-2xl: 1.25rem;
+    --radius-3xl: 1.75rem;
+
+    /* Shadows tinted with the wine tone instead of neutral black. */
+    --shadow-sm: 0 1px 2px 0 rgb(89 52 59 / 0.06), 0 1px 3px 0 rgb(89 52 59 / 0.04);
+    --shadow-md: 0 8px 20px -12px rgb(89 52 59 / 0.25);
+    --shadow-lg: 0 20px 40px -20px rgb(89 52 59 / 0.3);
+    --shadow-xl: 0 28px 56px -24px rgb(89 52 59 / 0.38);
+}
+
+@layer base {
+    :root {
+        /* Native checkboxes, radios, range and progress in the brand color. */
+        accent-color: var(--color-rose-brand-500);
+        color-scheme: light;
+    }
+
+    ::selection {
+        background: var(--color-rose-brand-100);
+        color: var(--color-ink);
+    }
 }
 
 @layer components {
+    /*
+     * Cormorant has a small x-height; scale headings set in font-serif so
+     * existing text-lg/xl/2xl sizes keep their visual weight.
+     */
+    .font-serif {
+        font-size-adjust: 0.47;
+        letter-spacing: -0.01em;
+        font-variant-numeric: lining-nums;
+    }
+
+    /* font-size-adjust is inherited: sans text nested in a serif heading resets it. */
+    .font-serif .font-sans {
+        font-size-adjust: none;
+        letter-spacing: normal;
+    }
+
+    /* Page heading for app, auth, legal and status pages. */
+    .page-title {
+        font-family: var(--font-display);
+        font-weight: 500;
+        font-size: clamp(2.25rem, 4.2vw, 3.5rem);
+        line-height: 0.95;
+        letter-spacing: -0.025em;
+        font-variant-numeric: lining-nums;
+        color: var(--color-ink);
+    }
+
+    .page-title em {
+        font-style: italic;
+        color: var(--color-rose-brand-500);
+    }
+
+    /* Header links: an underline draws in from the left on hover. */
+    .nav-link {
+        @apply relative py-1 text-sm font-medium text-ink/80 transition-colors hover:text-ink;
+    }
+
+    .nav-link::after {
+        content: '';
+        @apply absolute inset-x-0 -bottom-0.5 h-px origin-left scale-x-0 bg-rose-brand-500 transition-transform duration-300 ease-out-expo;
+    }
+
+    .nav-link:hover::after,
+    .nav-link.is-current::after {
+        @apply scale-x-100;
+    }
+
+    .nav-link.is-current {
+        @apply text-ink;
+    }
+
+    /* Feature lists with a small rose tick. */
+    .check-list {
+        @apply space-y-3;
+    }
+
+    .check-list li {
+        @apply relative pl-7;
+    }
+
+    .check-list li::before {
+        content: '';
+        @apply absolute top-[0.3em] left-0 h-4 w-4 rounded-full bg-rose-brand-100;
+        background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%239d5863' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 12.5 4 4 8-9'/%3E%3C/svg%3E");
+        background-size: 0.65rem;
+        background-position: center;
+        background-repeat: no-repeat;
+    }
+
+    .footer-link {
+        @apply text-cream/75 transition-colors hover:text-cream;
+    }
+
+    .back-link {
+        @apply inline-flex items-center gap-1.5 text-sm text-gray-500 transition-colors hover:text-rose-brand-600;
+    }
+
     .btn {
-        @apply inline-flex items-center justify-center gap-2 rounded-full px-5 py-2.5 text-sm font-semibold transition focus:outline-none focus-visible:ring-2 focus-visible:ring-rose-brand-400 focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-60;
+        @apply inline-flex items-center justify-center gap-2 rounded-full px-5 py-2.5 text-sm font-semibold transition duration-200 ease-out-expo focus:outline-none focus-visible:ring-2 focus-visible:ring-rose-brand-400 focus-visible:ring-offset-2 focus-visible:ring-offset-cream active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-60;
     }
 
     .btn-primary {
-        @apply bg-rose-brand-500 text-white shadow-sm hover:bg-rose-brand-600;
+        @apply bg-rose-brand-500 text-white shadow-[0_8px_20px_-10px_rgb(157_88_99/0.7)] hover:bg-rose-brand-600;
     }
 
     .btn-outline {
-        @apply border border-rose-brand-300 bg-white text-rose-brand-700 hover:bg-rose-brand-50;
+        @apply border border-rose-brand-900/15 bg-white/70 text-ink hover:border-rose-brand-400 hover:text-rose-brand-700;
     }
 
     .btn-ghost {
@@ -43,11 +171,11 @@
     }
 
     .form-label {
-        @apply mb-1.5 block text-sm font-medium text-ink;
+        @apply mb-2 block text-[13px] font-medium tracking-[0.01em] text-ink;
     }
 
     .form-input {
-        @apply block w-full rounded-xl border border-gray-200 bg-white px-4 py-2.5 text-sm text-ink placeholder:text-gray-400 focus:border-rose-brand-400 focus:ring-2 focus:ring-rose-brand-100 focus:outline-none;
+        @apply block w-full rounded-xl border border-rose-brand-900/12 bg-white px-4 py-3 text-sm text-ink transition duration-200 placeholder:text-gray-400 hover:border-rose-brand-900/25 focus:border-rose-brand-400 focus:ring-4 focus:ring-rose-brand-100 focus:outline-none aria-invalid:border-red-400;
     }
 
     .form-error {
@@ -55,16 +183,25 @@
     }
 
     .card {
-        @apply rounded-2xl border border-rose-brand-100 bg-white p-6 shadow-sm;
+        @apply rounded-2xl border border-rose-brand-900/8 bg-white p-6 shadow-[0_1px_2px_rgb(89_52_59/0.04),0_12px_32px_-20px_rgb(89_52_59/0.18)];
     }
 
     /* Long-form text on the legal pages. */
     .legal {
-        @apply space-y-4 leading-relaxed text-gray-700;
+        @apply space-y-4 text-[1.0625rem] leading-[1.75] tracking-[-0.005em] text-gray-700;
     }
 
     .legal h2 {
-        @apply pt-6 font-serif text-xl font-semibold text-ink;
+        @apply scroll-mt-28 pt-10 font-serif text-[1.875rem] leading-tight font-medium text-ink;
+        font-variant-numeric: lining-nums;
+    }
+
+    .legal h2:first-child {
+        @apply pt-0;
+    }
+
+    .legal li::marker {
+        @apply text-rose-brand-400;
     }
 
     .legal ul,
@@ -91,4 +228,39 @@
 
 [x-cloak] {
     display: none !important;
+}
+
+/*
+ * Cross-document view transitions between platform pages (same origin only;
+ * invitations live on subdomains and are unaffected). The page crossfades with
+ * a slight rise while the header, named below, stays put.
+ */
+@view-transition {
+    navigation: auto;
+}
+
+::view-transition-old(root) {
+    animation: 180ms ease-out both vt-fade-out;
+}
+
+::view-transition-new(root) {
+    animation: 420ms cubic-bezier(0.16, 1, 0.3, 1) both vt-rise-in;
+}
+
+.vt-header {
+    view-transition-name: site-header;
+}
+
+@keyframes vt-fade-out {
+    to { opacity: 0; }
+}
+
+@keyframes vt-rise-in {
+    from { opacity: 0; transform: translateY(8px); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    @view-transition {
+        navigation: none;
+    }
 }

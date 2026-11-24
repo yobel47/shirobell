@@ -5,12 +5,12 @@
 
 {{-- RSVP & wishes --}}
 @if ($showInteraction)
-    <section id="rsvp" class="px-6 py-16 text-center">
-        @include('themes._engine.ornaments.crown', ['class' => 'h-9 w-36'])
-        <h2 class="{{ $h2 }}">
-            {{ $invitation->sectionEnabled('rsvp') && $invitation->sectionEnabled('wishes') ? 'Konfirmasi & Ucapan' : ($invitation->sectionEnabled('rsvp') ? 'Konfirmasi Kehadiran' : 'Ucapan & Doa') }}
-        </h2>
-        <p class="mx-auto mt-3 mb-8 max-w-xs text-sm opacity-80">Kehadiran dan doa restu Anda sangat berarti bagi kami.</p>
+    <section id="rsvp" class="px-6 py-20 text-center">
+        @include('themes._engine.partials.heading', [
+            'eyebrow' => 'Kehadiran',
+            'title' => $invitation->sectionEnabled('rsvp') && $invitation->sectionEnabled('wishes') ? 'Konfirmasi & Ucapan' : ($invitation->sectionEnabled('rsvp') ? 'Konfirmasi Kehadiran' : 'Ucapan & Doa'),
+        ])
+        <p class="tc-pretty mx-auto mt-4 mb-10 max-w-xs text-sm leading-relaxed opacity-80">Kehadiran dan doa restu Anda sangat berarti bagi kami.</p>
         @if ($demo ?? false)
             @include('themes._engine.livewire.wishes', [
                 'submitted' => false, 'rsvpEnabled' => true, 'wishesEnabled' => true, 'attendance' => 'yes',

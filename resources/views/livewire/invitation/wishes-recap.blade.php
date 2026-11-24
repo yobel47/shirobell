@@ -2,7 +2,7 @@
     <dl class="grid grid-cols-2 gap-3 lg:grid-cols-4">
         <div class="card p-4">
             <dt class="text-xs text-gray-500">Hadir</dt>
-            <dd class="mt-1 font-serif text-2xl font-semibold text-emerald-700">{{ $stats['yes'] }} <span class="text-sm font-normal text-gray-500">RSVP / {{ $stats['yes_pax'] }} orang</span></dd>
+            <dd class="mt-1 font-serif text-2xl font-semibold text-emerald-700">{{ $stats['yes'] }} <span class="font-sans text-sm font-normal text-gray-500">RSVP / {{ $stats['yes_pax'] }} orang</span></dd>
         </div>
         <div class="card p-4">
             <dt class="text-xs text-gray-500">Tidak hadir</dt>

@@ -1,5 +1,6 @@
 @import 'tailwindcss' source(none);
 @import './patterns.css';
+@import './craft.css';
 
 @source '../../views/themes/_engine';
 @source '../../views/components/invitation';
@@ -34,6 +35,14 @@ html {
 
 body {
     font-family: var(--font-body);
+    /* craft.css tokens, resolved here where the per-theme inline colors live. */
+    --tc-primary: var(--color-t-primary);
+    --tc-accent: var(--color-t-accent);
+    --tc-ink: var(--color-t-ink);
+    --tc-bg: var(--color-t-bg);
+    --tc-soft: var(--color-t-soft);
+    --tc-surface: var(--color-t-surface);
+    --tc-on: var(--color-t-on);
 }
 
 /* Frame shapes for photos. */
@@ -71,18 +80,7 @@ body {
     pointer-events: none;
 }
 
-/* Scroll reveal: Alpine adds t-reveal on init and t-in when visible, so
-   content stays visible when JavaScript is unavailable. */
-.t-reveal {
-    opacity: 0;
-    transform: translateY(18px);
-}
-
-.t-in {
-    opacity: 1;
-    transform: none;
-    transition: opacity 0.9s ease, transform 0.9s ease;
-}
+/* Scroll reveal (t-reveal / t-in) lives in craft.css, shared with legacy themes. */
 
 /* Floating petals and sparkles on the cover. */
 @keyframes t-fall {
@@ -122,5 +120,4 @@ body {
 @media (prefers-reduced-motion: reduce) {
     .t-petal, .t-sparkle { display: none; }
     .t-sway { animation: none; }
-    .t-reveal { opacity: 1; transform: none; }
 }

@@ -8,6 +8,18 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class InvitationEvent extends Model
 {
+    protected static function booted(): void
+    {
+        // The first event's date is on the link-preview card: redraw it.
+        $redraw = function (InvitationEvent $event): void {
+            if ($event->invitation) {
+                app(\App\Services\OgImageService::class)->warm($event->invitation);
+            }
+        };
+        static::saved($redraw);
+        static::deleted($redraw);
+    }
+
     public const TIMEZONES = ['WIB' => 'Asia/Jakarta', 'WITA' => 'Asia/Makassar', 'WIT' => 'Asia/Jayapura'];
 
     protected $fillable = ['name', 'date', 'start_time', 'end_time', 'timezone', 'venue_name', 'address', 'maps_url', 'sort_order'];

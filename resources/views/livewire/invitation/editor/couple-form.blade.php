@@ -1,7 +1,7 @@
 <form wire:submit="save" class="space-y-6">
     @foreach (['groom' => 'Mempelai Pria', 'bride' => 'Mempelai Wanita'] as $side => $title)
         <section class="card space-y-4" wire:key="side-{{ $side }}">
-            <h2 class="font-serif text-lg font-semibold">{{ $title }}</h2>
+            <h2 class="font-serif text-xl font-semibold">{{ $title }}</h2>
 
             <x-editor.image-field
                 :label="'Foto '.strtolower($title)"

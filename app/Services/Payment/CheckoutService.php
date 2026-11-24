@@ -128,6 +128,57 @@ class CheckoutService
         return $order;
     }
 
+    /**
+     * Change payment method: Snap locks the method once one is picked (a VA
+     * number, a QRIS code), so the old transaction is expired at Midtrans and
+     * a fresh order with the same product and promo takes its place.
+     *
+     * Returns the new order, or the old one if it turned out to be paid.
+     */
+    public function restart(User $user, Order $order): Order
+    {
+        if ($order->user_id !== $user->id || ! $order->isPending()) {
+            throw ValidationException::withMessages(['checkout' => 'Pembayaran ini tidak bisa diganti.']);
+        }
+
+        $invitation = $order->invitation;
+        $product = $order->type === self::EVENT_DAY ? self::EVENT_DAY : self::PACKAGE;
+        $promoCode = $order->promoCode?->code;
+
+        // Fails early (invalid promo, add-on no longer available) before the
+        // current transaction is touched.
+        $this->quote($invitation, $promoCode, $product);
+        if ($product === self::EVENT_DAY && ! $this->canBuyEventDay($invitation)) {
+            throw ValidationException::withMessages(['checkout' => 'Add-on Hari-H tidak tersedia untuk undangan ini.']);
+        }
+
+        if ($order->payment_url) {
+            try {
+                $expired = $this->midtrans->expire($order->uuid);
+            } catch (Throwable $e) {
+                Log::warning('Midtrans expire failed', ['order' => $order->number, 'error' => $e->getMessage()]);
+
+                throw ValidationException::withMessages(['checkout' => 'Belum bisa menghubungi Midtrans. Coba lagi sebentar lagi.']);
+            }
+
+            if (! $expired) {
+                // Most likely paid in the meantime: let the status API decide.
+                $order = $this->payments->sync($order);
+                if ($order->status === OrderStatus::Paid) {
+                    return $order;
+                }
+
+                throw ValidationException::withMessages(['checkout' => 'Pembayaran ini sedang diproses dan belum bisa diganti. Coba lagi beberapa menit lagi.']);
+            }
+        }
+
+        Order::query()->whereKey($order->id)
+            ->where('status', OrderStatus::Pending)
+            ->update(['status' => OrderStatus::Expired->value, 'updated_at' => now()]);
+
+        return $this->start($user, $invitation, $promoCode, $product);
+    }
+
     private function newNumber(): string
     {
         do {

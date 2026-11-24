@@ -1,17 +1,17 @@
 <div class="space-y-4">
     {{-- Live counters --}}
     <div class="grid grid-cols-3 gap-2 text-center" wire:poll.15s>
-        <div class="rounded-2xl bg-white p-3 shadow-sm">
-            <p class="text-2xl font-semibold">{{ $stats['checked_in'] }}</p>
-            <p class="text-xs text-gray-500">dari {{ $stats['guests'] }} tamu hadir</p>
+        <div class="card px-3 py-4">
+            <p class="font-display text-4xl leading-none [font-variant-numeric:lining-nums]">{{ $stats['checked_in'] }}</p>
+            <p class="mt-1.5 text-xs text-gray-500">dari {{ $stats['guests'] }} tamu hadir</p>
         </div>
-        <div class="rounded-2xl bg-white p-3 shadow-sm">
-            <p class="text-2xl font-semibold">{{ $stats['pax'] }}</p>
-            <p class="text-xs text-gray-500">orang</p>
+        <div class="card px-3 py-4">
+            <p class="font-display text-4xl leading-none [font-variant-numeric:lining-nums]">{{ $stats['pax'] }}</p>
+            <p class="mt-1.5 text-xs text-gray-500">orang</p>
         </div>
-        <div class="rounded-2xl bg-white p-3 shadow-sm">
-            <p class="text-2xl font-semibold">{{ $stats['walk_in'] }}</p>
-            <p class="text-xs text-gray-500">tamu dadakan</p>
+        <div class="card px-3 py-4">
+            <p class="font-display text-4xl leading-none [font-variant-numeric:lining-nums]">{{ $stats['walk_in'] }}</p>
+            <p class="mt-1.5 text-xs text-gray-500">tamu dadakan</p>
         </div>
     </div>
 
@@ -131,13 +131,13 @@
                     </select>
                 @endif
             </div>
-            <p class="text-xs text-gray-500">{{ $total }} tamu &middot; urut nama</p>
-            <ul class="divide-y divide-gray-100 rounded-2xl bg-white shadow-sm">
+            <p class="mt-1.5 text-xs text-gray-500">{{ $total }} tamu &middot; urut nama</p>
+            <ul class="card divide-y divide-gray-100 p-0">
                 @forelse ($matches as $guest)
                     <li wire:key="g-{{ $guest->id }}" class="flex items-center justify-between gap-3 px-4 py-3" x-data="{ pax: {{ max(1, (int) ($guest->rsvp?->pax ?? 1)) }} }">
                         <div class="min-w-0">
                             <p class="truncate font-medium">{{ $guest->name }}</p>
-                            <p class="text-xs text-gray-500">
+                            <p class="mt-0.5 text-xs text-gray-500">
                                 {{ $guest->group_name ?: 'Tanpa grup' }}@if ($guest->table_number) &middot; Meja {{ $guest->table_number }}@endif
                                 @if ($guest->rsvp) &middot; RSVP: {{ $guest->rsvp->attendance->label() }}@if ($guest->rsvp->pax) ({{ $guest->rsvp->pax }})@endif @endif
                             </p>

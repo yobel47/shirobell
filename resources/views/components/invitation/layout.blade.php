@@ -28,17 +28,34 @@
         <meta name="description" content="Undangan pernikahan {{ $invitation->coupleName() }}">
         <meta property="og:title" content="The Wedding of {{ $invitation->coupleName() }}">
         <meta property="og:description" content="Kami mengundang Anda untuk hadir di hari bahagia kami.">
-        @if ($coverUrl)
-            <meta property="og:image" content="{{ url($coverUrl) }}">
+        @php
+            // Themed preview card for WhatsApp and other link previews (published
+            // invitations only). Never rendered inline: until the card exists it is
+            // drawn after the response and this request falls back to the cover photo.
+            $ogImage = $coverUrl ? url($coverUrl) : null;
+            if (config('shirobell.og_images') && $invitation->exists && ! $preview) {
+                try {
+                    $ogImage = app(\App\Services\OgImageService::class)->cachedUrl($invitation) ?? $ogImage;
+                } catch (\Throwable $e) {
+                    report($e);
+                }
+            }
+        @endphp
+        @if ($ogImage)
+            <meta property="og:image" content="{{ $ogImage }}">
+            <meta property="og:image:width" content="1200">
+            <meta property="og:image:height" content="630">
+            <meta name="twitter:card" content="summary_large_image">
         @endif
     @endif
     <link rel="icon" href="{{ asset('favicon.svg') }}" type="image/svg+xml">
-    @fonts
+    @fonts(app(\App\Services\ThemeRegistry::class)->fontAliases($invitation->theme->slug, $invitation->customization['font_pair'] ?? null))
     @vite([$css])
     @livewireStyles
 </head>
 <body {{ $attributes->merge(['class' => 'antialiased']) }} @if ($themeStyle) style="{{ $themeStyle }}" @endif>
-    @if ($demo)
+    {{-- ?frame=1 (editor frame, catalog thumbnail capture) hides the demo banner. --}}
+    @if ($demo && ! request()->boolean('frame'))
         <div class="fixed inset-x-0 top-0 z-[70] flex items-center justify-center gap-3 bg-black/85 px-4 py-2 text-xs text-white">
             <span>Contoh tema {{ $invitation->theme->name }}</span>
             <a href="{{ route('register') }}" class="rounded-full bg-white px-3 py-1 font-semibold text-black">Buat undangan seperti ini</a>
@@ -64,7 +81,7 @@
     @if ($musicUrl)
         <audio x-ref="music" src="{{ $musicUrl }}" loop preload="none"></audio>
         <button type="button" x-show="opened" x-cloak x-on:click="toggleMusic()"
-                class="fixed right-4 bottom-4 z-50 flex h-12 w-12 items-center justify-center rounded-full bg-white/90 text-gray-800 shadow-lg ring-1 ring-black/10 backdrop-blur"
+                class="fixed right-4 bottom-4 z-50 flex h-12 w-12 items-center justify-center rounded-full bg-(--tc-surface)/90 text-(--tc-primary) shadow-lg ring-1 ring-(--tc-accent)/40 backdrop-blur transition active:scale-95"
                 x-bind:aria-label="playing ? 'Matikan musik' : 'Putar musik'">
             <svg x-show="playing" class="h-5 w-5 animate-spin [animation-duration:4s]" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M9 18V5l12-2v13M9 18a3 3 0 1 1-6 0 3 3 0 0 1 6 0Zm12-2a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z"/></svg>
             <svg x-show="!playing" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M9 18V5l12-2v13M9 18a3 3 0 1 1-6 0 3 3 0 0 1 6 0Zm12-2a3 3 0 1 1-6 0 3 3 0 0 1 6 0ZM3 3l18 18"/></svg>

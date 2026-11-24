@@ -44,4 +44,11 @@ return [
         'webmail', 'www',
     ],
 
+    /*
+    | Generated link-preview cards (og:image) for invitations, drawn by
+    | App\Services\OgImageService. Off in the test suite (phpunit.xml) so
+    | tests do not write files to the real public disk.
+    */
+    'og_images' => env('OG_IMAGES', true),
+
 ];

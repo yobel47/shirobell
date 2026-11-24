@@ -1,7 +1,7 @@
 <div class="space-y-6">
     <section class="card space-y-4">
         <div>
-            <h2 class="font-serif text-lg font-semibold">Foto sampul</h2>
+            <h2 class="font-serif text-xl font-semibold">Foto sampul</h2>
             <p class="text-sm text-gray-500">Tampil di halaman pembuka undangan. Disarankan foto potret (vertikal).</p>
         </div>
         <form wire:submit="saveCover" class="space-y-4">
@@ -20,7 +20,7 @@
              x-on:livewire-upload-progress="progress = $event.detail.progress">
         <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
             <div>
-                <h2 class="font-serif text-lg font-semibold">Galeri</h2>
+                <h2 class="font-serif text-xl font-semibold">Galeri</h2>
                 <p class="text-sm text-gray-500">{{ $photos->count() }} dari {{ $max }} foto. Foto otomatis dikompres.</p>
             </div>
             @if ($photos->count() < $max)

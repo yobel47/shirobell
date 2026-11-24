@@ -41,8 +41,9 @@
     };
     // ?buka=1 skips the cover (editor preview, catalog thumbnails).
     $skipCover = request()->boolean('buka');
-    $btn = 'rounded-full bg-t-primary px-5 py-2 text-xs font-semibold text-t-on transition hover:opacity-90';
-    $btnOutline = 'rounded-full border border-t-primary/40 px-5 py-2 text-xs font-semibold text-t-primary transition hover:bg-t-soft';
+    // Shared controls from craft.css (colors via --tc-* tokens).
+    $btn = 'tc-btn';
+    $btnOutline = 'tc-btn-outline';
 @endphp
 <x-invitation.layout
     :invitation="$invitation" :preview="$preview" :demo="$demo ?? false" :music-url="$musicUrl" :cover-url="$coverUrl" :theme-style="$themeStyle"
@@ -69,7 +70,7 @@
     @if ($canvasCover ?? null)
         @include('themes._engine.canvas.cover', ['cover' => $canvasCover])
     @else
-    <section x-show="!opened" @if ($skipCover) x-cloak @endif x-transition:leave="transition duration-700" x-transition:leave-end="-translate-y-full opacity-0"
+    <section x-show="!opened" @if ($skipCover) x-cloak @endif x-transition:leave="transition duration-[1100ms] ease-[cubic-bezier(0.76,0,0.24,1)]" x-transition:leave-end="-translate-y-full"
              class="fixed inset-0 z-40 flex items-center justify-center overflow-hidden bg-t-bg text-t-ink">
         @if ($coverUrl)
             <img src="{{ $coverUrl }}" alt="" class="absolute inset-0 h-full w-full object-cover opacity-30">
@@ -83,25 +84,25 @@
         @include('themes._engine.illustrations.place', ['class' => 'w-full max-w-lg max-h-[24vh]'])
         @include('themes._engine.ornaments.corners', ['size' => 'h-40 w-40 sm:h-52 sm:w-52', 'gap' => '2'])
         <div class="relative mx-auto flex max-w-md flex-col items-center px-6 text-center {{ $coverRoom }}">
-            <div class="t-sway">@include('themes._engine.ornaments.crown', ['class' => 'h-16 w-56'])</div>
-            <div class="{{ $shape }} mt-2 h-40 w-32 overflow-hidden border-4 border-t-surface shadow-lg ring-1 ring-t-accent/60 [@media(max-height:700px)]:hidden">
+            <div class="tc-rise" style="--i: 0"><div class="t-sway">@include('themes._engine.ornaments.crown', ['class' => 'h-16 w-56'])</div></div>
+            <div style="--i: 1" class="tc-rise {{ $shape }} mt-2 h-40 w-32 overflow-hidden border-4 border-t-surface shadow-lg ring-1 ring-t-accent/60 [@media(max-height:700px)]:hidden">
                 @if ($coverUrl)
                     <img src="{{ $coverUrl }}" alt="" class="h-full w-full object-cover">
                 @else
                     @include('themes._engine.ornaments.monogram', ['withCorners' => false])
                 @endif
             </div>
-            <p class="mt-4 text-xs tracking-[0.35em] text-t-accent uppercase">The Wedding of</p>
-            <h1 class="{{ $names }} mt-4 leading-tight text-t-primary">{{ $groom }} <span class="mx-1 text-t-accent">&amp;</span> {{ $bride }}</h1>
+            <p class="tc-eyebrow tc-rise mt-5" style="--i: 2">The Wedding of</p>
+            <h1 class="{{ $names }} tc-title tc-rise mt-4 leading-tight text-t-primary" style="--i: 3">{{ $groom }} <span class="mx-1 text-t-accent">&amp;</span> {{ $bride }}</h1>
             @if ($dateLabel)
-                <p class="mt-3 text-sm tracking-widest">{{ $dateLabel }}</p>
+                <p class="tc-num tc-rise mt-3 text-sm tracking-[0.2em]" style="--i: 4">{{ $dateLabel }}</p>
             @endif
-            @include('themes._engine.partials.ornament')
-            <div class="px-6 py-2">
-                <p class="text-xs opacity-80">Kepada Yth. Bapak/Ibu/Saudara/i</p>
-                <p class="mt-1 font-heading text-xl font-semibold">{{ $guestName ?: 'Tamu Undangan' }}</p>
+            <div class="tc-rise" style="--i: 5">@include('themes._engine.partials.ornament')</div>
+            <div class="tc-rise px-6 py-2" style="--i: 6">
+                <p class="text-[11px] tracking-[0.18em] uppercase opacity-70">Kepada Yth. Bapak/Ibu/Saudara/i</p>
+                <p class="tc-title mt-2 font-heading text-2xl font-semibold">{{ $guestName ?: 'Tamu Undangan' }}</p>
             </div>
-            <button type="button" x-on:click="open()" class="mt-8 inline-flex items-center gap-2 rounded-full bg-t-primary px-7 py-3 text-sm font-medium text-t-on transition hover:opacity-90">
+            <button type="button" x-on:click="open()" class="tc-btn tc-rise mt-8 px-8 py-3.5 text-sm" style="--i: 7">
                 <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M21.75 9v.906a2.25 2.25 0 0 1-1.183 1.981l-6.478 3.488M2.25 9v.906a2.25 2.25 0 0 0 1.183 1.981l6.478 3.488m8.839 2.51-4.66-2.51m0 0-1.023-.55a2.25 2.25 0 0 0-2.134 0l-1.022.55m0 0-4.661 2.51m16.5 1.615a2.25 2.25 0 0 1-2.25 2.25h-15a2.25 2.25 0 0 1-2.25-2.25V8.844a2.25 2.25 0 0 1 1.183-1.981l7.5-4.039a2.25 2.25 0 0 1 2.134 0l7.5 4.039a2.25 2.25 0 0 1 1.183 1.98V19.5Z"/></svg>
                 Buka Undangan
             </button>
@@ -127,8 +128,8 @@
 
         <div class="t-grain pointer-events-none fixed inset-0 z-30"></div>
 
-        <footer class="bg-t-primary px-6 py-6 text-center text-xs text-t-on/80">
-            Dibuat dengan <a href="{{ config('app.url') }}" class="font-semibold text-t-on">{{ $siteName ?? config('app.name') }}</a>
+        <footer class="bg-t-primary px-6 py-7 text-center text-[11px] tracking-[0.18em] text-t-on/70 uppercase">
+            Dibuat dengan <a href="{{ config('app.url') }}" class="font-semibold text-t-on underline-offset-4 hover:underline">{{ $siteName ?? config('app.name') }}</a>
         </footer>
     </main>
 </x-invitation.layout>

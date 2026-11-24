@@ -13,6 +13,7 @@ use App\Models\Invitation;
 use App\Models\Order;
 use App\Models\PromoCode;
 use App\Models\User;
+use App\Services\Payment\CheckoutService;
 use App\Services\SettingService;
 use Database\Seeders\ThemeSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -336,5 +337,114 @@ class PaymentTest extends TestCase
         $this->artisan('orders:expire')->assertSuccessful();
 
         $this->assertSame(OrderStatus::Expired, $order->refresh()->status);
+    }
+
+    /** Snap returns a URL per order; the expire endpoint answers with $expireCode; status API reports $status. */
+    private function fakeMidtransForRestart(string $expireCode = '407', string $status = 'pending'): void
+    {
+        Http::fake([
+            'app.sandbox.midtrans.com/snap/v1/transactions' => fn ($request) => Http::response([
+                'token' => 'tok-'.$request['transaction_details']['order_id'],
+                'redirect_url' => 'https://app.sandbox.midtrans.com/snap/v4/redirection/tok-'.$request['transaction_details']['order_id'],
+            ], 201),
+            'api.sandbox.midtrans.com/v2/*/expire' => Http::response(['status_code' => $expireCode, 'transaction_status' => $expireCode === '407' ? 'expire' : 'settlement'], match ($expireCode) {
+                '412' => 412, '503' => 503, default => 200
+            }),
+            'api.sandbox.midtrans.com/v2/*/status' => function ($request) use ($status) {
+                $orderId = explode('/', parse_url($request->url(), PHP_URL_PATH))[2];
+                $order = Order::firstWhere('uuid', $orderId);
+
+                return Http::response([
+                    'status_code' => $status === 'settlement' ? '200' : '201',
+                    'order_id' => $orderId,
+                    'transaction_id' => 'trx-9',
+                    'transaction_status' => $status,
+                    'fraud_status' => 'accept',
+                    'payment_type' => 'bank_transfer',
+                    'gross_amount' => number_format($order?->total_amount ?? 0, 2, '.', ''),
+                ]);
+            },
+        ]);
+    }
+
+    private function pendingOrder(?string $promo = null): Order
+    {
+        $component = Livewire::actingAs($this->owner)->test(Checkout::class, ['invitation' => $this->invitation]);
+        if ($promo) {
+            $component->set('promoInput', $promo)->call('applyPromo')->assertHasNoErrors();
+        }
+        $component->call('pay');
+
+        return Order::latest('id')->first();
+    }
+
+    public function test_customer_can_change_payment_method_which_expires_the_old_transaction(): void
+    {
+        $this->fakeMidtransForRestart();
+        PromoCode::factory()->create(['code' => 'DISKON20', 'type' => 'percent', 'value' => 20]);
+        $old = $this->pendingOrder('DISKON20');
+
+        $component = Livewire::actingAs($this->owner)->test(OrderStatusPage::class, ['order' => $old])
+            ->assertSee('Ganti metode pembayaran')
+            ->call('changeMethod');
+
+        $new = Order::latest('id')->first();
+        $this->assertNotSame($old->id, $new->id);
+        $component->assertRedirect('https://app.sandbox.midtrans.com/snap/v4/redirection/tok-'.$new->uuid);
+
+        $this->assertSame(OrderStatus::Expired, $old->refresh()->status);
+        $this->assertSame(OrderStatus::Pending, $new->status);
+        $this->assertSame($old->total_amount, $new->total_amount);
+        $this->assertSame($old->promo_code_id, $new->promo_code_id);
+        $this->assertSame($old->type, $new->type);
+        Http::assertSent(fn ($r) => $r->method() === 'POST' && str_ends_with($r->url(), '/v2/'.$old->uuid.'/expire'));
+    }
+
+    public function test_change_method_works_when_no_method_was_picked_yet(): void
+    {
+        $this->fakeMidtransForRestart('404');
+        $old = $this->pendingOrder();
+
+        Livewire::actingAs($this->owner)->test(OrderStatusPage::class, ['order' => $old])->call('changeMethod');
+
+        $this->assertSame(OrderStatus::Expired, $old->refresh()->status);
+        $this->assertSame(2, Order::count());
+    }
+
+    public function test_change_method_on_an_already_paid_transaction_settles_it_instead(): void
+    {
+        $this->fakeMidtransForRestart('412', 'settlement');
+        $old = $this->pendingOrder();
+
+        // Paid in another tab just before the click: Midtrans refuses to expire it.
+        $result = app(CheckoutService::class)->restart($this->owner, $old);
+
+        $this->assertSame($old->id, $result->id);
+        $this->assertSame(OrderStatus::Paid, $old->refresh()->status);
+        $this->assertSame(1, Order::count());
+        $this->assertSame(InvitationStatus::Active, $this->invitation->refresh()->status);
+    }
+
+    public function test_change_method_keeps_the_order_when_midtrans_is_unreachable(): void
+    {
+        $this->fakeMidtransForRestart('503');
+        $old = $this->pendingOrder();
+
+        Livewire::actingAs($this->owner)->test(OrderStatusPage::class, ['order' => $old])
+            ->call('changeMethod')
+            ->assertSet('notice', 'Belum bisa menghubungi Midtrans. Coba lagi sebentar lagi.');
+
+        $this->assertSame(OrderStatus::Pending, $old->refresh()->status);
+        $this->assertSame(1, Order::count());
+    }
+
+    public function test_other_user_cannot_change_payment_method(): void
+    {
+        $this->fakeMidtransForRestart();
+        $old = $this->pendingOrder();
+
+        Livewire::actingAs(User::factory()->create())->test(OrderStatusPage::class, ['order' => $old])->assertForbidden();
+        $this->assertSame(OrderStatus::Pending, $old->refresh()->status);
+        Http::assertNotSent(fn ($r) => str_ends_with($r->url(), '/expire'));
     }
 }
