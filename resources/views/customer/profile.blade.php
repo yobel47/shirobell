@@ -1,16 +1,17 @@
 <x-layouts.app title="Profil">
-    <div class="mx-auto max-w-2xl space-y-6">
+    <div class="mx-auto max-w-2xl space-y-8">
         <div>
-            <h1 class="font-serif text-3xl font-semibold">Profil &amp; kata sandi</h1>
-            <p class="mt-1 text-sm text-gray-500">Data ini dipakai untuk login, bukti pembayaran, dan pengingat masa aktif undangan.</p>
+            <p class="eyebrow">Akun</p>
+            <h1 class="page-title mt-5">Profil &amp; kata sandi</h1>
+            <p class="mt-4 text-gray-600">Data ini dipakai untuk login, bukti pembayaran, dan pengingat masa aktif undangan.</p>
         </div>
 
         @php $user = auth()->user(); @endphp
 
-        <form method="POST" action="{{ route('user-profile-information.update') }}" class="card space-y-4">
+        <form method="POST" action="{{ route('user-profile-information.update') }}" class="card space-y-5 sm:p-8">
             @csrf
             @method('PUT')
-            <h2 class="font-serif text-lg font-semibold">Data akun</h2>
+            <h2 class="font-serif text-2xl font-medium">Data akun</h2>
             @php $profileErrors = $errors->getBag('updateProfileInformation'); @endphp
             <div>
                 <label for="name" class="form-label">Nama</label>
@@ -33,10 +34,10 @@
             </div>
         </form>
 
-        <form method="POST" action="{{ route('user-password.update') }}" class="card space-y-4">
+        <form method="POST" action="{{ route('user-password.update') }}" class="card space-y-5 sm:p-8">
             @csrf
             @method('PUT')
-            <h2 class="font-serif text-lg font-semibold">Ubah kata sandi</h2>
+            <h2 class="font-serif text-2xl font-medium">Ubah kata sandi</h2>
             @php $passwordErrors = $errors->getBag('updatePassword'); @endphp
             <div>
                 <label for="current_password" class="form-label">Kata sandi saat ini</label>

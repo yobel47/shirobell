@@ -1,7 +1,7 @@
 <div class="space-y-4">
     <div class="flex items-center justify-between">
         <div>
-            <h2 class="font-serif text-lg font-semibold">Cerita cinta</h2>
+            <h2 class="font-serif text-xl font-semibold">Cerita cinta</h2>
             <p class="text-sm text-gray-500">Perjalanan kalian, dari pertama bertemu sampai hari bahagia.</p>
         </div>
         @unless ($showForm)

@@ -1,4 +1,5 @@
 @import 'tailwindcss' source(none);
+@import './craft.css';
 
 @source '../../views/themes/sage-minimalist';
 @source '../../views/components/invitation';
@@ -40,4 +41,16 @@ html {
 
 .sm-watermark {
     background-image: repeating-linear-gradient(-30deg, transparent 0 90px, rgb(68 86 74 / 0.05) 90px 92px);
+}
+
+/* craft.css tokens mapped to this theme's palette. Declared on body, where a
+   color variant's inline custom properties live, so variants resolve here too. */
+body {
+    --tc-primary: var(--color-sm-deep);
+    --tc-accent: var(--color-sm-rose);
+    --tc-ink: var(--color-sm-ink);
+    --tc-bg: var(--color-sm-cream);
+    --tc-soft: var(--color-sm-blush);
+    --tc-surface: #ffffff;
+    --tc-on: #ffffff;
 }

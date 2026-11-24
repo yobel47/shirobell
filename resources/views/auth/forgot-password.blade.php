@@ -2,10 +2,10 @@
     <form method="POST" action="{{ route('password.email') }}" class="space-y-4">
         @csrf
         <x-form.input name="email" type="email" label="Email" required autofocus autocomplete="email" />
-        <button type="submit" class="btn btn-primary w-full">Kirim link</button>
+        <button type="submit" class="btn btn-primary btn-lg w-full">Kirim link</button>
     </form>
 
     <x-slot:footer>
-        <p class="mt-6 text-sm text-gray-500"><a href="{{ route('login') }}" class="font-medium text-rose-brand-600 hover:underline">Kembali ke halaman masuk</a></p>
+        <p class="mt-10 border-t border-rose-brand-900/8 pt-6 text-sm text-gray-500"><a href="{{ route('login') }}" class="font-medium text-rose-brand-600 hover:underline">Kembali ke halaman masuk</a></p>
     </x-slot:footer>
 </x-layouts.auth>

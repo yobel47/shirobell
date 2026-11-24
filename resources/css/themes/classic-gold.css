@@ -1,4 +1,5 @@
 @import 'tailwindcss' source(none);
+@import './craft.css';
 
 @source '../../views/themes/classic-gold';
 @source '../../views/components/invitation';
@@ -46,4 +47,16 @@ html {
 
 .cg-watermark {
     background-image: repeating-linear-gradient(-30deg, transparent 0 90px, rgb(31 27 22 / 0.05) 90px 92px);
+}
+
+/* craft.css tokens mapped to this theme's palette. Declared on body, where a
+   color variant's inline custom properties live, so variants resolve here too. */
+body {
+    --tc-primary: var(--color-cg-deep);
+    --tc-accent: var(--color-cg-rose);
+    --tc-ink: var(--color-cg-ink);
+    --tc-bg: var(--color-cg-cream);
+    --tc-soft: var(--color-cg-blush);
+    --tc-surface: #ffffff;
+    --tc-on: #ffffff;
 }

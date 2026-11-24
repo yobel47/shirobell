@@ -1,7 +1,7 @@
 <div class="space-y-4">
     <div class="flex flex-wrap items-start justify-between gap-3">
         <div>
-            <h2 class="font-serif text-lg font-semibold">Riwayat versi</h2>
+            <h2 class="font-serif text-xl font-semibold">Riwayat versi</h2>
             <p class="max-w-xl text-sm text-gray-500">
                 Salinan dibuat otomatis sebelum Anda mengubah undangan, paling sering setiap {{ $interval }} menit, dan {{ $max }} versi terakhir disimpan.
                 Memulihkan versi lama tidak menghapus apa pun: kondisi sekarang disimpan dulu sebagai versi baru.

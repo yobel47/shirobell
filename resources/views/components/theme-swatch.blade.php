@@ -15,9 +15,16 @@
         'square' => 'rounded-sm',
         default => 'rounded-t-full rounded-b-xl',
     };
+    // Real cover captures (public/images/themes/{slug}--{variant}.webp); the theme's
+    // default palette is its first variant. Regenerate after changing a theme's look.
+    $captureKey = $variant ?? array_key_first($theme->variants());
+    $capture = $captureKey !== null ? 'images/themes/'.$theme->slug.'--'.$captureKey.'.webp' : null;
+    $capture = $capture && is_file(public_path($capture)) ? $capture : null;
 @endphp
 @if ($theme->thumbnail_path && $variant === null)
     <img src="{{ Storage::disk('public')->url($theme->thumbnail_path) }}" alt="Tema {{ $theme->name }}" {{ $attributes->merge(['class' => 'w-full object-cover']) }}>
+@elseif ($capture)
+    <img src="{{ asset($capture) }}" alt="Tema {{ $theme->name }}" loading="lazy" decoding="async" width="420" height="525" {{ $attributes->merge(['class' => 'w-full bg-gray-100 object-cover object-top']) }}>
 @else
     {{-- Generated preview from the theme recipe and variant palette (no image needed). --}}
     <div {{ $attributes->merge(['class' => 'relative flex w-full flex-col items-center justify-center gap-2 overflow-hidden']) }}

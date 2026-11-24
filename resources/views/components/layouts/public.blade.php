@@ -3,15 +3,19 @@
     @isset($head)
         <x-slot:head>{{ $head }}</x-slot:head>
     @endisset
-    <header x-data="{ open: false }" class="sticky top-0 z-40 border-b border-rose-brand-100/70 bg-cream/90 backdrop-blur">
-        <nav class="mx-auto flex max-w-6xl items-center justify-between px-4 py-3 sm:px-6">
+    <header x-data="{ open: false }" class="vt-header sticky top-0 z-40 border-b border-rose-brand-900/8 bg-cream/85 backdrop-blur-md">
+        <nav class="mx-auto flex max-w-6xl items-center justify-between px-4 py-3.5 sm:px-6">
             <a href="{{ route('home') }}" aria-label="{{ $siteName }}"><x-brand.logo :name="$siteName"/></a>
 
-            <div class="hidden items-center gap-1 md:flex">
-                <a href="{{ route('themes.index') }}" class="btn btn-ghost">Tema</a>
-                <a href="{{ route('home') }}#fitur" class="btn btn-ghost">Fitur</a>
-                <a href="{{ route('home') }}#harga" class="btn btn-ghost">Harga</a>
-                <a href="{{ route('home') }}#faq" class="btn btn-ghost">FAQ</a>
+            <div class="hidden items-center gap-8 md:flex">
+                @foreach ([
+                    [route('themes.index'), 'Tema', request()->routeIs('themes.*')],
+                    [route('home').'#fitur', 'Fitur', false],
+                    [route('home').'#harga', 'Harga', false],
+                    [route('home').'#faq', 'FAQ', false],
+                ] as [$href, $label, $current])
+                    <a href="{{ $href }}" @class(['nav-link', 'is-current' => $current]) @if ($current) aria-current="page" @endif>{{ $label }}</a>
+                @endforeach
             </div>
 
             <div class="hidden items-center gap-2 md:flex">
@@ -23,24 +27,26 @@
                 @endauth
             </div>
 
-            <button type="button" class="btn btn-ghost px-3 md:hidden" x-on:click="open = !open" aria-label="Buka menu">
-                <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8"><path stroke-linecap="round" d="M4 7h16M4 12h16M4 17h16"/></svg>
+            <button type="button" class="-mr-2 flex h-11 w-11 items-center justify-center rounded-full text-ink md:hidden" x-on:click="open = !open" x-bind:aria-expanded="open.toString()" aria-label="Buka menu">
+                <span class="relative block h-3 w-5" aria-hidden="true">
+                    <span class="absolute inset-x-0 top-0 h-px bg-current transition duration-300" x-bind:class="open && 'translate-y-[5.5px] rotate-45'"></span>
+                    <span class="absolute inset-x-0 bottom-0 h-px bg-current transition duration-300" x-bind:class="open && '-translate-y-[5.5px] -rotate-45'"></span>
+                </span>
             </button>
         </nav>
 
-        <div x-show="open" x-cloak x-transition class="border-t border-rose-brand-100 bg-cream px-4 pb-4 md:hidden">
-            <div class="flex flex-col py-2">
-                <a href="{{ route('themes.index') }}" class="rounded-lg px-3 py-2.5">Tema</a>
-                <a href="{{ route('home') }}#fitur" class="rounded-lg px-3 py-2.5" x-on:click="open = false">Fitur</a>
-                <a href="{{ route('home') }}#harga" class="rounded-lg px-3 py-2.5" x-on:click="open = false">Harga</a>
-                <a href="{{ route('home') }}#faq" class="rounded-lg px-3 py-2.5" x-on:click="open = false">FAQ</a>
+        <div x-show="open" x-cloak x-transition.opacity class="border-t border-rose-brand-900/8 bg-cream px-4 pt-2 pb-6 md:hidden">
+            <div class="flex flex-col">
+                @foreach ([[route('themes.index'), 'Tema'], [route('home').'#fitur', 'Fitur'], [route('home').'#harga', 'Harga'], [route('home').'#faq', 'FAQ']] as [$href, $label])
+                    <a href="{{ $href }}" class="border-b border-rose-brand-900/8 py-4 font-display text-3xl text-ink" x-on:click="open = false">{{ $label }}</a>
+                @endforeach
             </div>
             @auth
-                <a href="{{ route('app.dashboard') }}" class="btn btn-primary w-full">Undangan Saya</a>
+                <a href="{{ route('app.dashboard') }}" class="btn btn-primary btn-lg mt-6 w-full">Undangan Saya</a>
             @else
-                <div class="grid grid-cols-2 gap-2">
-                    <a href="{{ route('login') }}" class="btn btn-outline">Masuk</a>
-                    <a href="{{ route('register') }}" class="btn btn-primary">Buat Undangan</a>
+                <div class="mt-6 grid grid-cols-2 gap-2">
+                    <a href="{{ route('login') }}" class="btn btn-outline btn-lg">Masuk</a>
+                    <a href="{{ route('register') }}" class="btn btn-primary btn-lg">Buat Undangan</a>
                 </div>
             @endauth
         </div>
@@ -50,34 +56,60 @@
         {{ $slot }}
     </main>
 
-    <footer class="border-t border-rose-brand-100 bg-white">
-        <div class="mx-auto flex max-w-6xl flex-col gap-4 px-4 py-8 text-sm text-gray-500 sm:flex-row sm:items-center sm:justify-between sm:px-6">
-            <div>
-                <x-brand.logo :name="$siteName" size="sm"/>
-                <p class="mt-2">Undangan pernikahan online</p>
+    <footer class="bg-wine text-cream">
+        <div class="mx-auto max-w-6xl px-4 pt-16 pb-10 sm:px-6 sm:pt-20">
+            <div class="grid gap-12 lg:grid-cols-12">
+                <div class="lg:col-span-6">
+                    <x-brand.mark class="h-9 w-9 text-rose-brand-300"/>
+                    <p class="display mt-6 text-[clamp(2.25rem,4.5vw,3.75rem)] text-cream">Kabar bahagia, <em class="text-rose-brand-300">dibagikan dengan indah.</em></p>
+                    <a href="{{ route('register') }}" class="btn btn-light btn-arrow mt-8">
+                        Buat undangan gratis
+                        <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M5 12h14m-6-6 6 6-6 6"/></svg>
+                    </a>
+                </div>
+
+                <nav class="grid grid-cols-2 gap-8 text-sm lg:col-span-5 lg:col-start-8" aria-label="Informasi">
+                    <div>
+                        <p class="text-xs font-semibold tracking-[0.12em] text-cream/50 uppercase">Produk</p>
+                        <ul class="mt-4 space-y-3">
+                            <li><a href="{{ route('themes.index') }}" class="footer-link">Katalog tema</a></li>
+                            <li><a href="{{ route('home') }}#fitur" class="footer-link">Fitur</a></li>
+                            <li><a href="{{ route('home') }}#harga" class="footer-link">Harga</a></li>
+                            <li><a href="{{ route('home') }}#faq" class="footer-link">FAQ</a></li>
+                        </ul>
+                    </div>
+                    <div>
+                        <p class="text-xs font-semibold tracking-[0.12em] text-cream/50 uppercase">Informasi</p>
+                        <ul class="mt-4 space-y-3">
+                            <li><a href="{{ route('legal.terms') }}" class="footer-link">Syarat &amp; Ketentuan</a></li>
+                            <li><a href="{{ route('legal.privacy') }}" class="footer-link">Kebijakan Privasi</a></li>
+                            <li><a href="{{ route('legal.refund') }}" class="footer-link">Kebijakan Refund</a></li>
+                            <li><a href="{{ route('legal.contact') }}" class="footer-link">Kontak</a></li>
+                        </ul>
+                    </div>
+                </nav>
             </div>
-            <nav class="flex flex-wrap gap-x-4 gap-y-2" aria-label="Informasi">
-                <a href="{{ route('legal.terms') }}" class="hover:text-rose-brand-600">Syarat & Ketentuan</a>
-                <a href="{{ route('legal.privacy') }}" class="hover:text-rose-brand-600">Kebijakan Privasi</a>
-                <a href="{{ route('legal.refund') }}" class="hover:text-rose-brand-600">Kebijakan Refund</a>
-                <a href="{{ route('legal.contact') }}" class="hover:text-rose-brand-600">Kontak</a>
-            </nav>
+
+            @if ($supportContacts['whatsapp_url'] || $supportContacts['instagram_url'] || $supportContacts['email'])
+                <div class="mt-14 flex flex-wrap items-center gap-x-6 gap-y-3 border-t border-cream/10 pt-8 text-sm">
+                    <span class="text-cream/50">Hubungi kami</span>
+                    @if ($supportContacts['whatsapp_url'])
+                        <a href="{{ $supportContacts['whatsapp_url'] }}" target="_blank" rel="noopener" class="footer-link inline-flex items-center gap-2"><svg class="h-4 w-4" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2a10 10 0 0 0-8.6 15.1L2 22l5-1.3A10 10 0 1 0 12 2Zm0 18.2c-1.5 0-3-.4-4.3-1.2l-.3-.2-3 .8.8-2.9-.2-.3A8.2 8.2 0 1 1 12 20.2Zm4.5-6.1c-.2-.1-1.5-.7-1.7-.8-.2-.1-.4-.1-.6.1l-.8 1c-.1.2-.3.2-.5.1a6.7 6.7 0 0 1-3.3-2.9c-.2-.4.2-.4.7-1.3.1-.2 0-.3 0-.4l-.8-1.8c-.2-.5-.4-.4-.6-.4h-.5c-.2 0-.4.1-.6.3-.2.2-.8.8-.8 2s.8 2.3.9 2.5c.1.2 1.6 2.5 4 3.5 1.5.6 2 .7 2.8.6.4-.1 1.5-.6 1.7-1.2.2-.6.2-1.1.2-1.2-.1-.1-.3-.2-.5-.3Z"/></svg> {{ $supportContacts['whatsapp'] }}</a>
+                    @endif
+                    @if ($supportContacts['instagram_url'])
+                        <a href="{{ $supportContacts['instagram_url'] }}" target="_blank" rel="noopener" class="footer-link inline-flex items-center gap-2"><svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="5"/><circle cx="12" cy="12" r="4"/><circle cx="17.5" cy="6.5" r="1" fill="currentColor" stroke="none"/></svg> {{ '@'.$supportContacts['instagram'] }}</a>
+                    @endif
+                    @if ($supportContacts['email'])
+                        <a href="mailto:{{ $supportContacts['email'] }}" class="footer-link inline-flex items-center gap-2"><svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="m3 7 9 6 9-6"/></svg> {{ $supportContacts['email'] }}</a>
+                    @endif
+                </div>
+            @endif
+
+            <div @class(["mt-8 flex flex-col gap-3 border-t border-cream/10 pt-6 text-xs text-cream/45 sm:flex-row sm:items-center sm:justify-between", "pb-16 sm:pb-0" => $supportContacts['whatsapp_url']])>
+                <p>{{ $siteName }} &middot; Undangan pernikahan online</p>
+                <p>&copy; {{ now()->year }} {{ $siteName }}. Hak cipta dilindungi.</p>
+            </div>
         </div>
-        @if ($supportContacts['whatsapp_url'] || $supportContacts['instagram_url'] || $supportContacts['email'])
-            <div class="mx-auto flex max-w-6xl flex-wrap items-center gap-x-5 gap-y-2 px-4 pb-6 text-sm text-gray-500 sm:px-6">
-                <span class="font-medium text-ink">Hubungi kami</span>
-                @if ($supportContacts['whatsapp_url'])
-                    <a href="{{ $supportContacts['whatsapp_url'] }}" target="_blank" rel="noopener" class="inline-flex items-center gap-1.5 hover:text-rose-brand-600"><svg class="h-4 w-4" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2a10 10 0 0 0-8.6 15.1L2 22l5-1.3A10 10 0 1 0 12 2Zm0 18.2c-1.5 0-3-.4-4.3-1.2l-.3-.2-3 .8.8-2.9-.2-.3A8.2 8.2 0 1 1 12 20.2Zm4.5-6.1c-.2-.1-1.5-.7-1.7-.8-.2-.1-.4-.1-.6.1l-.8 1c-.1.2-.3.2-.5.1a6.7 6.7 0 0 1-3.3-2.9c-.2-.4.2-.4.7-1.3.1-.2 0-.3 0-.4l-.8-1.8c-.2-.5-.4-.4-.6-.4h-.5c-.2 0-.4.1-.6.3-.2.2-.8.8-.8 2s.8 2.3.9 2.5c.1.2 1.6 2.5 4 3.5 1.5.6 2 .7 2.8.6.4-.1 1.5-.6 1.7-1.2.2-.6.2-1.1.2-1.2-.1-.1-.3-.2-.5-.3Z"/></svg> {{ $supportContacts['whatsapp'] }}</a>
-                @endif
-                @if ($supportContacts['instagram_url'])
-                    <a href="{{ $supportContacts['instagram_url'] }}" target="_blank" rel="noopener" class="inline-flex items-center gap-1.5 hover:text-rose-brand-600"><svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="5"/><circle cx="12" cy="12" r="4"/><circle cx="17.5" cy="6.5" r="1" fill="currentColor" stroke="none"/></svg> {{ '@'.$supportContacts['instagram'] }}</a>
-                @endif
-                @if ($supportContacts['email'])
-                    <a href="mailto:{{ $supportContacts['email'] }}" class="inline-flex items-center gap-1.5 hover:text-rose-brand-600"><svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="m3 7 9 6 9-6"/></svg> {{ $supportContacts['email'] }}</a>
-                @endif
-            </div>
-        @endif
-        <p @class(["border-t border-rose-brand-50 px-4 pt-4 text-center text-xs text-gray-400", "pb-24 sm:pb-4" => $supportContacts['whatsapp_url'], "pb-4" => ! $supportContacts['whatsapp_url']])>&copy; {{ now()->year }} {{ $siteName }}. Hak cipta dilindungi.</p>
     </footer>
 
     @if ($supportContacts['whatsapp_url'])

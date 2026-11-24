@@ -30,7 +30,7 @@
         <p @class(['mt-2 text-sm tracking-[0.4em] uppercase', 'text-white/80' => $coverUrl, 'text-t-accent' => ! $coverUrl])>The Wedding of</p>
         <p @class([$names, 'mt-4 text-6xl leading-tight xl:text-7xl', 'text-t-primary' => ! $coverUrl])>{{ $groom }} <span @class(['mx-2', 'text-t-accent' => ! $coverUrl, 'text-white/80' => $coverUrl])>&amp;</span> {{ $bride }}</p>
         @if ($dateLabel)
-            <p class="mt-5 text-base tracking-[0.25em]">{{ $dateLabel }}</p>
+            <p class="tc-num mt-5 text-base tracking-[0.25em]">{{ $dateLabel }}</p>
         @endif
 
         @if ($countdownTarget)
@@ -46,7 +46,7 @@
                  }">
                 @foreach (['d' => 'Hari', 'h' => 'Jam', 'm' => 'Menit', 's' => 'Detik'] as $unit => $label)
                     <div @class(['w-20 rounded-2xl py-3 backdrop-blur-sm', 'bg-white/15 ring-1 ring-white/25' => $coverUrl, 'bg-t-surface/70 ring-1 ring-t-accent/40' => ! $coverUrl])>
-                        <p class="font-heading text-3xl font-semibold" x-text="{{ $unit }}">0</p>
+                        <p class="tc-num font-heading text-3xl font-semibold" x-text="{{ $unit }}">0</p>
                         <p class="mt-1 text-[11px] tracking-widest uppercase opacity-80">{{ $label }}</p>
                     </div>
                 @endforeach

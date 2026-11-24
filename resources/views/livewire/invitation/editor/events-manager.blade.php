@@ -1,7 +1,7 @@
 <div class="space-y-4">
     <div class="flex items-center justify-between">
         <div>
-            <h2 class="font-serif text-lg font-semibold">Acara</h2>
+            <h2 class="font-serif text-xl font-semibold">Acara</h2>
             <p class="text-sm text-gray-500">Akad, pemberkatan, resepsi, atau acara lainnya.</p>
         </div>
         @unless ($showForm)

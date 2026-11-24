@@ -7,7 +7,7 @@
         <x-form.input name="password" type="password" label="Kata sandi" required autocomplete="new-password" hint="Minimal 8 karakter." />
         <x-form.input name="password_confirmation" type="password" label="Ulangi kata sandi" required autocomplete="new-password" />
 
-        <button type="submit" class="btn btn-primary w-full">Daftar</button>
+        <button type="submit" class="btn btn-primary btn-lg w-full">Daftar</button>
         <p class="text-center text-xs text-gray-500">
             Dengan mendaftar, Anda menyetujui
             <a href="{{ route('legal.terms') }}" target="_blank" class="text-rose-brand-600 hover:underline">Syarat & Ketentuan</a>
@@ -17,6 +17,6 @@
     </form>
 
     <x-slot:footer>
-        <p class="mt-6 text-sm text-gray-500">Sudah punya akun? <a href="{{ route('login') }}" class="font-medium text-rose-brand-600 hover:underline">Masuk</a></p>
+        <p class="mt-10 border-t border-rose-brand-900/8 pt-6 text-sm text-gray-500">Sudah punya akun? <a href="{{ route('login') }}" class="font-medium text-rose-brand-600 hover:underline">Masuk</a></p>
     </x-slot:footer>
 </x-layouts.auth>

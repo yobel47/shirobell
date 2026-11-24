@@ -18,7 +18,7 @@
     <section class="card space-y-4">
         <div class="flex items-center justify-between gap-3">
             <div>
-                <h2 class="font-serif text-lg font-semibold">Tambah tamu</h2>
+                <h2 class="font-serif text-xl font-semibold">Tambah tamu</h2>
                 <p class="text-sm text-gray-500">Tempel banyak nama sekaligus, atau impor dari file Excel/CSV.</p>
             </div>
             @unless ($showBulk)
@@ -97,9 +97,9 @@
 
     {{-- WhatsApp template --}}
     <details class="card group">
-        <summary class="cursor-pointer list-none font-serif text-lg font-semibold">
+        <summary class="cursor-pointer list-none font-serif text-xl font-semibold">
             Template pesan WhatsApp
-            <span class="ml-1 text-sm font-normal text-gray-500 group-open:hidden">(klik untuk mengubah)</span>
+            <span class="ml-1 font-sans text-sm font-normal text-gray-500 group-open:hidden">(klik untuk mengubah)</span>
         </summary>
         <form wire:submit="saveTemplate" class="mt-4 space-y-3">
             <textarea wire:model="template" rows="10" class="form-input" aria-label="Template pesan WhatsApp"></textarea>
@@ -130,7 +130,7 @@
             @php
                 $statusKey = $guest->statusKey();
                 $statusLabel = ['belum' => 'Belum dikirim', 'dibagikan' => 'Sudah dikirim', 'dibuka' => 'Sudah dibuka', 'rsvp' => $guest->rsvp?->attendance?->label() ?? 'RSVP'][$statusKey];
-                $statusClass = ['belum' => 'bg-gray-100 text-gray-600', 'dibagikan' => 'bg-sky-50 text-sky-700', 'dibuka' => 'bg-violet-50 text-violet-700', 'rsvp' => $guest->rsvp?->attendance?->badgeClass() ?? ''][$statusKey];
+                $statusClass = ['belum' => 'bg-gray-100 text-gray-600', 'dibagikan' => 'bg-rose-brand-50 text-rose-brand-700', 'dibuka' => 'bg-ink/8 text-ink', 'rsvp' => $guest->rsvp?->attendance?->badgeClass() ?? ''][$statusKey];
                 $link = $service->personalUrl($invitation, $guest);
             @endphp
             <div wire:key="guest-{{ $guest->id }}" class="card p-4">

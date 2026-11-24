@@ -1,6 +1,6 @@
 <div class="space-y-4">
     <div>
-        <h2 class="font-serif text-lg font-semibold">Amplop digital</h2>
+        <h2 class="font-serif text-xl font-semibold">Amplop digital</h2>
         <p class="text-sm text-gray-500">Tamu yang berhalangan hadir bisa mengirim hadiah langsung ke rekening, e-wallet, atau QRIS Anda. Dana tidak melewati {{ $siteName ?? config('app.name') }}.</p>
     </div>
 
